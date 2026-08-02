@@ -33,17 +33,49 @@ body {
   border-bottom: 1px solid #9ca3af;
   background: #b7b7b7;
 }
+.titleArea {
+  display: grid;
+  gap: 5px;
+  min-width: 214px;
+}
 h1 {
   margin: 0;
   font-size: 24px;
   letter-spacing: 0;
+}
+.topNav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.topNav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #8a96a6;
+  border-radius: 8px;
+  color: #263238;
+  background: rgba(255, 255, 255, 0.56);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.topNav a:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+.topNav a.active {
+  border-color: #2f7d5b;
+  background: #dff1e5;
+  color: #1d5e42;
 }
 .searchWrap {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  width: min(760px, 62vw);
+  width: min(980px, 68vw);
 }
 input, select {
   width: 100%;
@@ -100,6 +132,9 @@ select {
   height: calc(100vh - 67px);
   padding: 12px;
 }
+.itemLayout {
+  grid-template-columns: 410px minmax(0, 1fr);
+}
 .monsterList {
   overflow: auto;
   border: 1px solid var(--line);
@@ -137,6 +172,27 @@ select {
   border-radius: 8px;
   font-size: 22px;
   align-self: center;
+}
+.itemGlyph, .itemMark {
+  display: grid;
+  place-items: center;
+  border: 1px solid #d9c290;
+  background: #fff7df;
+  color: #7a5417;
+  font-weight: 900;
+}
+.itemGlyph {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  font-size: 22px;
+  align-self: center;
+}
+.itemMark {
+  width: 66px;
+  height: 66px;
+  border-radius: 8px;
+  font-size: 30px;
 }
 .rowText {
   display: grid;
@@ -235,6 +291,10 @@ h3 {
   display: block;
   font-size: 24px;
 }
+.itemHero .heroCounter strong {
+  overflow-wrap: anywhere;
+  font-size: 18px;
+}
 .heroCounter span {
   color: #7a5417;
   font-size: 13px;
@@ -257,6 +317,12 @@ h3 {
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.sourceStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
   gap: 8px;
   padding: 12px 14px 14px;
 }
@@ -356,6 +422,48 @@ h3 {
   gap: 12px;
   padding: 12px 14px 14px;
 }
+.sourceList {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.sourceRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-height: 64px;
+  padding: 10px 11px;
+  border: 1px dashed #b9d7ec;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+.sourceRow strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.sourceRow span, .sourceRow p {
+  display: block;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.sourceRow small {
+  align-self: start;
+  border: 1px solid #d9c290;
+  border-radius: 8px;
+  background: #fff7df;
+  color: #7a5417;
+  padding: 4px 7px;
+  font-weight: 800;
+}
+.listLimit {
+  padding: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
 .dropGroup {
   border-top: 1px dashed #b9d7ec;
 }
@@ -430,6 +538,9 @@ h3 {
     grid-template-columns: 1fr;
     height: auto;
   }
+  .itemLayout {
+    grid-template-columns: 1fr;
+  }
   .monsterList {
     max-height: 36vh;
   }
@@ -445,5 +556,8 @@ h3 {
   }
   .elementGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sourceStats {
+    grid-template-columns: 1fr;
   }
 }

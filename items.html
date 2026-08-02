@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MapleStory Classic 全道具索引</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="appHeader">
+    <div class="titleArea">
+      <h1>全道具索引</h1>
+      <nav class="topNav" aria-label="頁面切換">
+        <a href="./index.html">怪物</a>
+        <a class="active" href="./items.html">道具索引</a>
+      </nav>
+    </div>
+    <div class="searchWrap">
+      <input id="itemSearch" type="search" autocomplete="off" placeholder="輸入道具、怪物、任務、商人或 ID" />
+      <select id="categoryFilter" aria-label="以分類篩選">
+        <option value="">全部分類</option>
+      </select>
+      <select id="sourceFilter" aria-label="以取得途徑篩選">
+        <option value="">全部途徑</option>
+        <option value="monster">怪物掉落</option>
+        <option value="quest">任務獲取</option>
+        <option value="shop">商人購買</option>
+        <option value="none">尚無來源</option>
+      </select>
+      <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
+      <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
+      <span id="resultCount"></span>
+    </div>
+  </header>
+
+  <main class="layout itemLayout">
+    <aside class="monsterList itemIndexList" id="itemList"></aside>
+    <section class="detail itemDetailPane" id="itemDetail"></section>
+  </main>
+
+  <script src="./items-data.js"></script>
+  <script src="./items.js"></script>
+</body>
+</html>
