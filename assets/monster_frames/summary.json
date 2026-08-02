@@ -1,0 +1,66 @@
+{
+  "exported": 323,
+  "skipped": [
+    {
+      "id": "8200004",
+      "reason": "missing rects"
+    },
+    {
+      "id": "9300139",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8200003",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8220000",
+      "reason": "missing rects"
+    },
+    {
+      "id": "6130101",
+      "reason": "empty crop"
+    },
+    {
+      "id": "8200006",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8220007",
+      "reason": "empty crop"
+    },
+    {
+      "id": "7220001",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8200011",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8140001",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8200007",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8200008",
+      "reason": "missing rects"
+    },
+    {
+      "id": "8200010",
+      "reason": "missing rects"
+    },
+    {
+      "id": "2230106",
+      "reason": "empty crop"
+    },
+    {
+      "id": "8200012",
+      "reason": "missing rects"
+    }
+  ],
+  "skippedCount": 15
+}

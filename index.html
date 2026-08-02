@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MapleStory Classic 怪物掉落搜尋</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="appHeader">
+    <h1>怪物掉落搜尋</h1>
+    <div class="searchWrap">
+      <input id="search" type="search" autocomplete="off" placeholder="輸入怪物、道具、地圖名稱或 ID" />
+      <select id="continentFilter" aria-label="以大陸篩選">
+        <option value="">全部大陸</option>
+      </select>
+      <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
+      <span id="resultCount"></span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="monsterList" id="monsterList"></aside>
+    <section class="detail" id="detail"></section>
+  </main>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
