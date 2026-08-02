@@ -3,6 +3,7 @@ const state = {
   query: "",
   continent: "",
   showUnknownContinents: false,
+  showUnnamedItems: false,
   showIds: false,
   selectedId: null,
 };
@@ -11,6 +12,7 @@ const els = {
   search: document.getElementById("search"),
   continent: document.getElementById("continentFilter"),
   unknownToggle: document.getElementById("unknownToggle"),
+  unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
   list: document.getElementById("monsterList"),
   detail: document.getElementById("detail"),
@@ -61,19 +63,33 @@ function filteredMonsters() {
   return db.monsters.filter(monster => {
     const visibleContinentOk = state.showUnknownContinents || hasKnownContinent(monster);
     const continentOk = !state.continent || monster.continents.includes(state.continent);
+    const drops = visibleDrops(monster);
     const queryOk = !q ||
       norm(monster.id).includes(q) ||
       norm(monster.name).includes(q) ||
       norm(elementalText(monster)).includes(q) ||
       monster.continents.some(continent => norm(continent).includes(q)) ||
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
-      monster.drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q));
+      drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q));
     return visibleContinentOk && continentOk && queryOk;
   }).sort(compareMonsters);
 }
 
 function hasKnownContinent(monster) {
   return Boolean(monster.continents?.length);
+}
+
+function isUnnamedItem(item) {
+  return /^未命名道具\s+\d+$/.test(String(item.name || ""));
+}
+
+function visibleDrops(monster) {
+  const drops = monster.drops || [];
+  return state.showUnnamedItems ? drops : drops.filter(item => !isUnnamedItem(item));
+}
+
+function hiddenUnnamedCount(monster) {
+  return (monster.drops || []).filter(isUnnamedItem).length;
 }
 
 function escapeHtml(value) {
@@ -134,6 +150,11 @@ function updateUnknownToggle() {
   els.unknownToggle.textContent = state.showUnknownContinents ? "隱藏未知大陸" : "顯示未知大陸";
 }
 
+function updateUnnamedToggle() {
+  els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
+  els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
+}
+
 function renderList() {
   const rows = filteredMonsters();
   if (!rows.some(m => m.id === state.selectedId)) {
@@ -148,7 +169,7 @@ function renderList() {
         <span class="rowMeta">${monster.level ? `Lv.${monster.level}` : "Lv.?"}${idMeta(monster.id)}</span>
         <em>${escapeHtml(continentText(monster))}</em>
       </span>
-      <small>${monster.drops.length.toLocaleString()} 項</small>
+      <small>${visibleDrops(monster).length.toLocaleString()} 項</small>
     </button>
   `).join("");
 }
@@ -160,7 +181,8 @@ function renderDetail() {
     els.detail.innerHTML = `<div class="empty">找不到符合的怪物</div>`;
     return;
   }
-  const drops = monster.drops;
+  const drops = visibleDrops(monster);
+  const hiddenUnnamed = state.showUnnamedItems ? 0 : hiddenUnnamedCount(monster);
   els.detail.innerHTML = `
     <section class="monsterHero">
       ${assetImage(monster.image, monster.name, monster.name.slice(0, 1), "monsterMark")}
@@ -179,7 +201,7 @@ function renderDetail() {
     <section class="sectionBlock">
       <div class="sectionTitle">
         <h3>掉落道具</h3>
-        <span>${drops.length.toLocaleString()} 項</span>
+        <span>${drops.length.toLocaleString()} 項${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
       </div>
       <div class="dropGroups">
         ${renderDropGroups(drops)}
@@ -317,7 +339,11 @@ function renderDropGroups(drops) {
 }
 
 function itemCard(item) {
-  const meta = state.showIds ? `ID ${escapeHtml(item.id)} · ${escapeHtml(item.kind)}` : escapeHtml(item.kind);
+  const metaParts = [];
+  if (state.showIds) metaParts.push(`ID ${item.id}`);
+  metaParts.push(item.source === "quest" ? "任務掉落" : item.kind);
+  if (item.source === "quest" && item.questNames?.length) metaParts.push(`任務：${item.questNames.slice(0, 2).join("、")}`);
+  const meta = metaParts.map(escapeHtml).join(" · ");
   return `
     <article class="itemCard">
       <div class="itemText">
@@ -343,6 +369,7 @@ function shorten(value, size) {
 
 function render() {
   updateUnknownToggle();
+  updateUnnamedToggle();
   updateIdToggle();
   renderList();
   renderDetail();
@@ -360,6 +387,11 @@ els.continent.addEventListener("change", event => {
 
 els.unknownToggle.addEventListener("click", () => {
   state.showUnknownContinents = !state.showUnknownContinents;
+  render();
+});
+
+els.unnamedToggle.addEventListener("click", () => {
+  state.showUnnamedItems = !state.showUnnamedItems;
   render();
 });
 

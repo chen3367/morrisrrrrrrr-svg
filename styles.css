@@ -75,7 +75,7 @@ select {
   cursor: pointer;
 }
 .toggleButton {
-  min-width: 132px;
+  min-width: 146px;
 }
 .toggleIdButton {
   min-width: 96px;
@@ -421,7 +421,7 @@ h3 {
     flex-basis: 132px;
   }
   .toggleButton {
-    flex-basis: 128px;
+    flex-basis: 142px;
   }
   .toggleIdButton {
     flex-basis: 92px;
