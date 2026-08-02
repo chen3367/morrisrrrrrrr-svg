@@ -62,21 +62,28 @@ select {
   width: 156px;
   flex: 0 0 156px;
 }
-.toggleIdButton {
-  flex: 0 0 96px;
+.toggleButton, .toggleIdButton {
+  flex: 0 0 auto;
   min-height: 42px;
   border: 1px solid #7f8b99;
   border-radius: 8px;
+  padding: 0 12px;
   background: rgba(255, 255, 255, 0.72);
   color: #334155;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
-.toggleIdButton:hover {
+.toggleButton {
+  min-width: 132px;
+}
+.toggleIdButton {
+  min-width: 96px;
+}
+.toggleButton:hover, .toggleIdButton:hover {
   background: rgba(255, 255, 255, 0.94);
 }
-.toggleIdButton[aria-pressed="true"] {
+.toggleButton[aria-pressed="true"], .toggleIdButton[aria-pressed="true"] {
   border-color: #2f7d5b;
   background: #dff1e5;
   color: #1d5e42;
@@ -419,6 +426,9 @@ h3 {
   select {
     width: 132px;
     flex-basis: 132px;
+  }
+  .toggleButton {
+    flex-basis: 128px;
   }
   .toggleIdButton {
     flex-basis: 92px;

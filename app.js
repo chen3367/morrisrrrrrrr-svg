@@ -2,6 +2,7 @@ const db = window.MS_DROP_DB;
 const state = {
   query: "",
   continent: "",
+  showUnknownContinents: false,
   showIds: false,
   selectedId: null,
 };
@@ -9,6 +10,7 @@ const state = {
 const els = {
   search: document.getElementById("search"),
   continent: document.getElementById("continentFilter"),
+  unknownToggle: document.getElementById("unknownToggle"),
   idToggle: document.getElementById("idToggle"),
   list: document.getElementById("monsterList"),
   detail: document.getElementById("detail"),
@@ -57,6 +59,7 @@ function norm(value) {
 function filteredMonsters() {
   const q = norm(state.query);
   return db.monsters.filter(monster => {
+    const visibleContinentOk = state.showUnknownContinents || hasKnownContinent(monster);
     const continentOk = !state.continent || monster.continents.includes(state.continent);
     const queryOk = !q ||
       norm(monster.id).includes(q) ||
@@ -65,8 +68,12 @@ function filteredMonsters() {
       monster.continents.some(continent => norm(continent).includes(q)) ||
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
       monster.drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q));
-    return continentOk && queryOk;
+    return visibleContinentOk && continentOk && queryOk;
   }).sort(compareMonsters);
+}
+
+function hasKnownContinent(monster) {
+  return Boolean(monster.continents?.length);
 }
 
 function escapeHtml(value) {
@@ -122,9 +129,16 @@ function updateIdToggle() {
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
 }
 
+function updateUnknownToggle() {
+  els.unknownToggle.setAttribute("aria-pressed", String(state.showUnknownContinents));
+  els.unknownToggle.textContent = state.showUnknownContinents ? "隱藏未知大陸" : "顯示未知大陸";
+}
+
 function renderList() {
   const rows = filteredMonsters();
-  if (!rows.some(m => m.id === state.selectedId) && rows[0]) state.selectedId = rows[0].id;
+  if (!rows.some(m => m.id === state.selectedId)) {
+    state.selectedId = rows[0]?.id || null;
+  }
   els.count.textContent = `${rows.length.toLocaleString()} 隻`;
   els.list.innerHTML = rows.slice(0, 500).map(monster => `
     <button class="monsterRow ${monster.id === state.selectedId ? "active" : ""}" data-id="${monster.id}">
@@ -140,7 +154,8 @@ function renderList() {
 }
 
 function renderDetail() {
-  const monster = db.monsters.find(m => m.id === state.selectedId) || filteredMonsters()[0];
+  const rows = filteredMonsters();
+  const monster = rows.find(m => m.id === state.selectedId) || rows[0];
   if (!monster) {
     els.detail.innerHTML = `<div class="empty">找不到符合的怪物</div>`;
     return;
@@ -329,6 +344,7 @@ function shorten(value, size) {
 }
 
 function render() {
+  updateUnknownToggle();
   updateIdToggle();
   renderList();
   renderDetail();
@@ -341,6 +357,11 @@ els.search.addEventListener("input", event => {
 
 els.continent.addEventListener("change", event => {
   state.continent = event.target.value;
+  render();
+});
+
+els.unknownToggle.addEventListener("click", () => {
+  state.showUnknownContinents = !state.showUnknownContinents;
   render();
 });
 
