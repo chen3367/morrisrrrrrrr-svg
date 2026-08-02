@@ -318,10 +318,8 @@ function renderDropGroups(drops) {
 
 function itemCard(item) {
   const meta = state.showIds ? `ID ${escapeHtml(item.id)} · ${escapeHtml(item.kind)}` : escapeHtml(item.kind);
-  const fallback = state.showIds ? String(item.id).slice(0, 3) : String(item.name || item.kind).slice(0, 1);
   return `
     <article class="itemCard">
-      ${assetImage(item.image, item.name, fallback, "itemIcon")}
       <div class="itemText">
         <strong>${escapeHtml(item.name)}</strong>
         <span>${meta}</span>
