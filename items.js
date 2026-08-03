@@ -18,10 +18,20 @@ const els = {
   noSourceToggle: document.getElementById("noSourceToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
+  meta: document.getElementById("buildMeta"),
   list: document.getElementById("itemList"),
   detail: document.getElementById("itemDetail"),
   count: document.getElementById("resultCount"),
 };
+
+function renderBuildMeta() {
+  if (!els.meta) return;
+  const meta = db.metadata || {};
+  const parts = [];
+  if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
+  if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
+  els.meta.textContent = parts.join(" · ");
+}
 
 function initialItemId() {
   const value = new URLSearchParams(window.location.search).get("item");
@@ -570,5 +580,6 @@ els.list.addEventListener("click", event => {
   render();
 });
 
+renderBuildMeta();
 populateFilters();
 render();

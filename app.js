@@ -16,10 +16,20 @@ const els = {
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
+  meta: document.getElementById("buildMeta"),
   list: document.getElementById("monsterList"),
   detail: document.getElementById("detail"),
   count: document.getElementById("resultCount"),
 };
+
+function renderBuildMeta() {
+  if (!els.meta) return;
+  const meta = db.metadata || {};
+  const parts = [];
+  if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
+  if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
+  els.meta.textContent = parts.join(" · ");
+}
 
 function initialMonsterId() {
   return new URLSearchParams(window.location.search).get("monster");
@@ -485,5 +495,6 @@ els.list.addEventListener("click", event => {
   render();
 });
 
+renderBuildMeta();
 populateFilters();
 render();
