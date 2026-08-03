@@ -200,6 +200,27 @@ select {
   border-radius: 8px;
   font-size: 30px;
 }
+.questGlyph, .questMark {
+  display: grid;
+  place-items: center;
+  border: 1px solid #c9d9e8;
+  background: #eef7f1;
+  color: #245b45;
+  font-weight: 900;
+}
+.questGlyph {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  font-size: 22px;
+  align-self: center;
+}
+.questMark {
+  width: 66px;
+  height: 66px;
+  border-radius: 8px;
+  font-size: 30px;
+}
 .rowText {
   display: grid;
   min-width: 0;
@@ -514,6 +535,81 @@ h3 {
 .equipStatsGrid {
   grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   padding: 0;
+}
+.textLines, .questGroups {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+.textLine {
+  border: 1px solid #d8e2dc;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 10px 11px;
+}
+.textLine strong, .requirementGroup > strong {
+  display: block;
+  color: #245b45;
+  font-size: 15px;
+}
+.textLine p {
+  margin: 6px 0 0;
+  color: #334155;
+  white-space: pre-wrap;
+}
+.requirementGroup {
+  display: grid;
+  gap: 8px;
+}
+.compactStats {
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+  padding: 0;
+}
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+.miniLink {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 50px;
+  border: 1px dashed #b9d7ec;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.miniLink:not(.staticMini):hover {
+  border-color: #80b99a;
+  background: rgba(223, 241, 229, 0.72);
+}
+.miniIcon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #c9d9e8;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  object-fit: contain;
+  padding: 3px;
+  color: #245b45;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+.miniLink strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.miniLink em {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
 }
 .dropGroup {
   border-top: 1px dashed #b9d7ec;
