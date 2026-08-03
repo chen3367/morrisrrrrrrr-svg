@@ -430,7 +430,7 @@ function searchableText(item) {
 
 function monsterSourceRows(item) {
   const rows = item.sources?.monsterDrops || [];
-  return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps);
+  return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps && !row.unnamedMonster);
 }
 
 function filteredItems() {
@@ -484,7 +484,7 @@ function updateToggles() {
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
   els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
-  els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名地圖怪物" : "顯示未命名地圖怪物";
+  els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名怪物/地圖" : "顯示未命名怪物/地圖";
   els.noSourceToggle.setAttribute("aria-pressed", String(state.showNoSourceItems));
   els.noSourceToggle.textContent = state.showNoSourceItems ? "隱藏無來源道具" : "顯示無來源道具";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
