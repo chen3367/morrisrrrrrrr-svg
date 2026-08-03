@@ -1,10 +1,49 @@
 const db = window.MS_QUEST_DB;
+const COOKIE_DAYS = 180;
+
+function readCookie(name) {
+  try {
+    const prefix = `${encodeURIComponent(name)}=`;
+    const rows = document.cookie ? document.cookie.split("; ") : [];
+    const row = rows.find(value => value.startsWith(prefix));
+    return row ? decodeURIComponent(row.slice(prefix.length)) : "";
+  } catch (_error) {
+    return "";
+  }
+}
+
+function writeCookie(name, value) {
+  try {
+    const maxAge = COOKIE_DAYS * 24 * 60 * 60;
+    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(String(value))}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+  } catch (_error) {
+    // Cookie 被停用時，頁面仍保留本次操作狀態。
+  }
+}
+
+function cookieValue(name, fallback = "") {
+  const raw = readCookie(name);
+  return raw === "" ? fallback : raw;
+}
+
+function cookieBool(name, fallback = false) {
+  const raw = cookieValue(name);
+  if (raw === "1" || raw === "true") return true;
+  if (raw === "0" || raw === "false") return false;
+  return fallback;
+}
+
+function saveBool(name, value) {
+  writeCookie(name, value ? "1" : "0");
+}
+
 const state = {
   query: "",
-  category: "",
-  level: "",
-  showIds: false,
+  category: cookieValue("ms_quest_category"),
+  level: cookieValue("ms_quest_level"),
+  showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
+  settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialQuestId(),
 };
 
@@ -14,6 +53,8 @@ const els = {
   level: document.getElementById("questLevelFilter"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
+  settingsToggle: document.getElementById("settingsToggle"),
+  settingsPanel: document.getElementById("settingsPanel"),
   meta: document.getElementById("buildMeta"),
   list: document.getElementById("questList"),
   detail: document.getElementById("questDetail"),
@@ -30,6 +71,8 @@ function renderBuildMeta() {
 }
 
 function initialTheme() {
+  const cookieTheme = cookieValue("ms_theme");
+  if (cookieTheme === "dark" || cookieTheme === "light") return cookieTheme;
   try {
     return localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
   } catch (_error) {
@@ -49,6 +92,7 @@ function applyTheme() {
 function setTheme(theme) {
   state.theme = theme === "dark" ? "dark" : "light";
   applyTheme();
+  writeCookie("ms_theme", state.theme);
   try {
     localStorage.setItem("ms-theme", state.theme);
   } catch (_error) {
@@ -179,9 +223,26 @@ function populateFilters() {
   `;
 }
 
+function syncControls() {
+  els.search.value = state.query;
+  els.category.value = state.category;
+  state.category = els.category.value;
+  els.level.value = state.level;
+  state.level = els.level.value;
+}
+
 function updateToggles() {
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
+}
+
+function updateSettingsPanel() {
+  if (!els.settingsToggle || !els.settingsPanel) return;
+  els.settingsPanel.hidden = !state.settingsOpen;
+  els.settingsToggle.setAttribute("aria-expanded", String(state.settingsOpen));
+  els.settingsToggle.classList.toggle("active", state.settingsOpen);
+  els.settingsToggle.title = state.settingsOpen ? "隱藏設定" : "顯示設定";
+  els.settingsToggle.setAttribute("aria-label", state.settingsOpen ? "隱藏設定" : "顯示設定");
 }
 
 function renderList() {
@@ -463,6 +524,7 @@ function mapChip(map) {
 }
 
 function render() {
+  updateSettingsPanel();
   updateToggles();
   renderList();
   renderDetail();
@@ -475,21 +537,30 @@ els.search.addEventListener("input", event => {
 
 els.category.addEventListener("change", event => {
   state.category = event.target.value;
+  writeCookie("ms_quest_category", state.category);
   render();
 });
 
 els.level.addEventListener("change", event => {
   state.level = event.target.value;
+  writeCookie("ms_quest_level", state.level);
   render();
 });
 
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;
+  saveBool("ms_show_ids", state.showIds);
   render();
 });
 
 els.themeToggle.addEventListener("click", () => {
   setTheme(state.theme === "dark" ? "light" : "dark");
+});
+
+els.settingsToggle.addEventListener("click", () => {
+  state.settingsOpen = !state.settingsOpen;
+  saveBool("ms_settings_open", state.settingsOpen);
+  updateSettingsPanel();
 });
 
 els.list.addEventListener("click", event => {
@@ -503,4 +574,5 @@ els.list.addEventListener("click", event => {
 applyTheme();
 renderBuildMeta();
 populateFilters();
+syncControls();
 render();

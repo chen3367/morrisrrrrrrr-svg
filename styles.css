@@ -181,7 +181,7 @@ h1 {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  width: min(980px, 68vw);
+  width: min(1040px, 70vw);
 }
 input, select {
   width: 100%;
@@ -201,7 +201,7 @@ select {
   width: 156px;
   flex: 0 0 156px;
 }
-.toggleButton, .toggleIdButton, .toggleThemeButton {
+.settingsToggle, .toggleButton, .toggleIdButton, .toggleThemeButton {
   flex: 0 0 auto;
   min-height: 42px;
   border: 1px solid var(--control-border);
@@ -212,6 +212,34 @@ select {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+.settingsToggle {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  font-size: 21px;
+  line-height: 1;
+}
+.settingsToggle:hover, .settingsToggle.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.settingsPanel {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--control-soft);
+}
+.settingsPanel[hidden] {
+  display: none;
 }
 .toggleButton {
   min-width: 146px;
@@ -239,6 +267,7 @@ select {
 :root[data-theme="dark"] .toggleButton[aria-pressed="true"],
 :root[data-theme="dark"] .toggleIdButton[aria-pressed="true"],
 :root[data-theme="dark"] .toggleThemeButton[aria-pressed="true"],
+:root[data-theme="dark"] .settingsToggle.active,
 :root[data-theme="dark"] .topNav a.active {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -803,6 +832,12 @@ h3 {
   .searchWrap {
     width: 100%;
     margin-top: 10px;
+  }
+  .settingsToggle {
+    flex-basis: 42px;
+  }
+  .settingsPanel {
+    padding: 9px;
   }
   select {
     width: 132px;

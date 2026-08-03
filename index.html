@@ -6,10 +6,22 @@
   <title>MapleStory Classic 怪物掉落搜尋</title>
   <script>
     (function () {
+      function readCookie(name) {
+        try {
+          var prefix = encodeURIComponent(name) + "=";
+          var rows = document.cookie ? document.cookie.split("; ") : [];
+          for (var i = 0; i < rows.length; i += 1) {
+            if (rows[i].indexOf(prefix) === 0) return decodeURIComponent(rows[i].slice(prefix.length));
+          }
+        } catch (_error) {}
+        return "";
+      }
       try {
-        document.documentElement.dataset.theme = localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
+        var cookieTheme = readCookie("ms_theme");
+        var storedTheme = cookieTheme || (localStorage.getItem("ms-theme") === "dark" ? "dark" : "light");
+        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
       } catch (_error) {
-        document.documentElement.dataset.theme = "light";
+        document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
       }
     })();
   </script>
@@ -28,15 +40,18 @@
     </div>
     <div class="searchWrap">
       <input id="search" type="search" autocomplete="off" placeholder="輸入怪物、道具、地圖名稱或 ID" />
-      <select id="continentFilter" aria-label="以大陸篩選">
-        <option value="">全部大陸</option>
-      </select>
-      <button id="unknownToggle" class="toggleButton" type="button" aria-pressed="false">顯示未知大陸</button>
-      <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖怪物</button>
-      <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
-      <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
-      <button id="themeToggle" class="toggleThemeButton" type="button" aria-pressed="false">黑底模式</button>
+      <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
       <span id="resultCount"></span>
+      <div id="settingsPanel" class="settingsPanel" hidden>
+        <select id="continentFilter" aria-label="以大陸篩選">
+          <option value="">全部大陸</option>
+        </select>
+        <button id="unknownToggle" class="toggleButton" type="button" aria-pressed="false">顯示未知大陸</button>
+        <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖怪物</button>
+        <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
+        <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
+        <button id="themeToggle" class="toggleThemeButton" type="button" aria-pressed="false">黑底模式</button>
+      </div>
     </div>
   </header>
 

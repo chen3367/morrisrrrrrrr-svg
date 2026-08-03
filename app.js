@@ -1,12 +1,51 @@
 const db = window.MS_DROP_DB;
+const COOKIE_DAYS = 180;
+
+function readCookie(name) {
+  try {
+    const prefix = `${encodeURIComponent(name)}=`;
+    const rows = document.cookie ? document.cookie.split("; ") : [];
+    const row = rows.find(value => value.startsWith(prefix));
+    return row ? decodeURIComponent(row.slice(prefix.length)) : "";
+  } catch (_error) {
+    return "";
+  }
+}
+
+function writeCookie(name, value) {
+  try {
+    const maxAge = COOKIE_DAYS * 24 * 60 * 60;
+    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(String(value))}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+  } catch (_error) {
+    // Cookie 被停用時，頁面仍保留本次操作狀態。
+  }
+}
+
+function cookieValue(name, fallback = "") {
+  const raw = readCookie(name);
+  return raw === "" ? fallback : raw;
+}
+
+function cookieBool(name, fallback = false) {
+  const raw = cookieValue(name);
+  if (raw === "1" || raw === "true") return true;
+  if (raw === "0" || raw === "false") return false;
+  return fallback;
+}
+
+function saveBool(name, value) {
+  writeCookie(name, value ? "1" : "0");
+}
+
 const state = {
   query: "",
-  continent: "",
-  showUnknownContinents: false,
+  continent: cookieValue("ms_monster_continent"),
+  showUnknownContinents: cookieBool("ms_show_unknown_continents"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
-  showUnnamedItems: false,
-  showIds: false,
+  showUnnamedItems: cookieBool("ms_show_unnamed_items"),
+  showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
+  settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialMonsterId(),
 };
 
@@ -18,6 +57,8 @@ const els = {
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
+  settingsToggle: document.getElementById("settingsToggle"),
+  settingsPanel: document.getElementById("settingsPanel"),
   meta: document.getElementById("buildMeta"),
   list: document.getElementById("monsterList"),
   detail: document.getElementById("detail"),
@@ -34,6 +75,8 @@ function renderBuildMeta() {
 }
 
 function initialTheme() {
+  const cookieTheme = cookieValue("ms_theme");
+  if (cookieTheme === "dark" || cookieTheme === "light") return cookieTheme;
   try {
     return localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
   } catch (_error) {
@@ -53,6 +96,7 @@ function applyTheme() {
 function setTheme(theme) {
   state.theme = theme === "dark" ? "dark" : "light";
   applyTheme();
+  writeCookie("ms_theme", state.theme);
   try {
     localStorage.setItem("ms-theme", state.theme);
   } catch (_error) {
@@ -65,7 +109,9 @@ function initialMonsterId() {
 }
 
 function initialShowUnnamedMapMonsters() {
-  return new URLSearchParams(window.location.search).get("showUnnamedMaps") === "1";
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("showUnnamedMaps") === "1") return true;
+  return cookieBool("ms_show_unnamed_map_monsters");
 }
 
 function setMonsterUrl(monsterId) {
@@ -214,6 +260,12 @@ function populateFilters() {
   `;
 }
 
+function syncControls() {
+  els.search.value = state.query;
+  els.continent.value = state.continent;
+  state.continent = els.continent.value;
+}
+
 function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
 }
@@ -236,6 +288,15 @@ function updateUnnamedMapToggle() {
 function updateUnnamedToggle() {
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
+}
+
+function updateSettingsPanel() {
+  if (!els.settingsToggle || !els.settingsPanel) return;
+  els.settingsPanel.hidden = !state.settingsOpen;
+  els.settingsToggle.setAttribute("aria-expanded", String(state.settingsOpen));
+  els.settingsToggle.classList.toggle("active", state.settingsOpen);
+  els.settingsToggle.title = state.settingsOpen ? "隱藏設定" : "顯示設定";
+  els.settingsToggle.setAttribute("aria-label", state.settingsOpen ? "隱藏設定" : "顯示設定");
 }
 
 function renderList() {
@@ -478,6 +539,7 @@ function shorten(value, size) {
 }
 
 function render() {
+  updateSettingsPanel();
   updateUnknownToggle();
   updateUnnamedMapToggle();
   updateUnnamedToggle();
@@ -493,31 +555,43 @@ els.search.addEventListener("input", event => {
 
 els.continent.addEventListener("change", event => {
   state.continent = event.target.value;
+  writeCookie("ms_monster_continent", state.continent);
   render();
 });
 
 els.unknownToggle.addEventListener("click", () => {
   state.showUnknownContinents = !state.showUnknownContinents;
+  saveBool("ms_show_unknown_continents", state.showUnknownContinents);
   render();
 });
 
 els.unnamedMapToggle.addEventListener("click", () => {
   state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
+  saveBool("ms_show_unnamed_map_monsters", state.showUnnamedMapMonsters);
+  setMonsterUrl(state.selectedId);
   render();
 });
 
 els.unnamedToggle.addEventListener("click", () => {
   state.showUnnamedItems = !state.showUnnamedItems;
+  saveBool("ms_show_unnamed_items", state.showUnnamedItems);
   render();
 });
 
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;
+  saveBool("ms_show_ids", state.showIds);
   render();
 });
 
 els.themeToggle.addEventListener("click", () => {
   setTheme(state.theme === "dark" ? "light" : "dark");
+});
+
+els.settingsToggle.addEventListener("click", () => {
+  state.settingsOpen = !state.settingsOpen;
+  saveBool("ms_settings_open", state.settingsOpen);
+  updateSettingsPanel();
 });
 
 els.list.addEventListener("click", event => {
@@ -531,4 +605,5 @@ els.list.addEventListener("click", event => {
 applyTheme();
 renderBuildMeta();
 populateFilters();
+syncControls();
 render();

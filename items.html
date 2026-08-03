@@ -6,10 +6,22 @@
   <title>MapleStory Classic 全道具索引</title>
   <script>
     (function () {
+      function readCookie(name) {
+        try {
+          var prefix = encodeURIComponent(name) + "=";
+          var rows = document.cookie ? document.cookie.split("; ") : [];
+          for (var i = 0; i < rows.length; i += 1) {
+            if (rows[i].indexOf(prefix) === 0) return decodeURIComponent(rows[i].slice(prefix.length));
+          }
+        } catch (_error) {}
+        return "";
+      }
       try {
-        document.documentElement.dataset.theme = localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
+        var cookieTheme = readCookie("ms_theme");
+        var storedTheme = cookieTheme || (localStorage.getItem("ms-theme") === "dark" ? "dark" : "light");
+        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
       } catch (_error) {
-        document.documentElement.dataset.theme = "light";
+        document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
       }
     })();
   </script>
@@ -28,21 +40,24 @@
     </div>
     <div class="searchWrap">
       <input id="itemSearch" type="search" autocomplete="off" placeholder="輸入道具、怪物、任務、商人或 ID" />
-      <select id="categoryFilter" aria-label="以分類篩選">
-        <option value="">全部分類</option>
-      </select>
-      <select id="sourceFilter" aria-label="以取得途徑篩選">
-        <option value="">全部來源類型</option>
-        <option value="monster">怪物掉落</option>
-        <option value="quest">任務獲取</option>
-        <option value="shop">商人購買</option>
-      </select>
-      <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖怪物</button>
-      <button id="noSourceToggle" class="toggleButton" type="button" aria-pressed="false">顯示無來源道具</button>
-      <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
-      <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
-      <button id="themeToggle" class="toggleThemeButton" type="button" aria-pressed="false">黑底模式</button>
+      <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
       <span id="resultCount"></span>
+      <div id="settingsPanel" class="settingsPanel" hidden>
+        <select id="categoryFilter" aria-label="以分類篩選">
+          <option value="">全部分類</option>
+        </select>
+        <select id="sourceFilter" aria-label="以取得途徑篩選">
+          <option value="">全部來源類型</option>
+          <option value="monster">怪物掉落</option>
+          <option value="quest">任務獲取</option>
+          <option value="shop">商人購買</option>
+        </select>
+        <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖怪物</button>
+        <button id="noSourceToggle" class="toggleButton" type="button" aria-pressed="false">顯示無來源道具</button>
+        <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
+        <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
+        <button id="themeToggle" class="toggleThemeButton" type="button" aria-pressed="false">黑底模式</button>
+      </div>
     </div>
   </header>
 
