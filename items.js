@@ -148,7 +148,7 @@ function renderList() {
     : "";
   els.list.innerHTML = visibleRows.map(item => `
     <button class="monsterRow itemIndexRow ${String(item.id) === String(state.selectedId) ? "active" : ""}" data-id="${item.id}">
-      <span class="itemGlyph">${escapeHtml(item.name.slice(0, 1) || "?")}</span>
+      ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemGlyph")}
       <span class="rowText">
         <strong>${escapeHtml(item.name)}</strong>
         <span class="rowMeta">${escapeHtml(item.category || item.kind)}${idMeta(item.id)}</span>
