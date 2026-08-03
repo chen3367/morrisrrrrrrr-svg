@@ -5,7 +5,7 @@ const state = {
   showUnknownContinents: false,
   showUnnamedItems: false,
   showIds: false,
-  selectedId: null,
+  selectedId: initialMonsterId(),
 };
 
 const els = {
@@ -18,6 +18,21 @@ const els = {
   detail: document.getElementById("detail"),
   count: document.getElementById("resultCount"),
 };
+
+function initialMonsterId() {
+  return new URLSearchParams(window.location.search).get("monster");
+}
+
+function setMonsterUrl(monsterId) {
+  if (!monsterId) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("monster", monsterId);
+  window.history.replaceState(null, "", url);
+}
+
+function itemUrl(item) {
+  return `./items.html?item=${encodeURIComponent(item.id)}`;
+}
 
 const STAT_FIELDS = [
   ["level", "等級"],
@@ -345,14 +360,14 @@ function itemCard(item) {
   if (item.source === "quest" && item.questNames?.length) metaParts.push(`任務：${item.questNames.slice(0, 2).join("、")}`);
   const meta = metaParts.map(escapeHtml).join(" · ");
   return `
-    <article class="itemCard">
+    <a class="itemCard itemLinkCard" href="${itemUrl(item)}">
       ${assetImage(item.image, item.name, item.name.slice(0, 1), "itemIcon")}
       <div class="itemText">
         <strong>${escapeHtml(item.name)}</strong>
         <span>${meta}</span>
         ${item.desc ? `<p>${escapeHtml(shorten(item.desc, 92))}</p>` : ""}
       </div>
-    </article>
+    </a>
   `;
 }
 
@@ -405,6 +420,7 @@ els.list.addEventListener("click", event => {
   const button = event.target.closest(".monsterRow");
   if (!button) return;
   state.selectedId = button.dataset.id;
+  setMonsterUrl(state.selectedId);
   render();
 });
 

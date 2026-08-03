@@ -5,7 +5,7 @@ const state = {
   source: "",
   showUnnamedItems: false,
   showIds: false,
-  selectedId: null,
+  selectedId: initialItemId(),
 };
 
 const els = {
@@ -18,6 +18,68 @@ const els = {
   detail: document.getElementById("itemDetail"),
   count: document.getElementById("resultCount"),
 };
+
+function initialItemId() {
+  const value = new URLSearchParams(window.location.search).get("item");
+  return value && /^\d+$/.test(value) ? Number(value) : null;
+}
+
+function setItemUrl(itemId) {
+  if (!itemId) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("item", itemId);
+  window.history.replaceState(null, "", url);
+}
+
+function monsterUrl(monsterId) {
+  return `./index.html?monster=${encodeURIComponent(monsterId)}`;
+}
+
+const EQUIP_FIELD_GROUPS = [
+  {
+    title: "裝備需求",
+    fields: [
+      ["reqJob", "職業", formatReqJob],
+      ["reqLevel", "等級"],
+      ["reqSTR", "力量"],
+      ["reqDEX", "敏捷"],
+      ["reqINT", "智力"],
+      ["reqLUK", "幸運"],
+      ["reqPOP", "人氣"],
+    ],
+  },
+  {
+    title: "能力加成",
+    fields: [
+      ["incSTR", "力量", formatSigned],
+      ["incDEX", "敏捷", formatSigned],
+      ["incINT", "智力", formatSigned],
+      ["incLUK", "幸運", formatSigned],
+      ["incMHP", "MaxHP", formatSigned],
+      ["incMMP", "MaxMP", formatSigned],
+      ["incPAD", "物攻", formatSigned],
+      ["incMAD", "魔攻", formatSigned],
+      ["incPDD", "物防", formatSigned],
+      ["incMDD", "魔防", formatSigned],
+      ["incACC", "命中", formatSigned],
+      ["incEVA", "迴避", formatSigned],
+      ["incSpeed", "移速", formatSigned],
+      ["incJump", "跳躍", formatSigned],
+      ["incCraft", "熟練", formatSigned],
+      ["knockback", "擊退"],
+      ["attackSpeed", "攻速"],
+    ],
+  },
+  {
+    title: "其他數值",
+    fields: [
+      ["tuc", "可升級次數"],
+      ["price", "商店價格", formatMeso],
+      ["islot", "裝備欄位"],
+      ["vslot", "外觀欄位"],
+    ],
+  },
+];
 
 function norm(value) {
   return String(value || "").toLowerCase().trim();
@@ -37,6 +99,41 @@ function assetImage(src, alt, fallback, className) {
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
+}
+
+function formatSigned(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return escapeHtml(value);
+  return `${number > 0 ? "+" : ""}${number.toLocaleString()}`;
+}
+
+function formatMeso(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return escapeHtml(value);
+  return `${number.toLocaleString()} 楓幣`;
+}
+
+function formatReqJob(value) {
+  const mask = Number(value);
+  if (!Number.isFinite(mask) || mask === 0) return "全職";
+  const jobs = [
+    [1, "劍士"],
+    [2, "法師"],
+    [4, "弓手"],
+    [8, "盜賊"],
+    [16, "海盜"],
+  ];
+  const labels = jobs.filter(([bit]) => (mask & bit) === bit).map(([, label]) => label);
+  return labels.length ? labels.join(" / ") : formatNumber(mask);
+}
+
+function hasEquipValue(key, value) {
+  if (value === null || value === undefined || value === "") return false;
+  if (typeof value === "string") return true;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return true;
+  if (key === "reqJob") return true;
+  return number !== 0;
 }
 
 function isUnnamedItem(item) {
@@ -195,10 +292,42 @@ function renderDetail() {
         <div class="statCell"><span>商人購買</span><strong>${formatNumber(counts.shops)}</strong></div>
       </div>
     </section>
+    ${renderEquipmentStats(item)}
     ${renderMonsterSources(item)}
     ${renderQuestSources(item)}
     ${renderShopSources(item)}
     ${totalSources(item) ? "" : `<div class="empty">目前資料集中沒有取得途徑</div>`}
+  `;
+}
+
+function renderEquipmentStats(item) {
+  const stats = item.equipStats || {};
+  let totalRows = 0;
+  const groups = EQUIP_FIELD_GROUPS.map(group => {
+    const rows = group.fields.map(([key, label, formatter]) => {
+      const value = stats[key];
+      if (!hasEquipValue(key, value)) return "";
+      const text = formatter ? formatter(value) : formatNumber(value);
+      return `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${escapeHtml(text)}</strong></div>`;
+    }).filter(Boolean);
+    if (!rows.length) return "";
+    totalRows += rows.length;
+    return `
+      <div class="equipStatGroup">
+        <strong>${escapeHtml(group.title)}</strong>
+        <div class="statsGrid equipStatsGrid">${rows.join("")}</div>
+      </div>
+    `;
+  }).filter(Boolean);
+  if (!groups.length) return "";
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <h3>裝備數值</h3>
+        <span>${totalRows.toLocaleString()} 欄</span>
+      </div>
+      <div class="equipStats">${groups.join("")}</div>
+    </section>
   `;
 }
 
@@ -214,7 +343,7 @@ function renderMonsterSources(item) {
       ? `<p>任務線索：${escapeHtml(row.questNames.slice(0, 3).join("、"))}</p>`
       : "";
     return `
-      <article class="sourceRow">
+      <a class="sourceRow sourceLinkRow" href="${monsterUrl(row.monsterId)}">
         <div>
           <strong>${escapeHtml(row.monsterName)}</strong>
           <span>${meta.map(escapeHtml).join(" · ") || "怪物"}</span>
@@ -222,7 +351,7 @@ function renderMonsterSources(item) {
           ${questNote}
         </div>
         <small>${row.source === "quest" ? "任務掉落" : "圖鑑"}</small>
-      </article>
+      </a>
     `;
   });
 }
@@ -316,6 +445,7 @@ els.list.addEventListener("click", event => {
   const button = event.target.closest(".itemIndexRow");
   if (!button) return;
   state.selectedId = Number(button.dataset.id);
+  setItemUrl(state.selectedId);
   render();
 });
 
