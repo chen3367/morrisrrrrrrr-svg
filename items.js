@@ -153,6 +153,11 @@ function questUrl(questId) {
   return `./quests.html?quest=${encodeURIComponent(questId)}`;
 }
 
+function questNpcImage(row, className = "sourceMonsterImage") {
+  const npc = row.startNpc || row.endNpc || null;
+  return assetImage(npc?.image, npc?.name || row.questName || "任務", "任", className);
+}
+
 const EQUIP_FIELD_GROUPS = [
   {
     title: "裝備需求",
@@ -662,7 +667,8 @@ function renderMonsterSources(item) {
 function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
   return sourceBlock("任務獲取", rows, row => `
-    <a class="sourceRow sourceLinkRow" href="${questUrl(row.questId)}">
+    <a class="sourceRow sourceLinkRow sourceQuestRow" href="${questUrl(row.questId)}">
+      ${questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
         <span>${questStateLabel(row.state)}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
@@ -690,7 +696,8 @@ function renderShopSources(item) {
 function renderQuestRequirementSources(item) {
   const rows = questRequirementRows(item);
   return sourceBlock("任務需求", rows, row => `
-    <a class="sourceRow sourceLinkRow" href="${questUrl(row.questId)}">
+    <a class="sourceRow sourceLinkRow sourceQuestRow" href="${questUrl(row.questId)}">
+      ${questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
         <span>${escapeHtml(row.category || "任務")}${row.minLevel ? ` · Lv.${escapeHtml(row.minLevel)}+` : ""}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
