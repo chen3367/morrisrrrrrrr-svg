@@ -445,13 +445,21 @@ function renderMaps(monster) {
 }
 
 function mapCard(map) {
-  const meta = [map.street || "未知區域"];
+  const meta = [];
+  if (map.regionName) meta.push(map.regionName);
+  if (map.areaName && map.areaName !== map.regionName) meta.push(map.areaName);
+  if (map.street && !meta.includes(map.street)) meta.push(map.street);
+  if (!meta.length) meta.push("未知區域");
   if (state.showIds) meta.push(map.id);
+  if (state.showIds && map.regionKey) meta.push(map.regionKey);
   return `
-    <article class="mapCard">
-      <strong>${escapeHtml(map.name)}</strong>
-      <span>${meta.map(escapeHtml).join(" · ")}</span>
-      ${map.desc ? `<p>${escapeHtml(shorten(map.desc, 88))}</p>` : ""}
+    <article class="mapCard ${map.regionImage ? "withRegionImage" : ""}">
+      ${map.regionImage ? `<img class="mapRegionImage" src="${escapeHtml(map.regionImage)}" alt="${escapeHtml(map.regionName || map.street || "地區")}" loading="lazy">` : ""}
+      <div>
+        <strong>${escapeHtml(map.name)}</strong>
+        <span>${meta.map(escapeHtml).join(" · ")}</span>
+        ${map.desc || map.areaDesc ? `<p>${escapeHtml(shorten(map.desc || map.areaDesc, 88))}</p>` : ""}
+      </div>
     </article>
   `;
 }

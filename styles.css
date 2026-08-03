@@ -593,11 +593,26 @@ h3 {
   padding: 12px 14px 14px;
 }
 .mapCard {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
   min-height: 68px;
   border: 1px solid var(--mini-border);
   border-radius: 8px;
   background: var(--card-bg);
   padding: 9px 10px;
+}
+.mapCard:not(.withRegionImage) {
+  display: block;
+}
+.mapRegionImage {
+  width: 76px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid var(--mini-border);
+  border-radius: 6px;
+  background: var(--panel-bg);
 }
 .mapCard strong {
   display: block;
