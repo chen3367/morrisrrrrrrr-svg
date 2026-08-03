@@ -3,6 +3,7 @@ const state = {
   query: "",
   category: "",
   source: "",
+  showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: false,
   showIds: false,
   selectedId: initialItemId(),
@@ -12,6 +13,7 @@ const els = {
   search: document.getElementById("itemSearch"),
   category: document.getElementById("categoryFilter"),
   source: document.getElementById("sourceFilter"),
+  unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
   list: document.getElementById("itemList"),
@@ -24,15 +26,27 @@ function initialItemId() {
   return value && /^\d+$/.test(value) ? Number(value) : null;
 }
 
+function initialShowUnnamedMapMonsters() {
+  return new URLSearchParams(window.location.search).get("showUnnamedMaps") === "1";
+}
+
 function setItemUrl(itemId) {
   if (!itemId) return;
   const url = new URL(window.location.href);
   url.searchParams.set("item", itemId);
+  if (state.showUnnamedMapMonsters) {
+    url.searchParams.set("showUnnamedMaps", "1");
+  } else {
+    url.searchParams.delete("showUnnamedMaps");
+  }
   window.history.replaceState(null, "", url);
 }
 
-function monsterUrl(monsterId) {
-  return `./index.html?monster=${encodeURIComponent(monsterId)}`;
+function monsterUrl(monsterId, includeUnnamedMaps = false) {
+  const url = new URL("./index.html", window.location.href);
+  url.searchParams.set("monster", monsterId);
+  if (state.showUnnamedMapMonsters || includeUnnamedMaps) url.searchParams.set("showUnnamedMaps", "1");
+  return `${url.pathname.split("/").pop()}${url.search}`;
 }
 
 const EQUIP_FIELD_GROUPS = [
@@ -145,7 +159,12 @@ function idMeta(id) {
 }
 
 function sourceCounts(item) {
-  return item.sourceCounts || { monsterDrops: 0, questRewards: 0, shops: 0 };
+  const raw = item.sourceCounts || { monsterDrops: 0, questRewards: 0, shops: 0 };
+  return {
+    monsterDrops: monsterSourceRows(item).length,
+    questRewards: raw.questRewards || 0,
+    shops: raw.shops || 0,
+  };
 }
 
 function sourceSummary(item) {
@@ -168,7 +187,7 @@ function hasSource(item, type) {
 
 function searchableText(item) {
   const sources = item.sources || {};
-  const monsterText = (sources.monsterDrops || []).flatMap(row => [
+  const monsterText = monsterSourceRows(item).flatMap(row => [
     row.monsterId,
     row.monsterName,
     ...(row.continents || []),
@@ -195,6 +214,11 @@ function searchableText(item) {
     ...questText,
     ...shopText,
   ].map(norm).join(" ");
+}
+
+function monsterSourceRows(item) {
+  const rows = item.sources?.monsterDrops || [];
+  return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps);
 }
 
 function filteredItems() {
@@ -229,6 +253,8 @@ function populateFilters() {
 function updateToggles() {
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
+  els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
+  els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名地圖怪物" : "顯示未命名地圖怪物";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
 }
@@ -332,7 +358,7 @@ function renderEquipmentStats(item) {
 }
 
 function renderMonsterSources(item) {
-  const rows = item.sources?.monsterDrops || [];
+  const rows = monsterSourceRows(item);
   return sourceBlock("怪物掉落", rows, row => {
     const meta = [];
     if (row.level) meta.push(`Lv.${row.level}`);
@@ -343,7 +369,8 @@ function renderMonsterSources(item) {
       ? `<p>任務線索：${escapeHtml(row.questNames.slice(0, 3).join("、"))}</p>`
       : "";
     return `
-      <a class="sourceRow sourceLinkRow" href="${monsterUrl(row.monsterId)}">
+      <a class="sourceRow sourceLinkRow monsterSourceRow" href="${monsterUrl(row.monsterId, row.onlyUnnamedMaps)}">
+        ${assetImage(row.image, row.monsterName, row.monsterName.slice(0, 1) || "?", "sourceMonsterImage")}
         <div>
           <strong>${escapeHtml(row.monsterName)}</strong>
           <span>${meta.map(escapeHtml).join(" · ") || "怪物"}</span>
@@ -428,6 +455,11 @@ els.category.addEventListener("change", event => {
 
 els.source.addEventListener("change", event => {
   state.source = event.target.value;
+  render();
+});
+
+els.unnamedMapToggle.addEventListener("click", () => {
+  state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
   render();
 });
 

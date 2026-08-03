@@ -109,6 +109,9 @@ select {
 .toggleButton {
   min-width: 146px;
 }
+#unnamedMapToggle {
+  min-width: 184px;
+}
 .toggleIdButton {
   min-width: 96px;
 }
@@ -438,6 +441,23 @@ h3 {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
 }
+.monsterSourceRow {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+}
+.sourceMonsterImage {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #c9d9e8;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  object-fit: contain;
+  padding: 3px;
+  color: #245b45;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
 .itemLinkCard, .sourceLinkRow {
   color: inherit;
   text-decoration: none;
@@ -574,6 +594,9 @@ h3 {
   .toggleButton {
     flex-basis: 142px;
   }
+  #unnamedMapToggle {
+    flex-basis: 184px;
+  }
   .toggleIdButton {
     flex-basis: 92px;
   }
@@ -596,6 +619,13 @@ h3 {
   }
   .heroCounter {
     text-align: left;
+  }
+  .monsterSourceRow {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+  .monsterSourceRow small {
+    grid-column: 2;
+    justify-self: start;
   }
   .elementGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

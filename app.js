@@ -3,6 +3,7 @@ const state = {
   query: "",
   continent: "",
   showUnknownContinents: false,
+  showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: false,
   showIds: false,
   selectedId: initialMonsterId(),
@@ -12,6 +13,7 @@ const els = {
   search: document.getElementById("search"),
   continent: document.getElementById("continentFilter"),
   unknownToggle: document.getElementById("unknownToggle"),
+  unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
   list: document.getElementById("monsterList"),
@@ -23,15 +25,27 @@ function initialMonsterId() {
   return new URLSearchParams(window.location.search).get("monster");
 }
 
+function initialShowUnnamedMapMonsters() {
+  return new URLSearchParams(window.location.search).get("showUnnamedMaps") === "1";
+}
+
 function setMonsterUrl(monsterId) {
   if (!monsterId) return;
   const url = new URL(window.location.href);
   url.searchParams.set("monster", monsterId);
+  if (state.showUnnamedMapMonsters) {
+    url.searchParams.set("showUnnamedMaps", "1");
+  } else {
+    url.searchParams.delete("showUnnamedMaps");
+  }
   window.history.replaceState(null, "", url);
 }
 
 function itemUrl(item) {
-  return `./items.html?item=${encodeURIComponent(item.id)}`;
+  const url = new URL("./items.html", window.location.href);
+  url.searchParams.set("item", item.id);
+  if (state.showUnnamedMapMonsters) url.searchParams.set("showUnnamedMaps", "1");
+  return `${url.pathname.split("/").pop()}${url.search}`;
 }
 
 const STAT_FIELDS = [
@@ -77,6 +91,7 @@ function filteredMonsters() {
   const q = norm(state.query);
   return db.monsters.filter(monster => {
     const visibleContinentOk = state.showUnknownContinents || hasKnownContinent(monster);
+    const unnamedMapOk = state.showUnnamedMapMonsters || !onlyUnnamedMapMonster(monster);
     const continentOk = !state.continent || monster.continents.includes(state.continent);
     const drops = visibleDrops(monster);
     const queryOk = !q ||
@@ -86,12 +101,16 @@ function filteredMonsters() {
       monster.continents.some(continent => norm(continent).includes(q)) ||
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
       drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q));
-    return visibleContinentOk && continentOk && queryOk;
+    return visibleContinentOk && unnamedMapOk && continentOk && queryOk;
   }).sort(compareMonsters);
 }
 
 function hasKnownContinent(monster) {
   return Boolean(monster.continents?.length);
+}
+
+function onlyUnnamedMapMonster(monster) {
+  return Boolean(monster.onlyUnnamedMaps);
 }
 
 function isUnnamedItem(item) {
@@ -163,6 +182,11 @@ function updateIdToggle() {
 function updateUnknownToggle() {
   els.unknownToggle.setAttribute("aria-pressed", String(state.showUnknownContinents));
   els.unknownToggle.textContent = state.showUnknownContinents ? "隱藏未知大陸" : "顯示未知大陸";
+}
+
+function updateUnnamedMapToggle() {
+  els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
+  els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名地圖怪物" : "顯示未命名地圖怪物";
 }
 
 function updateUnnamedToggle() {
@@ -385,6 +409,7 @@ function shorten(value, size) {
 
 function render() {
   updateUnknownToggle();
+  updateUnnamedMapToggle();
   updateUnnamedToggle();
   updateIdToggle();
   renderList();
@@ -403,6 +428,11 @@ els.continent.addEventListener("change", event => {
 
 els.unknownToggle.addEventListener("click", () => {
   state.showUnknownContinents = !state.showUnknownContinents;
+  render();
+});
+
+els.unnamedMapToggle.addEventListener("click", () => {
+  state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
   render();
 });
 
