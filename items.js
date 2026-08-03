@@ -191,8 +191,8 @@ const EQUIP_FIELD_GROUPS = [
     fields: [
       ["tuc", "可升級次數"],
       ["price", "商店價格", formatMeso],
-      ["islot", "裝備欄位"],
-      ["vslot", "外觀欄位"],
+      ["islot", "裝備欄位", formatEquipSlot],
+      ["vslot", "外觀欄位", formatEquipSlot],
     ],
   },
 ];
@@ -227,6 +227,67 @@ function formatMeso(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return escapeHtml(value);
   return `${number.toLocaleString()} 楓幣`;
+}
+
+const EQUIP_SLOT_LABELS = {
+  Ae: "耳環",
+  Af: "臉飾",
+  As: "臉部飾品",
+  Ay: "眼飾",
+  Be: "腰帶",
+  Cp: "帽子",
+  Fc: "臉型",
+  Gl: "手套",
+  Gv: "手套",
+  Gw: "手套",
+  H1: "頭髮",
+  H2: "頭髮",
+  H3: "頭髮",
+  H4: "頭髮",
+  H5: "頭髮",
+  H6: "頭髮",
+  Hb: "頭髮",
+  Hc: "頭髮",
+  Hd: "皮膚",
+  Hf: "頭髮",
+  Hr: "髮型",
+  Hs: "頭髮",
+  Hx: "頭髮",
+  Ma: "上衣",
+  Me: "勳章",
+  Pe: "墜飾",
+  Pn: "褲裙",
+  Ri: "戒指",
+  Sd: "騎寵鞍座",
+  Si: "盾牌",
+  So: "鞋子",
+  Sr: "披風",
+  Tm: "騎寵",
+  Wp: "武器",
+};
+
+const EQUIP_SLOT_TOKENS = Object.keys(EQUIP_SLOT_LABELS).sort((a, b) => b.length - a.length);
+
+function formatEquipSlot(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const labels = [];
+  const seen = new Set();
+  let index = 0;
+  while (index < text.length) {
+    const token = EQUIP_SLOT_TOKENS.find(candidate => text.startsWith(candidate, index));
+    if (!token) {
+      labels.push(text.slice(index));
+      break;
+    }
+    const label = EQUIP_SLOT_LABELS[token] || token;
+    if (!seen.has(label)) {
+      labels.push(label);
+      seen.add(label);
+    }
+    index += token.length;
+  }
+  return labels.length ? labels.join(" / ") : text;
 }
 
 function formatReqJob(value) {
