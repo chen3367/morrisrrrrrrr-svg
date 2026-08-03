@@ -1,7 +1,7 @@
 {
-  "requested": 2239,
-  "exported": 1935,
-  "missing": 304,
+  "requested": 2273,
+  "exported": 1980,
+  "missing": 293,
   "missingSample": [
     1002268,
     1050005,
@@ -14,7 +14,6 @@
     1122000,
     1332020,
     1382019,
-    2010003,
     2040024,
     2040025,
     2040026,
@@ -42,7 +41,8 @@
     2040512,
     2040513,
     2040514,
-    2040515
+    2040515,
+    2040516
   ],
   "groupInfos": [
     "0200",
@@ -68,7 +68,7 @@
   ],
   "bundles": {
     "spritesheet_abb78745197801a5927bf6955788bb81.bundle": {
-      "groups": 545,
+      "groups": 590,
       "equipment": 0
     },
     "spritesheet_631a1e3068991baaee1cfa048357fd49.bundle": {
