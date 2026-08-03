@@ -4,6 +4,7 @@ const state = {
   category: "",
   source: "",
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
+  showNoSourceItems: initialShowNoSourceItems(),
   showUnnamedItems: false,
   showIds: false,
   selectedId: initialItemId(),
@@ -14,6 +15,7 @@ const els = {
   category: document.getElementById("categoryFilter"),
   source: document.getElementById("sourceFilter"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
+  noSourceToggle: document.getElementById("noSourceToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
   list: document.getElementById("itemList"),
@@ -30,6 +32,10 @@ function initialShowUnnamedMapMonsters() {
   return new URLSearchParams(window.location.search).get("showUnnamedMaps") === "1";
 }
 
+function initialShowNoSourceItems() {
+  return new URLSearchParams(window.location.search).get("showNoSource") === "1";
+}
+
 function setItemUrl(itemId) {
   if (!itemId) return;
   const url = new URL(window.location.href);
@@ -38,6 +44,11 @@ function setItemUrl(itemId) {
     url.searchParams.set("showUnnamedMaps", "1");
   } else {
     url.searchParams.delete("showUnnamedMaps");
+  }
+  if (state.showNoSourceItems) {
+    url.searchParams.set("showNoSource", "1");
+  } else {
+    url.searchParams.delete("showNoSource");
   }
   window.history.replaceState(null, "", url);
 }
@@ -195,12 +206,17 @@ function sourceSummary(item) {
 }
 
 function hasSource(item, type) {
-  const rawCounts = rawSourceCounts(item);
   if (type === "monster") return monsterSourceRows(item).length > 0;
+  const rawCounts = rawSourceCounts(item);
   if (type === "quest") return rawCounts.questRewards > 0;
   if (type === "shop") return rawCounts.shops > 0;
-  if (type === "none") return !rawCounts.monsterDrops && !rawCounts.questRewards && !rawCounts.shops;
+  if (type === "none") return isRawNoSource(item);
   return true;
+}
+
+function isRawNoSource(item) {
+  const counts = rawSourceCounts(item);
+  return !counts.monsterDrops && !counts.questRewards && !counts.shops;
 }
 
 function hasVisibleSource(item) {
@@ -249,11 +265,16 @@ function filteredItems() {
   return (db.items || []).filter(item => {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
     if (state.category && item.category !== state.category) return false;
+    const rawNoSource = isRawNoSource(item);
     if (state.source === "none") {
-      if (!hasSource(item, "none")) return false;
+      if (!state.showNoSourceItems || !rawNoSource) return false;
     } else {
-      if (state.source && !hasSource(item, state.source)) return false;
-      if (!hasVisibleSource(item)) return false;
+      if (rawNoSource) {
+        if (!state.showNoSourceItems || state.source) return false;
+      } else {
+        if (state.source && !hasSource(item, state.source)) return false;
+        if (!hasVisibleSource(item)) return false;
+      }
     }
     if (q && !searchableText(item).includes(q)) return false;
     return true;
@@ -283,6 +304,8 @@ function updateToggles() {
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
   els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
   els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名地圖怪物" : "顯示未命名地圖怪物";
+  els.noSourceToggle.setAttribute("aria-pressed", String(state.showNoSourceItems));
+  els.noSourceToggle.textContent = state.showNoSourceItems ? "隱藏無來源道具" : "顯示無來源道具";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
 }
@@ -488,6 +511,11 @@ els.source.addEventListener("change", event => {
 
 els.unnamedMapToggle.addEventListener("click", () => {
   state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
+  render();
+});
+
+els.noSourceToggle.addEventListener("click", () => {
+  state.showNoSourceItems = !state.showNoSourceItems;
   render();
 });
 
