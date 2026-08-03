@@ -231,7 +231,7 @@ function formatMeso(value) {
 
 function formatReqJob(value) {
   const mask = Number(value);
-  if (!Number.isFinite(mask) || mask === 0) return "全職";
+  if (!Number.isFinite(mask) || mask <= 0) return "全職";
   const jobs = [
     [1, "劍士"],
     [2, "法師"],
