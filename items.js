@@ -40,6 +40,7 @@ function saveBool(name, value) {
 const state = {
   query: "",
   category: cookieValue("ms_item_category"),
+  subcategory: cookieValue("ms_item_subcategory"),
   source: cookieValue("ms_item_source"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showNoSourceItems: initialShowNoSourceItems(),
@@ -53,6 +54,7 @@ const state = {
 const els = {
   search: document.getElementById("itemSearch"),
   category: document.getElementById("categoryFilter"),
+  subcategory: document.getElementById("subcategoryFilter"),
   source: document.getElementById("sourceFilter"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   noSourceToggle: document.getElementById("noSourceToggle"),
@@ -438,6 +440,7 @@ function filteredItems() {
   return (db.items || []).filter(item => {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
     if (state.category && item.category !== state.category) return false;
+    if (state.subcategory && item.subcategory !== state.subcategory) return false;
     const rawNoSource = isRawNoSource(item);
     if (state.source === "none") {
       if (!state.showNoSourceItems || !rawNoSource) return false;
@@ -459,6 +462,8 @@ function compareItems(a, b) {
   if (orderDiff) return orderDiff;
   const categoryDiff = String(a.category || "").localeCompare(String(b.category || ""), "zh-Hant");
   if (categoryDiff) return categoryDiff;
+  const subcategoryDiff = String(a.subcategory || "").localeCompare(String(b.subcategory || ""), "zh-Hant");
+  if (subcategoryDiff) return subcategoryDiff;
   const nameDiff = String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
   if (nameDiff) return nameDiff;
   return Number(a.id) - Number(b.id);
@@ -472,10 +477,39 @@ function populateFilters() {
   `;
 }
 
+function subcategoriesForCategory(category) {
+  const byCategory = db.filters?.itemSubcategoriesByCategory || {};
+  if (category) return byCategory[category] || [];
+  const seen = new Set();
+  Object.values(byCategory).forEach(rows => {
+    (rows || []).forEach(row => {
+      if (row) seen.add(row);
+    });
+  });
+  return [...seen].sort((a, b) => a.localeCompare(b, "zh-Hant"));
+}
+
+function updateSubcategoryFilter() {
+  const options = subcategoriesForCategory(state.category);
+  els.subcategory.innerHTML = `
+    <option value="">全部子分類</option>
+    ${options.map(subcategory => `<option value="${escapeHtml(subcategory)}">${escapeHtml(subcategory)}</option>`).join("")}
+  `;
+  if (state.subcategory && options.includes(state.subcategory)) {
+    els.subcategory.value = state.subcategory;
+  } else {
+    state.subcategory = "";
+    els.subcategory.value = "";
+    writeCookie("ms_item_subcategory", "");
+  }
+  els.subcategory.disabled = options.length === 0;
+}
+
 function syncControls() {
   els.search.value = state.query;
   els.category.value = state.category;
   state.category = els.category.value;
+  updateSubcategoryFilter();
   els.source.value = state.source;
   state.source = els.source.value;
 }
@@ -708,6 +742,14 @@ els.search.addEventListener("input", event => {
 els.category.addEventListener("change", event => {
   state.category = event.target.value;
   writeCookie("ms_item_category", state.category);
+  updateSubcategoryFilter();
+  writeCookie("ms_item_subcategory", state.subcategory);
+  render();
+});
+
+els.subcategory.addEventListener("change", event => {
+  state.subcategory = event.target.value;
+  writeCookie("ms_item_subcategory", state.subcategory);
   render();
 });
 
