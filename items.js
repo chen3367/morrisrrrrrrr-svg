@@ -60,6 +60,10 @@ function monsterUrl(monsterId, includeUnnamedMaps = false) {
   return `${url.pathname.split("/").pop()}${url.search}`;
 }
 
+function questUrl(questId) {
+  return `./quests.html?quest=${encodeURIComponent(questId)}`;
+}
+
 const EQUIP_FIELD_GROUPS = [
   {
     title: "裝備需求",
@@ -187,6 +191,10 @@ function sourceRows(item) {
   };
 }
 
+function questRequirementRows(item) {
+  return item.sources?.questRequirements || [];
+}
+
 function sourceCounts(item) {
   const rows = sourceRows(item);
   return {
@@ -243,6 +251,15 @@ function searchableText(item) {
     row.merchantName,
     row.sn,
   ]);
+  const questRequirementText = questRequirementRows(item).flatMap(row => [
+    row.questId,
+    row.questName,
+    row.category,
+    row.parent,
+    row.stageLabel,
+    row.startNpc?.name,
+    row.endNpc?.name,
+  ]);
   return [
     item.id,
     item.name,
@@ -252,6 +269,7 @@ function searchableText(item) {
     ...monsterText,
     ...questText,
     ...shopText,
+    ...questRequirementText,
   ].map(norm).join(" ");
 }
 
@@ -373,7 +391,8 @@ function renderDetail() {
     ${renderMonsterSources(item)}
     ${renderQuestSources(item)}
     ${renderShopSources(item)}
-    ${totalSources(item) ? "" : `<div class="empty">目前資料集中沒有取得途徑</div>`}
+    ${renderQuestRequirementSources(item)}
+    ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出任務需求" : "目前資料集中沒有取得途徑"}</div>`}
   `;
 }
 
@@ -437,14 +456,14 @@ function renderMonsterSources(item) {
 function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
   return sourceBlock("任務獲取", rows, row => `
-    <article class="sourceRow">
+    <a class="sourceRow sourceLinkRow" href="${questUrl(row.questId)}">
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
         <span>${questStateLabel(row.state)}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
         <p>${formatNumber(row.count)} 個${row.random ? " · 隨機獎勵" : ""}</p>
       </div>
       <small>任務</small>
-    </article>
+    </a>
   `);
 }
 
@@ -459,6 +478,20 @@ function renderShopSources(item) {
       </div>
       <small>${row.sourceType === "cashShop" ? "商城" : "商店"}</small>
     </article>
+  `);
+}
+
+function renderQuestRequirementSources(item) {
+  const rows = questRequirementRows(item);
+  return sourceBlock("任務需求", rows, row => `
+    <a class="sourceRow sourceLinkRow" href="${questUrl(row.questId)}">
+      <div>
+        <strong>${escapeHtml(row.questName)}</strong>
+        <span>${escapeHtml(row.category || "任務")}${row.minLevel ? ` · Lv.${escapeHtml(row.minLevel)}+` : ""}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
+        <p>${escapeHtml(row.stageLabel || "任務條件")}${row.parent ? ` · ${escapeHtml(row.parent)}` : ""}</p>
+      </div>
+      <small>需要 ${formatNumber(row.count)} 個</small>
+    </a>
   `);
 }
 

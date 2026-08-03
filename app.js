@@ -48,6 +48,10 @@ function itemUrl(item) {
   return `${url.pathname.split("/").pop()}${url.search}`;
 }
 
+function questUrl(questId) {
+  return `./quests.html?quest=${encodeURIComponent(questId)}`;
+}
+
 const STAT_FIELDS = [
   ["level", "等級"],
   ["maxHP", "HP"],
@@ -100,6 +104,7 @@ function filteredMonsters() {
       norm(elementalText(monster)).includes(q) ||
       monster.continents.some(continent => norm(continent).includes(q)) ||
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
+      (monster.questRequirements || []).some(row => norm(row.questId).includes(q) || norm(row.questName).includes(q) || norm(row.category).includes(q) || norm(row.parent).includes(q)) ||
       drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q));
     return visibleContinentOk && unnamedMapOk && continentOk && queryOk;
   }).sort(compareMonsters);
@@ -237,6 +242,7 @@ function renderDetail() {
     ${renderStats(monster)}
     ${renderElements(monster)}
     ${renderMaps(monster)}
+    ${renderQuestRequirements(monster)}
     <section class="sectionBlock">
       <div class="sectionTitle">
         <h3>掉落道具</h3>
@@ -336,6 +342,31 @@ function mapCard(map) {
       <span>${meta.map(escapeHtml).join(" · ")}</span>
       ${map.desc ? `<p>${escapeHtml(shorten(map.desc, 88))}</p>` : ""}
     </article>
+  `;
+}
+
+function renderQuestRequirements(monster) {
+  const rows = monster.questRequirements || [];
+  if (!rows.length) return "";
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <h3>任務狩獵需求</h3>
+        <span>${rows.length.toLocaleString()} 筆</span>
+      </div>
+      <div class="sourceList">
+        ${rows.map(row => `
+          <a class="sourceRow sourceLinkRow" href="${questUrl(row.questId)}">
+            <div>
+              <strong>${escapeHtml(row.questName)}</strong>
+              <span>${escapeHtml(row.category || "任務")}${row.minLevel ? ` · Lv.${escapeHtml(row.minLevel)}+` : ""}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
+              <p>${escapeHtml(row.stageLabel || "任務條件")}${row.parent ? ` · ${escapeHtml(row.parent)}` : ""}</p>
+            </div>
+            <small>狩獵 ${formatNumber(row.count)} 隻</small>
+          </a>
+        `).join("")}
+      </div>
+    </section>
   `;
 }
 
