@@ -137,6 +137,12 @@ function questUrl(questId) {
   return `./quests.html?quest=${encodeURIComponent(questId)}`;
 }
 
+function itemTypeText(item) {
+  const parts = [item.category || item.kind || "其他"];
+  if (item.subcategory && item.subcategory !== item.category) parts.push(item.subcategory);
+  return parts.join(" · ");
+}
+
 const STAT_FIELDS = [
   ["level", "等級"],
   ["maxHP", "HP"],
@@ -511,7 +517,7 @@ function renderDropGroups(drops) {
 function itemCard(item) {
   const metaParts = [];
   if (state.showIds) metaParts.push(`ID ${item.id}`);
-  metaParts.push(item.source === "quest" ? "任務掉落" : item.kind);
+  metaParts.push(item.source === "quest" ? "任務掉落" : itemTypeText(item));
   if (item.source === "quest" && item.questNames?.length) metaParts.push(`任務：${item.questNames.slice(0, 2).join("、")}`);
   const meta = metaParts.map(escapeHtml).join(" · ");
   return `

@@ -304,6 +304,12 @@ function formatReqJob(value) {
   return labels.length ? labels.join(" / ") : formatNumber(mask);
 }
 
+function itemTypeText(item) {
+  const parts = [item.category || item.kind || "其他"];
+  if (item.subcategory && item.subcategory !== item.category) parts.push(item.subcategory);
+  return parts.join(" · ");
+}
+
 function hasEquipValue(key, value) {
   if (value === null || value === undefined || value === "") return false;
   if (typeof value === "string") return true;
@@ -414,6 +420,7 @@ function searchableText(item) {
     item.desc,
     item.kind,
     item.category,
+    item.subcategory,
     ...monsterText,
     ...questText,
     ...shopText,
@@ -508,7 +515,7 @@ function renderList() {
       ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemGlyph")}
       <span class="rowText">
         <strong>${escapeHtml(item.name)}</strong>
-        <span class="rowMeta">${escapeHtml(item.category || item.kind)}${idMeta(item.id)}</span>
+        <span class="rowMeta">${escapeHtml(itemTypeText(item))}${idMeta(item.id)}</span>
         <em>${escapeHtml(sourceSummary(item))}</em>
       </span>
       <small>${formatNumber(totalSources(item))}</small>
@@ -538,11 +545,11 @@ function renderDetail() {
       ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemMark")}
       <div class="heroText">
         <h2>${escapeHtml(item.name)}</h2>
-        <p>${escapeHtml(item.category || item.kind)}${idMeta(item.id)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
+        <p>${escapeHtml(itemTypeText(item))}${idMeta(item.id)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${formatNumber(totalSources(item))}</strong><span>來源</span></div>
-        <div class="heroCounter"><strong>${escapeHtml(item.kind)}</strong><span>種類</span></div>
+        <div class="heroCounter"><strong>${escapeHtml(item.subcategory || item.kind)}</strong><span>細類</span></div>
       </div>
     </section>
     <section class="sectionBlock">
