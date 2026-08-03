@@ -346,6 +346,7 @@ function itemCard(item) {
   const meta = metaParts.map(escapeHtml).join(" · ");
   return `
     <article class="itemCard">
+      ${assetImage(item.image, item.name, item.name.slice(0, 1), "itemIcon")}
       <div class="itemText">
         <strong>${escapeHtml(item.name)}</strong>
         <span>${meta}</span>

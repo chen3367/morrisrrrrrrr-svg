@@ -494,12 +494,27 @@ h3 {
 }
 .itemCard {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
   min-height: 62px;
   padding: 10px 11px;
   border: 1px dashed #b9d7ec;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
+}
+.itemIcon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c9d9e8;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  object-fit: contain;
+  padding: 4px;
+  font-weight: 900;
+  color: #245b45;
+  display: grid;
+  place-items: center;
 }
 .itemText strong {
   display: block;

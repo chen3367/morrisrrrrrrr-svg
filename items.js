@@ -27,6 +27,13 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
+function assetImage(src, alt, fallback, className) {
+  if (src) {
+    return `<img class="${className} assetImage" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
+  }
+  return `<div class="${className}">${escapeHtml(fallback)}</div>`;
+}
+
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
@@ -171,7 +178,7 @@ function renderDetail() {
   const counts = sourceCounts(item);
   els.detail.innerHTML = `
     <section class="monsterHero itemHero">
-      <div class="itemMark">${escapeHtml(item.name.slice(0, 1) || "?")}</div>
+      ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemMark")}
       <div class="heroText">
         <h2>${escapeHtml(item.name)}</h2>
         <p>${escapeHtml(item.category || item.kind)}${idMeta(item.id)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
