@@ -368,6 +368,15 @@ select {
   border-radius: 8px;
   font-size: 30px;
 }
+.questGlyph.assetImage, .questMark.assetImage {
+  object-fit: contain;
+}
+.questGlyph.assetImage {
+  padding: 3px;
+}
+.questMark.assetImage {
+  padding: 5px;
+}
 .rowText {
   display: grid;
   min-width: 0;
@@ -517,6 +526,15 @@ h3 {
   margin-top: 3px;
   overflow-wrap: anywhere;
   font-size: 19px;
+}
+.statCell em {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 .elementGrid {
   display: grid;

@@ -143,8 +143,50 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
 }
 
+function shorten(value, size) {
+  const text = String(value || "").replace(/\s+/g, " ");
+  return text.length > size ? text.slice(0, size - 1) + "…" : text;
+}
+
 function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
+}
+
+function npcForQuest(quest) {
+  return quest.startNpc || quest.endNpc || null;
+}
+
+function questNpcThumb(quest, className) {
+  const npc = npcForQuest(quest);
+  return assetImage(npc?.image, npc?.name || quest.name, "任", className);
+}
+
+function npcLocationText(npc) {
+  if (!npc) return "";
+  if (npc.locationText) return npc.locationText;
+  const maps = npc.maps || [];
+  return maps.map(map => map.label || map.name || map.id).filter(Boolean).join("、");
+}
+
+function npcMeta(npc, fallback = "NPC") {
+  const parts = [];
+  const location = npcLocationText(npc);
+  if (location) parts.push(location);
+  if (state.showIds && npc?.id) parts.push(`ID ${npc.id}`);
+  return parts.join(" · ") || fallback;
+}
+
+function npcStatCell(label, npc) {
+  if (!npc) {
+    return `<div class="statCell"><span>${escapeHtml(label)}</span><strong>自動/未知</strong></div>`;
+  }
+  return `
+    <div class="statCell">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(npc.name)}${idMeta(npc.id)}</strong>
+      <em>${escapeHtml(npcMeta(npc, "所在地未知"))}</em>
+    </div>
+  `;
 }
 
 function levelText(quest) {
@@ -171,22 +213,27 @@ function searchableText(quest) {
   const reqItems = reqs.flatMap(row => row.items || []);
   const reqMobs = reqs.flatMap(row => row.monsters || []);
   const reqQuests = reqs.flatMap(row => row.quests || []);
+  const reqNpcs = reqs.map(row => row.npc).filter(Boolean);
   const rewardItems = acts.flatMap(row => row.items || []);
   const refs = quest.refs || {};
+  const allNpcs = [quest.startNpc, quest.endNpc, ...reqNpcs, ...(refs.npcs || [])].filter(Boolean);
   return [
     quest.id,
     quest.name,
     quest.category,
     quest.parent,
-    quest.startNpc?.name,
-    quest.endNpc?.name,
+    ...allNpcs.flatMap(npc => [
+      npc.id,
+      npc.name,
+      npc.locationText,
+      ...(npc.maps || []).flatMap(map => [map.id, map.name, map.street, map.label]),
+    ]),
     quest.nextQuest?.name,
     ...(quest.texts || []).map(row => row.text),
     ...reqItems.flatMap(item => [item.id, item.name, item.category]),
     ...rewardItems.flatMap(item => [item.id, item.name, item.category]),
     ...reqMobs.flatMap(monster => [monster.id, monster.name]),
     ...reqQuests.flatMap(row => [row.id, row.name]),
-    ...(refs.npcs || []).flatMap(npc => [npc.id, npc.name]),
     ...(refs.items || []).flatMap(item => [item.id, item.name]),
     ...(refs.monsters || []).flatMap(monster => [monster.id, monster.name]),
     ...(refs.maps || []).flatMap(map => [map.id, map.name, map.street]),
@@ -255,17 +302,21 @@ function renderList() {
   const limitNote = rows.length > visibleRows.length
     ? `<div class="listLimit">已顯示前 ${visibleRows.length.toLocaleString()} 個</div>`
     : "";
-  els.list.innerHTML = visibleRows.map(quest => `
-    <button class="monsterRow questIndexRow ${String(quest.id) === String(state.selectedId) ? "active" : ""}" data-id="${quest.id}">
-      <div class="questGlyph">任</div>
-      <span class="rowText">
-        <strong>${escapeHtml(quest.name)}</strong>
-        <span class="rowMeta">${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}</span>
-        <em>${escapeHtml(quest.parent || quest.startNpc?.name || "任務")}</em>
-      </span>
-      <small>${questRewardCount(quest)}</small>
-    </button>
-  `).join("") + limitNote;
+  els.list.innerHTML = visibleRows.map(quest => {
+    const npc = npcForQuest(quest);
+    const npcLine = npc ? `${npc.name}${npc.locationText ? ` · ${shorten(npc.locationText, 36)}` : ""}` : (quest.parent || "任務");
+    return `
+      <button class="monsterRow questIndexRow ${String(quest.id) === String(state.selectedId) ? "active" : ""}" data-id="${quest.id}">
+        ${questNpcThumb(quest, "questGlyph")}
+        <span class="rowText">
+          <strong>${escapeHtml(quest.name)}</strong>
+          <span class="rowMeta">${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}</span>
+          <em>${escapeHtml(npcLine)}</em>
+        </span>
+        <small>${questRewardCount(quest)}</small>
+      </button>
+    `;
+  }).join("") + limitNote;
 }
 
 function questRewardCount(quest) {
@@ -286,10 +337,10 @@ function renderDetail() {
   }
   els.detail.innerHTML = `
     <section class="monsterHero questHero">
-      <div class="questMark">任</div>
+      ${questNpcThumb(quest, "questMark")}
       <div class="heroText">
         <h2>${escapeHtml(quest.name)}</h2>
-        <p>${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}${quest.parent ? ` · ${escapeHtml(quest.parent)}` : ""}</p>
+        <p>${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}${quest.parent ? ` · ${escapeHtml(quest.parent)}` : ""}${npcForQuest(quest) ? ` · ${escapeHtml(npcForQuest(quest).name)}` : ""}</p>
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${formatNumber(totalRequirementCount(quest))}</strong><span>需求</span></div>
@@ -346,8 +397,6 @@ function renderQuestMeta(quest) {
   const rows = [
     ["分類", quest.category],
     ["任務線", quest.parent || "無"],
-    ["接取 NPC", quest.startNpc?.name || "自動/未知"],
-    ["完成 NPC", quest.endNpc?.name || "自動/未知"],
     ["等級", levelText(quest)],
   ];
   return `
@@ -358,6 +407,8 @@ function renderQuestMeta(quest) {
       </div>
       <div class="statsGrid">
         ${rows.map(([label, value]) => `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}
+        ${npcStatCell("接取 NPC", quest.startNpc)}
+        ${npcStatCell("完成 NPC", quest.endNpc)}
       </div>
     </section>
   `;
@@ -370,7 +421,7 @@ function renderRequirements(title, group = {}) {
       <div class="requirementGroup">
         <strong>基本條件</strong>
         <div class="statsGrid compactStats">
-          ${group.npc ? `<div class="statCell"><span>NPC</span><strong>${escapeHtml(group.npc.name)}${idMeta(group.npc.id)}</strong></div>` : ""}
+          ${group.npc ? npcStatCell("NPC", group.npc) : ""}
           ${(group.minLevel || group.maxLevel) ? `<div class="statCell"><span>等級</span><strong>${escapeHtml(levelText({ minLevel: group.minLevel, maxLevel: group.maxLevel }))}</strong></div>` : ""}
           ${group.jobs?.length ? `<div class="statCell"><span>職業</span><strong>${escapeHtml(formatJobs(group.jobs))}</strong></div>` : ""}
         </div>
@@ -506,8 +557,8 @@ function questLink(quest) {
 function npcChip(npc) {
   return `
     <div class="miniLink staticMini">
-      <div class="miniIcon">人</div>
-      <span><strong>${escapeHtml(npc.name)}</strong><em>${state.showIds ? `ID ${escapeHtml(npc.id)}` : "NPC"}</em></span>
+      ${assetImage(npc.image, npc.name, "人", "miniIcon")}
+      <span><strong>${escapeHtml(npc.name)}</strong><em>${escapeHtml(npcMeta(npc, "NPC"))}</em></span>
     </div>
   `;
 }
