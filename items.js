@@ -7,6 +7,7 @@ const state = {
   showNoSourceItems: initialShowNoSourceItems(),
   showUnnamedItems: false,
   showIds: false,
+  theme: initialTheme(),
   selectedId: initialItemId(),
 };
 
@@ -18,6 +19,7 @@ const els = {
   noSourceToggle: document.getElementById("noSourceToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
+  themeToggle: document.getElementById("themeToggle"),
   meta: document.getElementById("buildMeta"),
   list: document.getElementById("itemList"),
   detail: document.getElementById("itemDetail"),
@@ -31,6 +33,33 @@ function renderBuildMeta() {
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
   if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
   els.meta.textContent = parts.join(" · ");
+}
+
+function initialTheme() {
+  try {
+    return localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
+  } catch (_error) {
+    return "light";
+  }
+}
+
+function applyTheme() {
+  const isDark = state.theme === "dark";
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  if (!els.themeToggle) return;
+  els.themeToggle.setAttribute("aria-pressed", String(isDark));
+  els.themeToggle.textContent = isDark ? "白底模式" : "黑底模式";
+  els.themeToggle.title = isDark ? "切換為白底" : "切換為黑底";
+}
+
+function setTheme(theme) {
+  state.theme = theme === "dark" ? "dark" : "light";
+  applyTheme();
+  try {
+    localStorage.setItem("ms-theme", state.theme);
+  } catch (_error) {
+    // 使用者若停用本機儲存，仍可在本次瀏覽切換。
+  }
 }
 
 function initialItemId() {
@@ -572,6 +601,10 @@ els.idToggle.addEventListener("click", () => {
   render();
 });
 
+els.themeToggle.addEventListener("click", () => {
+  setTheme(state.theme === "dark" ? "light" : "dark");
+});
+
 els.list.addEventListener("click", event => {
   const button = event.target.closest(".itemIndexRow");
   if (!button) return;
@@ -580,6 +613,7 @@ els.list.addEventListener("click", event => {
   render();
 });
 
+applyTheme();
 renderBuildMeta();
 populateFilters();
 render();

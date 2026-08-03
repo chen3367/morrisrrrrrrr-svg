@@ -4,6 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MapleStory Classic 怪物掉落搜尋</title>
+  <script>
+    (function () {
+      try {
+        document.documentElement.dataset.theme = localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
+      } catch (_error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -26,6 +35,7 @@
       <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖怪物</button>
       <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
       <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
+      <button id="themeToggle" class="toggleThemeButton" type="button" aria-pressed="false">黑底模式</button>
       <span id="resultCount"></span>
     </div>
   </header>
