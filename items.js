@@ -226,6 +226,7 @@ function filteredItems() {
   return (db.items || []).filter(item => {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
     if (state.category && item.category !== state.category) return false;
+    if (!state.source && hasSource(item, "none")) return false;
     if (state.source && !hasSource(item, state.source)) return false;
     if (q && !searchableText(item).includes(q)) return false;
     return true;
