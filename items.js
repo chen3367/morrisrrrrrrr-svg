@@ -158,12 +158,30 @@ function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
 }
 
-function sourceCounts(item) {
+function rawSourceCounts(item) {
   const raw = item.sourceCounts || { monsterDrops: 0, questRewards: 0, shops: 0 };
   return {
-    monsterDrops: monsterSourceRows(item).length,
+    monsterDrops: raw.monsterDrops || 0,
     questRewards: raw.questRewards || 0,
     shops: raw.shops || 0,
+  };
+}
+
+function sourceRows(item) {
+  const source = state.source;
+  return {
+    monsterDrops: source && source !== "monster" ? [] : monsterSourceRows(item),
+    questRewards: source && source !== "quest" ? [] : (item.sources?.questRewards || []),
+    shops: source && source !== "shop" ? [] : (item.sources?.shops || []),
+  };
+}
+
+function sourceCounts(item) {
+  const rows = sourceRows(item);
+  return {
+    monsterDrops: rows.monsterDrops.length,
+    questRewards: rows.questRewards.length,
+    shops: rows.shops.length,
   };
 }
 
@@ -177,17 +195,22 @@ function sourceSummary(item) {
 }
 
 function hasSource(item, type) {
-  const counts = sourceCounts(item);
-  if (type === "monster") return counts.monsterDrops > 0;
-  if (type === "quest") return counts.questRewards > 0;
-  if (type === "shop") return counts.shops > 0;
-  if (type === "none") return !counts.monsterDrops && !counts.questRewards && !counts.shops;
+  const rawCounts = rawSourceCounts(item);
+  if (type === "monster") return monsterSourceRows(item).length > 0;
+  if (type === "quest") return rawCounts.questRewards > 0;
+  if (type === "shop") return rawCounts.shops > 0;
+  if (type === "none") return !rawCounts.monsterDrops && !rawCounts.questRewards && !rawCounts.shops;
   return true;
 }
 
+function hasVisibleSource(item) {
+  const counts = sourceCounts(item);
+  return Boolean(counts.monsterDrops || counts.questRewards || counts.shops);
+}
+
 function searchableText(item) {
-  const sources = item.sources || {};
-  const monsterText = monsterSourceRows(item).flatMap(row => [
+  const sources = sourceRows(item);
+  const monsterText = sources.monsterDrops.flatMap(row => [
     row.monsterId,
     row.monsterName,
     ...(row.continents || []),
@@ -195,11 +218,11 @@ function searchableText(item) {
     ...(row.questIds || []),
     ...(row.questNames || []),
   ]);
-  const questText = (sources.questRewards || []).flatMap(row => [
+  const questText = sources.questRewards.flatMap(row => [
     row.questId,
     row.questName,
   ]);
-  const shopText = (sources.shops || []).flatMap(row => [
+  const shopText = sources.shops.flatMap(row => [
     row.merchantId,
     row.merchantName,
     row.sn,
@@ -226,8 +249,12 @@ function filteredItems() {
   return (db.items || []).filter(item => {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
     if (state.category && item.category !== state.category) return false;
-    if (!state.source && hasSource(item, "none")) return false;
-    if (state.source && !hasSource(item, state.source)) return false;
+    if (state.source === "none") {
+      if (!hasSource(item, "none")) return false;
+    } else {
+      if (state.source && !hasSource(item, state.source)) return false;
+      if (!hasVisibleSource(item)) return false;
+    }
     if (q && !searchableText(item).includes(q)) return false;
     return true;
   }).sort(compareItems);
@@ -359,7 +386,7 @@ function renderEquipmentStats(item) {
 }
 
 function renderMonsterSources(item) {
-  const rows = monsterSourceRows(item);
+  const rows = sourceRows(item).monsterDrops;
   return sourceBlock("怪物掉落", rows, row => {
     const meta = [];
     if (row.level) meta.push(`Lv.${row.level}`);
@@ -385,7 +412,7 @@ function renderMonsterSources(item) {
 }
 
 function renderQuestSources(item) {
-  const rows = item.sources?.questRewards || [];
+  const rows = sourceRows(item).questRewards;
   return sourceBlock("任務獲取", rows, row => `
     <article class="sourceRow">
       <div>
@@ -399,7 +426,7 @@ function renderQuestSources(item) {
 }
 
 function renderShopSources(item) {
-  const rows = item.sources?.shops || [];
+  const rows = sourceRows(item).shops;
   return sourceBlock("商人購買", rows, row => `
     <article class="sourceRow">
       <div>
