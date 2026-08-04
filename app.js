@@ -37,6 +37,77 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+const SEARCH_HISTORY_COOKIE = "ms_search_history";
+const SEARCH_HISTORY_LIMIT = 20;
+const SEARCH_HISTORY_MAX_LENGTH = 40;
+let searchHistoryTimer = null;
+
+function escapeSearchOption(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  }[char]));
+}
+
+function normalizedSearchTerm(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, SEARCH_HISTORY_MAX_LENGTH);
+}
+
+function parseSearchHistory() {
+  const raw = cookieValue(SEARCH_HISTORY_COOKIE);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map(value => normalizedSearchTerm(value)).filter(Boolean).slice(0, SEARCH_HISTORY_LIMIT);
+    }
+  } catch (_error) {}
+  return raw.split("\\n").map(value => normalizedSearchTerm(value)).filter(Boolean).slice(0, SEARCH_HISTORY_LIMIT);
+}
+
+function saveSearchHistory(rows) {
+  const unique = [];
+  rows.forEach(row => {
+    const term = normalizedSearchTerm(row);
+    if (term && !unique.includes(term)) unique.push(term);
+  });
+  writeCookie(SEARCH_HISTORY_COOKIE, JSON.stringify(unique.slice(0, SEARCH_HISTORY_LIMIT)));
+}
+
+function renderSearchHistoryOptions() {
+  const list = document.getElementById("searchHistoryOptions");
+  if (!list) return;
+  list.innerHTML = parseSearchHistory()
+    .map(term => `<option value="${escapeSearchOption(term)}"></option>`)
+    .join("");
+}
+
+function rememberSearchTerm(value) {
+  const term = normalizedSearchTerm(value);
+  if (term.length < 2) return;
+  const rows = parseSearchHistory().filter(row => row !== term);
+  rows.unshift(term);
+  saveSearchHistory(rows);
+  renderSearchHistoryOptions();
+}
+
+function scheduleRememberSearchTerm(value) {
+  window.clearTimeout(searchHistoryTimer);
+  searchHistoryTimer = window.setTimeout(() => rememberSearchTerm(value), 900);
+}
+
+function bindSearchHistory() {
+  if (!els.search) return;
+  renderSearchHistoryOptions();
+  els.search.addEventListener("keydown", event => {
+    if (event.key === "Enter") rememberSearchTerm(els.search.value);
+  });
+  els.search.addEventListener("blur", () => rememberSearchTerm(els.search.value));
+}
+
 const DEFAULT_HIDDEN_CONTINENTS = new Set(["楓葉世界", "日本"]);
 const EVENT_CONTINENTS = new Set(["楓葉世界"]);
 
@@ -1004,6 +1075,7 @@ function render() {
 
 els.search.addEventListener("input", event => {
   state.query = event.target.value;
+  scheduleRememberSearchTerm(state.query);
   render();
 });
 
@@ -1084,4 +1156,5 @@ applyTheme();
 renderBuildMeta();
 populateFilters();
 syncControls();
+bindSearchHistory();
 render();

@@ -37,12 +37,84 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+const SEARCH_HISTORY_COOKIE = "ms_search_history";
+const SEARCH_HISTORY_LIMIT = 20;
+const SEARCH_HISTORY_MAX_LENGTH = 40;
+let searchHistoryTimer = null;
+
+function escapeSearchOption(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  }[char]));
+}
+
+function normalizedSearchTerm(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, SEARCH_HISTORY_MAX_LENGTH);
+}
+
+function parseSearchHistory() {
+  const raw = cookieValue(SEARCH_HISTORY_COOKIE);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map(value => normalizedSearchTerm(value)).filter(Boolean).slice(0, SEARCH_HISTORY_LIMIT);
+    }
+  } catch (_error) {}
+  return raw.split("\\n").map(value => normalizedSearchTerm(value)).filter(Boolean).slice(0, SEARCH_HISTORY_LIMIT);
+}
+
+function saveSearchHistory(rows) {
+  const unique = [];
+  rows.forEach(row => {
+    const term = normalizedSearchTerm(row);
+    if (term && !unique.includes(term)) unique.push(term);
+  });
+  writeCookie(SEARCH_HISTORY_COOKIE, JSON.stringify(unique.slice(0, SEARCH_HISTORY_LIMIT)));
+}
+
+function renderSearchHistoryOptions() {
+  const list = document.getElementById("searchHistoryOptions");
+  if (!list) return;
+  list.innerHTML = parseSearchHistory()
+    .map(term => `<option value="${escapeSearchOption(term)}"></option>`)
+    .join("");
+}
+
+function rememberSearchTerm(value) {
+  const term = normalizedSearchTerm(value);
+  if (term.length < 2) return;
+  const rows = parseSearchHistory().filter(row => row !== term);
+  rows.unshift(term);
+  saveSearchHistory(rows);
+  renderSearchHistoryOptions();
+}
+
+function scheduleRememberSearchTerm(value) {
+  window.clearTimeout(searchHistoryTimer);
+  searchHistoryTimer = window.setTimeout(() => rememberSearchTerm(value), 900);
+}
+
+function bindSearchHistory() {
+  if (!els.search) return;
+  renderSearchHistoryOptions();
+  els.search.addEventListener("keydown", event => {
+    if (event.key === "Enter") rememberSearchTerm(els.search.value);
+  });
+  els.search.addEventListener("blur", () => rememberSearchTerm(els.search.value));
+}
+
 const state = {
   query: "",
   category: cookieValue("ms_item_category"),
   subcategory: cookieValue("ms_item_subcategory"),
   nameOnlySearch: cookieBool("ms_item_name_only_search"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
+  showItemMakeCrafts: cookieBool("ms_show_item_make_crafts"),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   showDuplicateNoSourceItems: cookieBool("ms_show_duplicate_no_source_items"),
   showIds: cookieBool("ms_show_ids"),
@@ -58,6 +130,7 @@ const els = {
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
+  itemMakeCraftToggle: document.getElementById("itemMakeCraftToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   duplicateNoSourceToggle: document.getElementById("duplicateNoSourceToggle"),
   idToggle: document.getElementById("idToggle"),
@@ -396,8 +469,8 @@ function sourceRows(item) {
   return {
     monsterDrops: monsterSourceRows(item),
     questRewards: item.sources?.questRewards || [],
-    shops: item.sources?.shops || [],
-    crafts: item.sources?.crafts || [],
+    shops: shopSourceRows(item),
+    crafts: craftSourceRows(item),
   };
 }
 
@@ -406,7 +479,7 @@ function questRequirementRows(item) {
 }
 
 function craftRequirementRows(item) {
-  return item.sources?.craftRequirements || [];
+  return (item.sources?.craftRequirements || []).filter(visibleCraftRecipe);
 }
 
 function sourceCounts(item) {
@@ -499,6 +572,31 @@ function monsterSourceRows(item) {
   return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps && !row.unnamedMonster);
 }
 
+function shopSourceRows(item) {
+  const rows = item.sources?.shops || [];
+  return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps);
+}
+
+function npcOnlyUnnamedMaps(npc) {
+  const maps = npc?.maps || [];
+  return maps.length > 0 && maps.every(map => map?.unnamed);
+}
+
+function recipeOnlyUnnamedMapNpcs(row) {
+  const npcs = row?.npcs || [];
+  return npcs.length > 0 && npcs.every(npcOnlyUnnamedMaps);
+}
+
+function visibleCraftRecipe(row) {
+  if (row?.sourceKind !== "npcDialog") return state.showItemMakeCrafts;
+  if (!state.showUnnamedMapMonsters && recipeOnlyUnnamedMapNpcs(row)) return false;
+  return true;
+}
+
+function craftSourceRows(item) {
+  return (item.sources?.crafts || []).filter(visibleCraftRecipe);
+}
+
 function filteredItems() {
   const q = norm(state.query);
   return (db.items || []).filter(item => {
@@ -576,7 +674,9 @@ function updateToggles() {
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
   els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
-  els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名怪物/地圖" : "顯示未命名怪物/地圖";
+  els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未定位/未命名NPC與地圖" : "顯示未定位/未命名NPC與地圖";
+  els.itemMakeCraftToggle.setAttribute("aria-pressed", String(state.showItemMakeCrafts));
+  els.itemMakeCraftToggle.textContent = state.showItemMakeCrafts ? "隱藏強化合成配方" : "顯示強化合成配方";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
   els.duplicateNoSourceToggle.setAttribute("aria-pressed", String(state.showDuplicateNoSourceItems));
@@ -767,16 +867,26 @@ function shopPriceHtml(row) {
 
 function renderShopSources(item) {
   const rows = sourceRows(item).shops;
-  return sourceBlock("商人購買", rows, row => `
-    <article class="sourceRow">
+  return sourceBlock("商人購買", rows, row => {
+    const isNpcShop = row.sourceType === "npcShop";
+    const meta = [];
+    if (row.locationText) meta.push(row.locationText);
+    if (row.sourceLabel) meta.push(row.sourceLabel);
+    if (state.showIds && row.shopId) meta.push(`Shop ${row.shopId}`);
+    if (state.showIds && row.merchantId && isNpcShop) meta.push(`NPC ${row.merchantId}`);
+    if (state.showIds && row.sn) meta.push(`SN ${row.sn}`);
+    return `
+    <article class="sourceRow ${isNpcShop ? "shopSourceRow" : ""}">
+      ${isNpcShop ? assetImage(row.merchantImage || row.npc?.image, row.merchantName, String(row.merchantName || "?").slice(0, 1), "sourceMonsterImage") : ""}
       <div>
         <strong>${escapeHtml(row.merchantName)}</strong>
-        <span>${shopPriceHtml(row)}${state.showIds && row.sn ? ` · SN ${escapeHtml(row.sn)}` : ""}</span>
-        <p>${formatNumber(row.count || 1)} 個</p>
+        <span>${shopPriceHtml(row)}</span>
+        <p>${meta.map(escapeHtml).join(" · ") || `${formatNumber(row.count || 1)} 個`}</p>
       </div>
       <small>${row.sourceType === "cashShop" ? "商城" : "商店"}</small>
     </article>
-  `);
+  `;
+  });
 }
 
 function recipeMeta(row) {
@@ -977,6 +1087,7 @@ function render() {
 
 els.search.addEventListener("input", event => {
   state.query = event.target.value;
+  scheduleRememberSearchTerm(state.query);
   render();
 });
 
@@ -1004,6 +1115,12 @@ els.unnamedMapToggle.addEventListener("click", () => {
   state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
   saveBool("ms_show_unnamed_map_monsters", state.showUnnamedMapMonsters);
   setItemUrl(state.selectedId);
+  render();
+});
+
+els.itemMakeCraftToggle.addEventListener("click", () => {
+  state.showItemMakeCrafts = !state.showItemMakeCrafts;
+  saveBool("ms_show_item_make_crafts", state.showItemMakeCrafts);
   render();
 });
 
@@ -1047,4 +1164,5 @@ applyTheme();
 renderBuildMeta();
 populateFilters();
 syncControls();
+bindSearchHistory();
 render();

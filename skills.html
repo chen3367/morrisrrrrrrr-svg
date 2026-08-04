@@ -41,7 +41,8 @@
       <div class="buildMeta" id="buildMeta"></div>
     </div>
     <div class="searchWrap">
-      <input id="skillSearch" type="search" autocomplete="off" placeholder="輸入技能、職業、效果或 ID" />
+      <input id="skillSearch" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入技能、職業、效果或 ID" />
+      <datalist id="searchHistoryOptions"></datalist>
       <label id="nameOnlySearchControl" class="nameOnlySearchControl">
         <input id="nameOnlySearch" type="checkbox" autocomplete="off" />
         <span>只搜尋名稱</span>

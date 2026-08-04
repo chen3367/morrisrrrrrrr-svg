@@ -41,7 +41,8 @@
       <div class="buildMeta" id="buildMeta"></div>
     </div>
     <div class="searchWrap">
-      <input id="itemSearch" type="search" autocomplete="off" placeholder="輸入道具、怪物、任務、商人或 ID" />
+      <input id="itemSearch" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入道具、怪物、任務、商人或 ID" />
+      <datalist id="searchHistoryOptions"></datalist>
       <label id="nameOnlySearchControl" class="nameOnlySearchControl">
         <input id="nameOnlySearch" type="checkbox" autocomplete="off" />
         <span>只搜尋名稱</span>
@@ -55,7 +56,8 @@
         <select id="subcategoryFilter" aria-label="以子分類篩選">
           <option value="">全部子分類</option>
         </select>
-        <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名怪物/地圖</button>
+        <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未定位/未命名NPC與地圖</button>
+        <button id="itemMakeCraftToggle" class="toggleButton" type="button" aria-pressed="false">顯示強化合成配方</button>
         <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
         <button id="duplicateNoSourceToggle" class="toggleButton" type="button" aria-pressed="false">顯示重複無來源道具</button>
         <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>

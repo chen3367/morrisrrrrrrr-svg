@@ -1,0 +1,349 @@
+{
+  "missing": [],
+  "rows": [
+    {
+      "id": "1301006",
+      "name": "禦魔陣",
+      "jobId": 130,
+      "jobName": "槍騎兵之路",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "1121001",
+      "name": "絕對引力",
+      "jobId": 112,
+      "jobName": "終極英雄",
+      "imageExists": true,
+      "source": "WZ/API local"
+    },
+    {
+      "id": "1221001",
+      "name": "絕對引力",
+      "jobId": 122,
+      "jobName": "光之聖騎士",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "1321001",
+      "name": "絕對引力",
+      "jobId": 132,
+      "jobName": "黑暗力量的黑騎士",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "1121000",
+      "name": "楓葉祝福",
+      "jobId": 112,
+      "jobName": "終極英雄",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "1221000",
+      "name": "楓葉祝福",
+      "jobId": 122,
+      "jobName": "光之聖騎士",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "1321000",
+      "name": "楓葉祝福",
+      "jobId": 132,
+      "jobName": "黑暗力量的黑騎士",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2121000",
+      "name": "楓葉祝福",
+      "jobId": 212,
+      "jobName": "最頂級火毒魔法",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2221000",
+      "name": "楓葉祝福",
+      "jobId": 222,
+      "jobName": "最頂級冰雷魔法",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2321000",
+      "name": "楓葉祝福",
+      "jobId": 232,
+      "jobName": "最頂級神聖魔法",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "3121000",
+      "name": "楓葉祝福",
+      "jobId": 312,
+      "jobName": "弓箭達人",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "3221000",
+      "name": "楓葉祝福",
+      "jobId": 322,
+      "jobName": "弩弓的達人",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "4121000",
+      "name": "楓葉祝福",
+      "jobId": 412,
+      "jobName": "夜使者的秘笈",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "4221000",
+      "name": "楓葉祝福",
+      "jobId": 422,
+      "jobName": "暗影神偷密技",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "4341000",
+      "name": "楓葉祝福",
+      "jobId": 434,
+      "jobName": "影武者的祕笈",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "5121000",
+      "name": "楓葉祝福",
+      "jobId": 512,
+      "jobName": "拳霸的終點",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "5221000",
+      "name": "楓葉祝福",
+      "jobId": 522,
+      "jobName": "槍神的終點",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "21121000",
+      "name": "楓葉祝福",
+      "jobId": 2112,
+      "jobName": "狂狼勇士",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "22171000",
+      "name": "楓葉祝福",
+      "jobId": 2217,
+      "jobName": "精通9次",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2000001",
+      "name": "魔力擴展",
+      "jobId": 200,
+      "jobName": "法師入門",
+      "imageExists": true,
+      "source": "WZ path override"
+    },
+    {
+      "id": "2001002",
+      "name": "魔心防禦",
+      "jobId": 200,
+      "jobName": "法師入門",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "12001001",
+      "name": "魔心防禦",
+      "jobId": 1200,
+      "jobName": "烈焰巫師入門",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "22111001",
+      "name": "魔心防禦",
+      "jobId": 2211,
+      "jobName": "精通3次",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2201005",
+      "name": "電閃雷鳴",
+      "jobId": 220,
+      "jobName": "冰/雷魔法指南",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2301002",
+      "name": "群體治癒",
+      "jobId": 230,
+      "jobName": "僧侶指南",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2301005",
+      "name": "神聖之箭",
+      "jobId": 230,
+      "jobName": "僧侶指南",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2111003",
+      "name": "致命毒霧",
+      "jobId": 211,
+      "jobName": "魔導士之路(火毒)",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2311001",
+      "name": "淨化",
+      "jobId": 231,
+      "jobName": "祭司之路",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2311003",
+      "name": "神聖祈禱",
+      "jobId": 231,
+      "jobName": "祭司之路",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2311004",
+      "name": "聖光",
+      "jobId": 231,
+      "jobName": "祭司之路",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2311005",
+      "name": "喚化術",
+      "jobId": 231,
+      "jobName": "祭司之路",
+      "imageExists": true,
+      "source": "WZ path override"
+    },
+    {
+      "id": "2311006",
+      "name": "聖龍召喚",
+      "jobId": 231,
+      "jobName": "祭司之路",
+      "imageExists": true,
+      "source": "WZ path override"
+    },
+    {
+      "id": "2121003",
+      "name": "炎靈地獄",
+      "jobId": 212,
+      "jobName": "最頂級火毒魔法",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2121001",
+      "name": "核爆術",
+      "jobId": 212,
+      "jobName": "最頂級火毒魔法",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2221001",
+      "name": "核爆術",
+      "jobId": 222,
+      "jobName": "最頂級冰雷魔法",
+      "imageExists": true,
+      "source": "alias"
+    },
+    {
+      "id": "2321001",
+      "name": "核爆術",
+      "jobId": 232,
+      "jobName": "最頂級神聖魔法",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2121005",
+      "name": "召喚冰魔",
+      "jobId": 212,
+      "jobName": "最頂級火毒魔法",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "2221005",
+      "name": "召喚火炎神",
+      "jobId": 222,
+      "jobName": "最頂級冰雷魔法",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "3000002",
+      "name": "百步穿楊",
+      "jobId": 300,
+      "jobName": "弓箭手入門",
+      "imageExists": true,
+      "source": "WZ path override"
+    },
+    {
+      "id": "3001004",
+      "name": "斷魂箭",
+      "jobId": 300,
+      "jobName": "弓箭手入門",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "3101003",
+      "name": "強弓",
+      "jobId": 310,
+      "jobName": "獵人指南",
+      "imageExists": true,
+      "source": "WZ path override"
+    },
+    {
+      "id": "3101004",
+      "name": "無形之箭",
+      "jobId": 310,
+      "jobName": "獵人指南",
+      "imageExists": true,
+      "source": "Nexon direct"
+    },
+    {
+      "id": "3201004",
+      "name": "無形之箭",
+      "jobId": 320,
+      "jobName": "弩弓手指南",
+      "imageExists": true,
+      "source": "WZ/API local"
+    }
+  ]
+}

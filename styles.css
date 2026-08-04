@@ -980,7 +980,7 @@ h3 {
   border-radius: 8px;
   background: var(--card-bg);
 }
-.monsterSourceRow, .sourceQuestRow, .craftSourceRow {
+.monsterSourceRow, .sourceQuestRow, .craftSourceRow, .shopSourceRow {
   grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
 }

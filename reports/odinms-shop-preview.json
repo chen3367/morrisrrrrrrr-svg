@@ -1,0 +1,19 @@
+{
+  "shopsParsed": 113,
+  "shopRowsParsed": 4113,
+  "previewShopGroups": 113,
+  "matchedShopGroups": 87,
+  "matchedRows": 3190,
+  "baseRows": 3309,
+  "optionalRows": 231,
+  "customRows": 573,
+  "missingNpcRows": 638,
+  "missingItemRows": 371,
+  "shopRowsWithoutNpc": 0,
+  "sqlCounts": {
+    "heavenms_db_database.sql:shopitems:rows": 3795,
+    "heavenms_db_database.sql:shops:rows": 110,
+    "heavenms_db_shopupdate.sql:shops:rows": 3,
+    "heavenms_db_shopupdate.sql:shopitems:rows": 318
+  }
+}

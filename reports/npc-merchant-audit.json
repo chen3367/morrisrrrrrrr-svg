@@ -1,0 +1,2493 @@
+{
+  "summary": {
+    "npcTextRows": 1153,
+    "merchantNpcByFunc": 84,
+    "serviceOrCraftNpcByFunc": 6,
+    "merchantNpcByNameOnly": 3,
+    "merchantNpcWithLocation": 71,
+    "vendorishScriptRows": 6,
+    "vendorishScriptRowsMappedToNpc": 5,
+    "commodityRows": 692,
+    "commodityKind": "cashShopOnly; rows include SN/ItemId/Count/Price but no NPC/map id",
+    "missingNpcShopTable": true,
+    "notes": [
+      "Npc.json provides names/functions/talk text only.",
+      "NpcLocation.wzjson provides NPC-to-map placement and can be joined to map names.",
+      "Commodity.json is cash shop data, not normal NPC merchant inventory.",
+      "No Shop.wzjson, NpcShop, ShopItem, ShopData, openShop, or NPC merchant ItemId/Price table was found in extracted TextAssets/CAB string scan.",
+      "Vendor-like scripts are identifiable by ScriptInfo and NPC WZ script fields, but script dialogue/content for those roots was not present in NPC dialogue string data."
+    ]
+  },
+  "merchantNpcs": [
+    {
+      "id": 1032103,
+      "name": "艾摩斯",
+      "func": "卷軸商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 101010102,
+          "street": "維多利亞",
+          "name": "大木林Ⅲ",
+          "label": "維多利亞 / 大木林Ⅲ",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Ellinia",
+          "markImage": "./assets/map_marks/Ellinia.png"
+        }
+      ],
+      "locationText": "維多利亞 / 大木林Ⅲ"
+    },
+    {
+      "id": 1052104,
+      "name": "杜卡斯",
+      "func": "卷軸商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 107000100,
+          "street": "戰火之地",
+          "name": "沼澤地Ⅱ",
+          "label": "戰火之地 / 沼澤地Ⅱ",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "KerningCity",
+          "markImage": "./assets/map_marks/KerningCity.png"
+        }
+      ],
+      "locationText": "戰火之地 / 沼澤地Ⅱ"
+    },
+    {
+      "id": 2022002,
+      "name": "巴倫",
+      "func": "卷軸商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 200080800,
+          "street": "",
+          "name": "未命名地圖 200080800",
+          "label": "未命名地圖 200080800",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "天空之塔 8樓~20樓",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 200080800"
+    },
+    {
+      "id": 2041016,
+      "name": "彌爾格",
+      "func": "卷軸商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 221022000,
+          "street": "",
+          "name": "未命名地圖 221022000",
+          "label": "未命名地圖 221022000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "愛奧斯塔 41樓~55樓",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 221022000"
+    },
+    {
+      "id": 2082000,
+      "name": "紐曼",
+      "func": "售票員",
+      "image": "",
+      "locations": [
+        {
+          "id": 240000100,
+          "street": "",
+          "name": "未命名地圖 240000100",
+          "label": "未命名地圖 240000100",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 240000100"
+    },
+    {
+      "id": 2102002,
+      "name": "西拉斯",
+      "func": "售票員",
+      "image": "",
+      "locations": [
+        {
+          "id": 260000100,
+          "street": "",
+          "name": "未命名地圖 260000100",
+          "label": "未命名地圖 260000100",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 260000100"
+    },
+    {
+      "id": 2030009,
+      "name": "格里巴",
+      "func": "商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 211040200,
+          "street": "",
+          "name": "未命名地圖 211040200",
+          "label": "未命名地圖 211040200",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 211040200"
+    },
+    {
+      "id": 9030000,
+      "name": "富蘭德里",
+      "func": "商店主人",
+      "image": "",
+      "locations": [
+        {
+          "id": 910000000,
+          "street": "自由市場",
+          "name": "自由市場入口",
+          "label": "自由市場 / 自由市場入口",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap000",
+          "regionName": "楓之島",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "portal",
+          "markKey": "FreeMarket",
+          "markImage": "./assets/map_marks/FreeMarket.png",
+          "regionDistance": 2
+        }
+      ],
+      "locationText": "自由市場 / 自由市場入口"
+    },
+    {
+      "id": 2090006,
+      "name": "拉雅",
+      "func": "寵物商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 250000000,
+          "street": "",
+          "name": "未命名地圖 250000000",
+          "label": "未命名地圖 250000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 250000000"
+    },
+    {
+      "id": 1012004,
+      "name": "科爾",
+      "func": "寵物飼料商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 100000202,
+          "street": "維多利亞",
+          "name": "寵物公園",
+          "label": "維多利亞 / 寵物公園",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        },
+        {
+          "id": 100000100,
+          "street": "維多利亞",
+          "name": "弓箭手村市集",
+          "label": "維多利亞 / 弓箭手村市集",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        }
+      ],
+      "locationText": "維多利亞 / 寵物公園、維多利亞 / 弓箭手村市集"
+    },
+    {
+      "id": 2010004,
+      "name": "未散 中等兵",
+      "func": "寵物飼料商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 200000200,
+          "street": "",
+          "name": "未命名地圖 200000200",
+          "label": "未命名地圖 200000200",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 200000200"
+    },
+    {
+      "id": 2041014,
+      "name": "菲特利沙",
+      "func": "寵物飼料商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 220000000,
+          "street": "",
+          "name": "未命名地圖 220000000",
+          "label": "未命名地圖 220000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 220000000"
+    },
+    {
+      "id": 2080004,
+      "name": "馬蒂",
+      "func": "寵物飼料商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 240000000,
+          "street": "",
+          "name": "未命名地圖 240000000",
+          "label": "未命名地圖 240000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 240000000"
+    },
+    {
+      "id": 9000017,
+      "name": "可可",
+      "func": "巧克力材料商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 100000000,
+          "street": "維多利亞",
+          "name": "弓箭手村",
+          "label": "維多利亞 / 弓箭手村",
+          "desc": "位於廣闊草原裏的弓箭手村，在這裏可以轉職成為弓箭手。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        },
+        {
+          "id": 104000000,
+          "street": "維多利亞",
+          "name": "維多利亞港",
+          "label": "維多利亞 / 維多利亞港",
+          "desc": "這是位在維多利亞島的港口， 您可在此傳送到其它的都市。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Rith",
+          "markImage": "./assets/map_marks/Rith.png"
+        },
+        {
+          "id": 200000000,
+          "street": "",
+          "name": "未命名地圖 200000000",
+          "label": "未命名地圖 200000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 220000000,
+          "street": "",
+          "name": "未命名地圖 220000000",
+          "label": "未命名地圖 220000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 240000000,
+          "street": "",
+          "name": "未命名地圖 240000000",
+          "label": "未命名地圖 240000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 250000000,
+          "street": "",
+          "name": "未命名地圖 250000000",
+          "label": "未命名地圖 250000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 261000000,
+          "street": "",
+          "name": "未命名地圖 261000000",
+          "label": "未命名地圖 261000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "維多利亞 / 弓箭手村、維多利亞 / 維多利亞港、未命名地圖 200000000、未命名地圖 220000000、未命名地圖 240000000、未命名地圖 250000000、未命名地圖 261000000"
+    },
+    {
+      "id": 2080003,
+      "name": "諾蔓",
+      "func": "捲軸商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 240010800,
+          "street": "",
+          "name": "未命名地圖 240010800",
+          "label": "未命名地圖 240010800",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 240010800"
+    },
+    {
+      "id": 1011101,
+      "name": "歐心馬",
+      "func": "攤販",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 2080007,
+      "name": "歐心馬",
+      "func": "攤販",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1055000,
+      "name": "英彩",
+      "func": "武器/防具商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 11000,
+      "name": "賽德",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 1010001,
+          "street": "彩虹之地",
+          "name": "楓葉村武器店",
+          "label": "彩虹之地 / 楓葉村武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap000",
+          "regionName": "楓之島",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "Amherst",
+          "markImage": "./assets/map_marks/Amherst.png"
+        }
+      ],
+      "locationText": "彩虹之地 / 楓葉村武器店"
+    },
+    {
+      "id": 1001000,
+      "name": "賽爾文",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 104000003,
+          "street": "維多利亞",
+          "name": "維多利亞港武器店",
+          "label": "維多利亞 / 維多利亞港武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Rith",
+          "markImage": "./assets/map_marks/Rith.png"
+        }
+      ],
+      "locationText": "維多利亞 / 維多利亞港武器店"
+    },
+    {
+      "id": 1011000,
+      "name": "克爾",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 100000101,
+          "street": "維多利亞",
+          "name": "弓箭手村武器店",
+          "label": "維多利亞 / 弓箭手村武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        }
+      ],
+      "locationText": "維多利亞 / 弓箭手村武器店"
+    },
+    {
+      "id": 1021000,
+      "name": "利伯",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 102000001,
+          "street": "維多利亞",
+          "name": "勇士之村武器店",
+          "label": "維多利亞 / 勇士之村武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Perion",
+          "markImage": "./assets/map_marks/Perion.png"
+        }
+      ],
+      "locationText": "維多利亞 / 勇士之村武器店"
+    },
+    {
+      "id": 1031000,
+      "name": "妖精 佛羅拉",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 101000001,
+          "street": "維多利亞",
+          "name": "魔法森林武器店",
+          "label": "維多利亞 / 魔法森林武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Ellinia",
+          "markImage": "./assets/map_marks/Ellinia.png"
+        }
+      ],
+      "locationText": "維多利亞 / 魔法森林武器店"
+    },
+    {
+      "id": 1091000,
+      "name": "摩根",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 120000200,
+          "street": "鯨魚號",
+          "name": "中央走廊 ",
+          "label": "鯨魚號 / 中央走廊 ",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap011",
+          "regionName": "鯨魚號",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "Nautilus",
+          "markImage": "./assets/map_marks/Nautilus.png"
+        }
+      ],
+      "locationText": "鯨魚號 / 中央走廊"
+    },
+    {
+      "id": 2012003,
+      "name": "妖精 娜麗",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 200000001,
+          "street": "",
+          "name": "未命名地圖 200000001",
+          "label": "未命名地圖 200000001",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 200000001"
+    },
+    {
+      "id": 2020001,
+      "name": "斯考特",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 211000101,
+          "street": "",
+          "name": "未命名地圖 211000101",
+          "label": "未命名地圖 211000101",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 211000101"
+    },
+    {
+      "id": 2041002,
+      "name": "海德",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 220000001,
+          "street": "",
+          "name": "未命名地圖 220000001",
+          "label": "未命名地圖 220000001",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 220000001"
+    },
+    {
+      "id": 2050000,
+      "name": "馬溫廷",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 221000200,
+          "street": "",
+          "name": "未命名地圖 221000200",
+          "label": "未命名地圖 221000200",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 221000200"
+    },
+    {
+      "id": 2060007,
+      "name": "卡利",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 230000002,
+          "street": "",
+          "name": "未命名地圖 230000002",
+          "label": "未命名地圖 230000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap040",
+          "regionName": "水世界",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 230000002"
+    },
+    {
+      "id": 2070002,
+      "name": "武器商人 墨鐵",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 222000000,
+          "street": "",
+          "name": "未命名地圖 222000000",
+          "label": "未命名地圖 222000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 222000000"
+    },
+    {
+      "id": 2090001,
+      "name": "空公",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 250000000,
+          "street": "",
+          "name": "未命名地圖 250000000",
+          "label": "未命名地圖 250000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 250000000"
+    },
+    {
+      "id": 2093000,
+      "name": "無憚",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 251000000,
+          "street": "",
+          "name": "未命名地圖 251000000",
+          "label": "未命名地圖 251000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 251000000"
+    },
+    {
+      "id": 2100002,
+      "name": "渣伊德",
+      "func": "武器商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 260000000,
+          "street": "",
+          "name": "未命名地圖 260000000",
+          "label": "未命名地圖 260000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 260000000"
+    },
+    {
+      "id": 1100001,
+      "name": "奇里游",
+      "func": "武器防具商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1200001,
+      "name": "噗諾暈",
+      "func": "武器防具商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 9000018,
+      "name": "馬蒂達",
+      "func": "網咖用武器出租",
+      "image": "",
+      "locations": [
+        {
+          "id": 102000000,
+          "street": "維多利亞",
+          "name": "勇士之村",
+          "label": "維多利亞 / 勇士之村",
+          "desc": "這是位在高原地區的劍士村落， 您可在此轉職成為劍士。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Perion",
+          "markImage": "./assets/map_marks/Perion.png"
+        },
+        {
+          "id": 103000000,
+          "street": "維多利亞",
+          "name": "墮落城市",
+          "label": "維多利亞 / 墮落城市",
+          "desc": "以美麗的黃昏著稱的盜賊之村！可在此轉職成為盜賊。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "KerningCity",
+          "markImage": "./assets/map_marks/KerningCity.png"
+        },
+        {
+          "id": 100000000,
+          "street": "維多利亞",
+          "name": "弓箭手村",
+          "label": "維多利亞 / 弓箭手村",
+          "desc": "位於廣闊草原裏的弓箭手村，在這裏可以轉職成為弓箭手。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        },
+        {
+          "id": 101000000,
+          "street": "維多利亞",
+          "name": "魔法森林",
+          "label": "維多利亞 / 魔法森林",
+          "desc": "四周都是緊密叢叢樹林的魔法森林，在這裏可以轉職魔法師職業。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Ellinia",
+          "markImage": "./assets/map_marks/Ellinia.png"
+        },
+        {
+          "id": 200000000,
+          "street": "",
+          "name": "未命名地圖 200000000",
+          "label": "未命名地圖 200000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 211000000,
+          "street": "",
+          "name": "未命名地圖 211000000",
+          "label": "未命名地圖 211000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 220000000,
+          "street": "",
+          "name": "未命名地圖 220000000",
+          "label": "未命名地圖 220000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 221000000,
+          "street": "",
+          "name": "未命名地圖 221000000",
+          "label": "未命名地圖 221000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 240000000,
+          "street": "",
+          "name": "未命名地圖 240000000",
+          "label": "未命名地圖 240000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 250000000,
+          "street": "",
+          "name": "未命名地圖 250000000",
+          "label": "未命名地圖 250000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 260000000,
+          "street": "",
+          "name": "未命名地圖 260000000",
+          "label": "未命名地圖 260000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        },
+        {
+          "id": 261000000,
+          "street": "",
+          "name": "未命名地圖 261000000",
+          "label": "未命名地圖 261000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "維多利亞 / 勇士之村、維多利亞 / 墮落城市、維多利亞 / 弓箭手村、維多利亞 / 魔法森林、未命名地圖 200000000、未命名地圖 211000000、未命名地圖 220000000、未命名地圖 221000000、未命名地圖 240000000、未命名地圖 250000000、未命名地圖 260000000、未命名地圖 261000000"
+    },
+    {
+      "id": 2002001,
+      "name": "魯迪",
+      "func": "聖誕樹飾品商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 209000000,
+          "street": "",
+          "name": "未命名地圖 209000000",
+          "label": "未命名地圖 209000000",
+          "desc": "",
+          "unnamed": true
+        }
+      ],
+      "locationText": "未命名地圖 209000000"
+    },
+    {
+      "id": 2012016,
+      "name": "售票員",
+      "func": "販售開往玩具城票券",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 21000,
+      "name": "潘",
+      "func": "防具商人",
+      "image": "./assets/npcs/21000.png",
+      "locations": [
+        {
+          "id": 60001,
+          "street": "楓之島",
+          "name": "楓之港防具店",
+          "label": "楓之島 / 楓之港防具店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap000",
+          "regionName": "楓之島",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "SouthPerry",
+          "markImage": "./assets/map_marks/SouthPerry.png"
+        }
+      ],
+      "locationText": "楓之島 / 楓之港防具店"
+    },
+    {
+      "id": 1001001,
+      "name": "娜塔莎",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 104000001,
+          "street": "維多利亞",
+          "name": "維多利亞防具店",
+          "label": "維多利亞 / 維多利亞防具店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Rith",
+          "markImage": "./assets/map_marks/Rith.png"
+        }
+      ],
+      "locationText": "維多利亞 / 維多利亞防具店"
+    },
+    {
+      "id": 1011001,
+      "name": "山姆",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 100000101,
+          "street": "維多利亞",
+          "name": "弓箭手村武器店",
+          "label": "維多利亞 / 弓箭手村武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        }
+      ],
+      "locationText": "維多利亞 / 弓箭手村武器店"
+    },
+    {
+      "id": 1021001,
+      "name": "海里",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 102000001,
+          "street": "維多利亞",
+          "name": "勇士之村武器店",
+          "label": "維多利亞 / 勇士之村武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Perion",
+          "markImage": "./assets/map_marks/Perion.png"
+        }
+      ],
+      "locationText": "維多利亞 / 勇士之村武器店"
+    },
+    {
+      "id": 1031001,
+      "name": "妖精 舍拉比",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 101000001,
+          "street": "維多利亞",
+          "name": "魔法森林武器店",
+          "label": "維多利亞 / 魔法森林武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Ellinia",
+          "markImage": "./assets/map_marks/Ellinia.png"
+        }
+      ],
+      "locationText": "維多利亞 / 魔法森林武器店"
+    },
+    {
+      "id": 1051001,
+      "name": "瑪帕",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 103000001,
+          "street": "維多利亞",
+          "name": "墮落城市武器店",
+          "label": "維多利亞 / 墮落城市武器店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "KerningCity",
+          "markImage": "./assets/map_marks/KerningCity.png"
+        }
+      ],
+      "locationText": "維多利亞 / 墮落城市武器店"
+    },
+    {
+      "id": 1091001,
+      "name": "羅德斯",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 120000200,
+          "street": "鯨魚號",
+          "name": "中央走廊 ",
+          "label": "鯨魚號 / 中央走廊 ",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap011",
+          "regionName": "鯨魚號",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "Nautilus",
+          "markImage": "./assets/map_marks/Nautilus.png"
+        }
+      ],
+      "locationText": "鯨魚號 / 中央走廊"
+    },
+    {
+      "id": 2012004,
+      "name": "妖精 諾麗",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 200000001,
+          "street": "",
+          "name": "未命名地圖 200000001",
+          "label": "未命名地圖 200000001",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 200000001"
+    },
+    {
+      "id": 2022000,
+      "name": "盧米",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 211000101,
+          "street": "",
+          "name": "未命名地圖 211000101",
+          "label": "未命名地圖 211000101",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 211000101"
+    },
+    {
+      "id": 2041003,
+      "name": "咪魯",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 220000001,
+          "street": "",
+          "name": "未命名地圖 220000001",
+          "label": "未命名地圖 220000001",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 220000001"
+    },
+    {
+      "id": 2050003,
+      "name": "史貝森",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 221000200,
+          "street": "",
+          "name": "未命名地圖 221000200",
+          "label": "未命名地圖 221000200",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 221000200"
+    },
+    {
+      "id": 2060003,
+      "name": "艾里亞斯",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 230000002,
+          "street": "",
+          "name": "未命名地圖 230000002",
+          "label": "未命名地圖 230000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap040",
+          "regionName": "水世界",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 230000002"
+    },
+    {
+      "id": 2070003,
+      "name": "防具商人 石鐵",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 222000000,
+          "street": "",
+          "name": "未命名地圖 222000000",
+          "label": "未命名地圖 222000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 222000000"
+    },
+    {
+      "id": 2080002,
+      "name": "馬克斯",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 240000000,
+          "street": "",
+          "name": "未命名地圖 240000000",
+          "label": "未命名地圖 240000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 240000000"
+    },
+    {
+      "id": 2090002,
+      "name": "比德元",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 250000000,
+          "street": "",
+          "name": "未命名地圖 250000000",
+          "label": "未命名地圖 250000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 250000000"
+    },
+    {
+      "id": 2093001,
+      "name": "蕭元期",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 251000000,
+          "street": "",
+          "name": "未命名地圖 251000000",
+          "label": "未命名地圖 251000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 251000000"
+    },
+    {
+      "id": 2100003,
+      "name": "雅斯敏",
+      "func": "防具商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 260000000,
+          "street": "",
+          "name": "未命名地圖 260000000",
+          "label": "未命名地圖 260000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 260000000"
+    },
+    {
+      "id": 1091002,
+      "name": "蓋利",
+      "func": "雜貨商",
+      "image": "",
+      "locations": [
+        {
+          "id": 120000200,
+          "street": "鯨魚號",
+          "name": "中央走廊 ",
+          "label": "鯨魚號 / 中央走廊 ",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap011",
+          "regionName": "鯨魚號",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "Nautilus",
+          "markImage": "./assets/map_marks/Nautilus.png"
+        }
+      ],
+      "locationText": "鯨魚號 / 中央走廊"
+    },
+    {
+      "id": 11100,
+      "name": "露茜",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 1010003,
+          "street": "彩虹之地",
+          "name": "楓葉村雜貨店",
+          "label": "彩虹之地 / 楓葉村雜貨店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap000",
+          "regionName": "楓之島",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "Amherst",
+          "markImage": "./assets/map_marks/Amherst.png"
+        }
+      ],
+      "locationText": "彩虹之地 / 楓葉村雜貨店"
+    },
+    {
+      "id": 1001100,
+      "name": "米娜",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 104000002,
+          "street": "維多利亞",
+          "name": "維多利亞港雜貨店",
+          "label": "維多利亞 / 維多利亞港雜貨店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Rith",
+          "markImage": "./assets/map_marks/Rith.png"
+        }
+      ],
+      "locationText": "維多利亞 / 維多利亞港雜貨店"
+    },
+    {
+      "id": 1011100,
+      "name": "露娜",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 100000102,
+          "street": "維多利亞",
+          "name": "弓箭手村雜貨店",
+          "label": "維多利亞 / 弓箭手村雜貨店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Henesys",
+          "markImage": "./assets/map_marks/Henesys.png"
+        }
+      ],
+      "locationText": "維多利亞 / 弓箭手村雜貨店"
+    },
+    {
+      "id": 1021100,
+      "name": "格里高利",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 102000002,
+          "street": "維多利亞",
+          "name": "勇士之村雜貨店",
+          "label": "維多利亞 / 勇士之村雜貨店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Perion",
+          "markImage": "./assets/map_marks/Perion.png"
+        }
+      ],
+      "locationText": "維多利亞 / 勇士之村雜貨店"
+    },
+    {
+      "id": 1031100,
+      "name": "妖精 蓮",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 101000002,
+          "street": "維多利亞",
+          "name": "魔法森林雜貨店",
+          "label": "維多利亞 / 魔法森林雜貨店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "Ellinia",
+          "markImage": "./assets/map_marks/Ellinia.png"
+        }
+      ],
+      "locationText": "維多利亞 / 魔法森林雜貨店"
+    },
+    {
+      "id": 1051002,
+      "name": "銘仁",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 103000002,
+          "street": "維多利亞",
+          "name": "墮落城市藥店",
+          "label": "維多利亞 / 墮落城市藥店",
+          "desc": "",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "維多利亞",
+          "areaDesc": "",
+          "regionSource": "manual",
+          "markKey": "KerningCity",
+          "markImage": "./assets/map_marks/KerningCity.png"
+        }
+      ],
+      "locationText": "維多利亞 / 墮落城市藥店"
+    },
+    {
+      "id": 1052116,
+      "name": "唐唐",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1055002,
+      "name": "太何",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1081000,
+      "name": "拜倫",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 110000000,
+          "street": "黃金海岸",
+          "name": "黃金海灘",
+          "label": "黃金海岸 / 黃金海灘",
+          "desc": "位在維多利亞島的熱帶島嶼，其中有廣無邊際的沙灘。",
+          "unnamed": false,
+          "regionKey": "WorldMap010",
+          "regionName": "維多利亞島",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap",
+          "markKey": "Rith",
+          "markImage": "./assets/map_marks/Rith.png"
+        }
+      ],
+      "locationText": "黃金海岸 / 黃金海灘"
+    },
+    {
+      "id": 1100002,
+      "name": "奇里營",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1200002,
+      "name": "噗里噗里",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1301000,
+      "name": "道勒",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 2012005,
+      "name": "妖精 易多",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 200000002,
+          "street": "",
+          "name": "未命名地圖 200000002",
+          "label": "未命名地圖 200000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 200000002"
+    },
+    {
+      "id": 2022001,
+      "name": "哈娜",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 211000102,
+          "street": "",
+          "name": "未命名地圖 211000102",
+          "label": "未命名地圖 211000102",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 211000102"
+    },
+    {
+      "id": 2040049,
+      "name": "糖果機",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 221021600,
+          "street": "",
+          "name": "未命名地圖 221021600",
+          "label": "未命名地圖 221021600",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "愛奧斯塔 21樓~40樓",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 221021600"
+    },
+    {
+      "id": 2040051,
+      "name": "托利",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 220050300,
+          "street": "",
+          "name": "未命名地圖 220050300",
+          "label": "未命名地圖 220050300",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap031",
+          "regionName": "鐘塔最下層",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 220050300"
+    },
+    {
+      "id": 2041006,
+      "name": "米斯級",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 220000002,
+          "street": "",
+          "name": "未命名地圖 220000002",
+          "label": "未命名地圖 220000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 220000002"
+    },
+    {
+      "id": 2051000,
+      "name": "派特",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 221000200,
+          "street": "",
+          "name": "未命名地圖 221000200",
+          "label": "未命名地圖 221000200",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 221000200"
+    },
+    {
+      "id": 2060004,
+      "name": "安納斯",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 230000002,
+          "street": "",
+          "name": "未命名地圖 230000002",
+          "label": "未命名地圖 230000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap040",
+          "regionName": "水世界",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 230000002"
+    },
+    {
+      "id": 2070001,
+      "name": "雜貨商人 芭德阿姨",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 222000000,
+          "street": "",
+          "name": "未命名地圖 222000000",
+          "label": "未命名地圖 222000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 222000000"
+    },
+    {
+      "id": 2080001,
+      "name": "史萊",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 240000002,
+          "street": "",
+          "name": "未命名地圖 240000002",
+          "label": "未命名地圖 240000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 240000002"
+    },
+    {
+      "id": 2090003,
+      "name": "達淑",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 250000002,
+          "street": "",
+          "name": "未命名地圖 250000002",
+          "label": "未命名地圖 250000002",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 250000002"
+    },
+    {
+      "id": 2093002,
+      "name": "藍明",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 251000000,
+          "street": "",
+          "name": "未命名地圖 251000000",
+          "label": "未命名地圖 251000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap060",
+          "regionName": "桃花仙境",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 251000000"
+    },
+    {
+      "id": 2100004,
+      "name": "沙吉達",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 260000000,
+          "street": "",
+          "name": "未命名地圖 260000000",
+          "label": "未命名地圖 260000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 260000000"
+    },
+    {
+      "id": 2110001,
+      "name": "哲利",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 261000000,
+          "street": "",
+          "name": "未命名地圖 261000000",
+          "label": "未命名地圖 261000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 261000000"
+    },
+    {
+      "id": 2130000,
+      "name": "瑪依侖",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 300000000,
+          "street": "",
+          "name": "未命名地圖 300000000",
+          "label": "未命名地圖 300000000",
+          "desc": "",
+          "unnamed": true
+        }
+      ],
+      "locationText": "未命名地圖 300000000"
+    },
+    {
+      "id": 9000081,
+      "name": "唐歡",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 9402506,
+      "name": "露娜",
+      "func": "雜貨商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    }
+  ],
+  "serviceOrCraftNpcs": [
+    {
+      "id": 2110000,
+      "name": "羅森",
+      "func": "倉庫商人",
+      "image": "",
+      "locations": [
+        {
+          "id": 261000000,
+          "street": "",
+          "name": "未命名地圖 261000000",
+          "label": "未命名地圖 261000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap070",
+          "regionName": "納希沙漠",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 261000000"
+    },
+    {
+      "id": 1002104,
+      "name": "特魯",
+      "func": "情報商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 1204005,
+      "name": "特魯",
+      "func": "情報商人",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 2080000,
+      "name": "摩斯",
+      "func": "武器合成術師",
+      "image": "./assets/npcs/2080000.png",
+      "locations": [
+        {
+          "id": 240000000,
+          "street": "",
+          "name": "未命名地圖 240000000",
+          "label": "未命名地圖 240000000",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap050",
+          "regionName": "米納爾森林",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 240000000"
+    },
+    {
+      "id": 2040022,
+      "name": "萊多",
+      "func": "武器製造者",
+      "image": "./assets/npcs/2040022.png",
+      "locations": [
+        {
+          "id": 220020600,
+          "street": "",
+          "name": "未命名地圖 220020600",
+          "label": "未命名地圖 220020600",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap030",
+          "regionName": "路德斯湖",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 220020600"
+    },
+    {
+      "id": 9000216,
+      "name": "布萊爾小姐",
+      "func": "現金商店小幫手",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    }
+  ],
+  "merchantNameCluesWithoutFunc": [
+    {
+      "id": 1092017,
+      "name": "無名商人",
+      "func": "",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    },
+    {
+      "id": 2012000,
+      "name": "售票員",
+      "func": "",
+      "image": "",
+      "locations": [
+        {
+          "id": 200000100,
+          "street": "",
+          "name": "未命名地圖 200000100",
+          "label": "未命名地圖 200000100",
+          "desc": "",
+          "unnamed": true,
+          "regionKey": "WorldMap020",
+          "regionName": "冰原雪域",
+          "areaName": "",
+          "areaDesc": "",
+          "regionSource": "worldMap"
+        }
+      ],
+      "locationText": "未命名地圖 200000100"
+    },
+    {
+      "id": 9001103,
+      "name": "商人月妙",
+      "func": "",
+      "image": "",
+      "locations": [],
+      "locationText": ""
+    }
+  ],
+  "vendorishScripts": [
+    {
+      "script": "get_ticket",
+      "description": "我想要搭乘飛行船。",
+      "npcs": [
+        {
+          "id": 2012021,
+          "name": "拉米奇",
+          "image": "",
+          "maps": [
+            {
+              "id": 200000131,
+              "street": "",
+              "name": "未命名地圖 200000131",
+              "label": "未命名地圖 200000131",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap020",
+              "regionName": "冰原雪域",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 200000131"
+        },
+        {
+          "id": 2082001,
+          "name": "塔咪",
+          "image": "",
+          "maps": [
+            {
+              "id": 240000110,
+              "street": "",
+              "name": "未命名地圖 240000110",
+              "label": "未命名地圖 240000110",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap050",
+              "regionName": "米納爾森林",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 240000110"
+        },
+        {
+          "id": 2012013,
+          "name": "剪票員",
+          "image": "",
+          "maps": [
+            {
+              "id": 200000121,
+              "street": "",
+              "name": "未命名地圖 200000121",
+              "label": "未命名地圖 200000121",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap020",
+              "regionName": "冰原雪域",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 200000121"
+        },
+        {
+          "id": 2012001,
+          "name": "售票員",
+          "image": "",
+          "maps": [
+            {
+              "id": 200000111,
+              "street": "",
+              "name": "未命名地圖 200000111",
+              "label": "未命名地圖 200000111",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap020",
+              "regionName": "冰原雪域",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 200000111"
+        },
+        {
+          "id": 2102000,
+          "name": "亞歲",
+          "image": "",
+          "maps": [
+            {
+              "id": 260000100,
+              "street": "",
+              "name": "未命名地圖 260000100",
+              "label": "未命名地圖 260000100",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap070",
+              "regionName": "納希沙漠",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 260000100"
+        },
+        {
+          "id": 1032008,
+          "name": "檢票員",
+          "image": "",
+          "maps": [
+            {
+              "id": 101000300,
+              "street": "",
+              "name": "未命名地圖 101000300",
+              "label": "未命名地圖 101000300",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap010",
+              "regionName": "維多利亞島",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 101000300"
+        },
+        {
+          "id": 2041000,
+          "name": "剪票員",
+          "image": "",
+          "maps": [
+            {
+              "id": 220000110,
+              "street": "",
+              "name": "未命名地圖 220000110",
+              "label": "未命名地圖 220000110",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap030",
+              "regionName": "路德斯湖",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 220000110"
+        },
+        {
+          "id": 2012025,
+          "name": "杰拉斯",
+          "image": "",
+          "maps": [
+            {
+              "id": 200000151,
+              "street": "",
+              "name": "未命名地圖 200000151",
+              "label": "未命名地圖 200000151",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap020",
+              "regionName": "冰原雪域",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 200000151"
+        }
+      ],
+      "npcCount": 8
+    },
+    {
+      "script": "sell_ticket",
+      "description": "我想要買飛行船的船票。",
+      "npcs": [
+        {
+          "id": 2082000,
+          "name": "紐曼",
+          "image": "",
+          "maps": [
+            {
+              "id": 240000100,
+              "street": "",
+              "name": "未命名地圖 240000100",
+              "label": "未命名地圖 240000100",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap050",
+              "regionName": "米納爾森林",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 240000100"
+        },
+        {
+          "id": 2102002,
+          "name": "西拉斯",
+          "image": "",
+          "maps": [
+            {
+              "id": 260000100,
+              "street": "",
+              "name": "未命名地圖 260000100",
+              "label": "未命名地圖 260000100",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap070",
+              "regionName": "納希沙漠",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 260000100"
+        },
+        {
+          "id": 2012000,
+          "name": "售票員",
+          "image": "",
+          "maps": [
+            {
+              "id": 200000100,
+              "street": "",
+              "name": "未命名地圖 200000100",
+              "label": "未命名地圖 200000100",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap020",
+              "regionName": "冰原雪域",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 200000100"
+        },
+        {
+          "id": 1032007,
+          "name": "售票員",
+          "image": "",
+          "maps": [
+            {
+              "id": 101000300,
+              "street": "",
+              "name": "未命名地圖 101000300",
+              "label": "未命名地圖 101000300",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap010",
+              "regionName": "維多利亞島",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 101000300"
+        },
+        {
+          "id": 2040000,
+          "name": "車掌",
+          "image": "",
+          "maps": [
+            {
+              "id": 220000100,
+              "street": "",
+              "name": "未命名地圖 220000100",
+              "label": "未命名地圖 220000100",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap030",
+              "regionName": "路德斯湖",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 220000100"
+        }
+      ],
+      "npcCount": 5
+    },
+    {
+      "script": "jane",
+      "description": "購買藥水",
+      "npcs": [
+        {
+          "id": 1002100,
+          "name": "珍",
+          "image": "./assets/npcs/1002100.png",
+          "maps": [
+            {
+              "id": 104000000,
+              "street": "維多利亞",
+              "name": "維多利亞港",
+              "label": "維多利亞 / 維多利亞港",
+              "desc": "這是位在維多利亞島的港口， 您可在此傳送到其它的都市。",
+              "unnamed": false,
+              "regionKey": "WorldMap010",
+              "regionName": "維多利亞島",
+              "areaName": "維多利亞",
+              "areaDesc": "",
+              "regionSource": "manual",
+              "markKey": "Rith",
+              "markImage": "./assets/map_marks/Rith.png"
+            }
+          ],
+          "locationText": "維多利亞 / 維多利亞港"
+        }
+      ],
+      "npcCount": 1
+    },
+    {
+      "script": "oldBook1",
+      "description": "想要購買珍貴物品。",
+      "npcs": [
+        {
+          "id": 2020005,
+          "name": "亞凱斯特",
+          "image": "./assets/npcs/2020005.png",
+          "maps": [
+            {
+              "id": 211000100,
+              "street": "",
+              "name": "未命名地圖 211000100",
+              "label": "未命名地圖 211000100",
+              "desc": "",
+              "unnamed": true,
+              "regionKey": "WorldMap020",
+              "regionName": "冰原雪域",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap"
+            }
+          ],
+          "locationText": "未命名地圖 211000100"
+        }
+      ],
+      "npcCount": 1
+    },
+    {
+      "script": "subway_ticket",
+      "description": "想要進入地下鐵。",
+      "npcs": [
+        {
+          "id": 1052006,
+          "name": "地鐵站 服務員",
+          "image": "./assets/npcs/1052006.png",
+          "maps": [
+            {
+              "id": 103000100,
+              "street": "墮落城市地鐵",
+              "name": "地鐵售票處",
+              "label": "墮落城市地鐵 / 地鐵售票處",
+              "desc": "",
+              "unnamed": false,
+              "regionKey": "WorldMap010",
+              "regionName": "維多利亞島",
+              "areaName": "",
+              "areaDesc": "",
+              "regionSource": "worldMap",
+              "markKey": "KerningCity",
+              "markImage": "./assets/map_marks/KerningCity.png"
+            }
+          ],
+          "locationText": "墮落城市地鐵 / 地鐵售票處"
+        }
+      ],
+      "npcCount": 1
+    },
+    {
+      "script": "pio",
+      "description": "這村莊裡有拿些商店呢？",
+      "npcs": [],
+      "npcCount": 0
+    }
+  ]
+}
