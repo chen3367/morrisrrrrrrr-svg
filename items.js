@@ -190,7 +190,7 @@ const EQUIP_FIELD_GROUPS = [
       ["incJump", "跳躍", formatSigned],
       ["incCraft", "熟練", formatSigned],
       ["knockback", "擊退"],
-      ["attackSpeed", "攻速"],
+      ["attackSpeed", "攻速", formatAttackSpeed],
     ],
   },
   {
@@ -234,6 +234,22 @@ function formatMeso(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return escapeHtml(value);
   return `${number.toLocaleString()} 楓幣`;
+}
+
+function formatAttackSpeed(value) {
+  const number = Number(value);
+  const labels = {
+    9: "比較慢",
+    8: "慢",
+    7: "慢",
+    6: "普通",
+    5: "快",
+    4: "快",
+    3: "更快",
+    2: "頂速",
+  };
+  if (!Number.isFinite(number)) return escapeHtml(value);
+  return labels[number] ? `${labels[number]}(${number})` : number.toLocaleString();
 }
 
 const EQUIP_SLOT_LABELS = {
