@@ -956,6 +956,38 @@ h3 {
   gap: 9px;
   padding: 0;
 }
+.mesoDropCard {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 62px;
+  padding: 10px 11px;
+  border: 1px solid rgba(214, 163, 62, 0.45);
+  border-radius: 8px;
+  background: rgba(214, 163, 62, 0.11);
+}
+.mesoIcon {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(214, 163, 62, 0.55);
+  border-radius: 8px;
+  background: rgba(214, 163, 62, 0.18);
+  color: #f5c45b;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+.mesoText strong {
+  display: block;
+  color: var(--text-strong);
+}
+.mesoText span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
 .itemCard {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);

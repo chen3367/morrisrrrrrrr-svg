@@ -197,6 +197,7 @@ function filteredMonsters() {
       norm(monster.id).includes(q) ||
       norm(monster.name).includes(q) ||
       norm(elementalText(monster)).includes(q) ||
+      norm(mesoSearchText(monster)).includes(q) ||
       monster.continents.some(continent => norm(continent).includes(q)) ||
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
       (monster.questRequirements || []).some(row => norm(row.questId).includes(q) || norm(row.questName).includes(q) || norm(row.category).includes(q) || norm(row.parent).includes(q)) ||
@@ -220,6 +221,21 @@ function isUnnamedItem(item) {
 function visibleDrops(monster) {
   const drops = monster.drops || [];
   return state.showUnnamedItems ? drops : drops.filter(item => !isUnnamedItem(item));
+}
+
+function mesoSearchText(monster) {
+  const meso = monster.mesoDrop;
+  if (!meso) return "";
+  return [
+    "楓幣",
+    "金幣",
+    meso.min,
+    meso.max,
+    meso.totalMin,
+    meso.totalMax,
+    meso.piles,
+    meso.sourceLabel,
+  ].filter(value => value !== null && value !== undefined && value !== "").join(" ");
 }
 
 function hiddenUnnamedCount(monster) {
@@ -343,6 +359,8 @@ function renderDetail() {
     return;
   }
   const drops = visibleDrops(monster);
+  const hasMesoDrop = Boolean(monster.mesoDrop);
+  const dropCount = drops.length + (hasMesoDrop ? 1 : 0);
   const hiddenUnnamed = state.showUnnamedItems ? 0 : hiddenUnnamedCount(monster);
   els.detail.innerHTML = `
     <section class="monsterHero">
@@ -352,7 +370,7 @@ function renderDetail() {
         <p>${heroMeta(monster)}</p>
       </div>
       <div class="heroCounters">
-        <div class="heroCounter"><strong>${drops.length.toLocaleString()}</strong><span>掉落物</span></div>
+        <div class="heroCounter"><strong>${dropCount.toLocaleString()}</strong><span>掉落</span></div>
         <div class="heroCounter"><strong>${monster.maps.length.toLocaleString()}</strong><span>地圖</span></div>
       </div>
     </section>
@@ -362,10 +380,11 @@ function renderDetail() {
     ${renderQuestRequirements(monster)}
     <section class="sectionBlock">
       <div class="sectionTitle">
-        <h3>掉落道具</h3>
-        <span>${drops.length.toLocaleString()} 項${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
+        <h3>掉落</h3>
+        <span>${drops.length.toLocaleString()} 項道具${hasMesoDrop ? ` · 楓幣 ${formatMesoRange(monster.mesoDrop)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
       </div>
       <div class="dropGroups">
+        ${renderMesoDrop(monster)}
         ${renderDropGroups(drops)}
       </div>
     </section>
@@ -507,6 +526,33 @@ function renderQuestRequirements(monster) {
             <small>狩獵 ${formatNumber(row.count)} 隻</small>
           </a>
         `).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderMesoDrop(monster) {
+  const meso = monster.mesoDrop;
+  if (!meso) return "";
+  const piles = Number(meso.piles || 0);
+  const source = meso.sourceLabel || "推估";
+  const totalRange = formatMesoRange(meso);
+  const perPileRange = formatMesoAmountRange(meso.min, meso.max);
+  const meta = piles > 1
+    ? `${piles.toLocaleString()} 包 · 每包 ${perPileRange}`
+    : (piles === 1 ? "單包掉落" : "不掉落楓幣");
+  return `
+    <section class="dropGroup mesoDropGroup">
+      <div class="dropGroupTitle">
+        <strong>楓幣</strong>
+        <span>${escapeHtml(source)}</span>
+      </div>
+      <div class="mesoDropCard">
+        <div class="mesoIcon">楓</div>
+        <div class="mesoText">
+          <strong>${escapeHtml(totalRange)}</strong>
+          <span>${escapeHtml(meta)}</span>
+        </div>
       </div>
     </section>
   `;
