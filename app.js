@@ -453,8 +453,8 @@ function mapCard(map) {
   if (state.showIds) meta.push(map.id);
   if (state.showIds && map.regionKey) meta.push(map.regionKey);
   return `
-    <article class="mapCard ${map.regionImage ? "withRegionImage" : ""}">
-      ${map.regionImage ? `<img class="mapRegionImage" src="${escapeHtml(map.regionImage)}" alt="${escapeHtml(map.regionName || map.street || "地區")}" loading="lazy">` : ""}
+    <article class="mapCard ${map.markImage ? "withMapMark" : ""}">
+      ${map.markImage ? `<img class="mapMarkImage" src="${escapeHtml(map.markImage)}" alt="${escapeHtml(map.markKey || map.regionName || map.street || "地圖圖示")}" loading="lazy">` : ""}
       <div>
         <strong>${escapeHtml(map.name)}</strong>
         <span>${meta.map(escapeHtml).join(" · ")}</span>
