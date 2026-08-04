@@ -258,6 +258,18 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
 }
 
+function formatMesoAmountRange(min, max) {
+  const minValue = Number(min);
+  const maxValue = Number(max);
+  if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return "未知";
+  if (minValue === maxValue) return `${minValue.toLocaleString()} 楓幣`;
+  return `${minValue.toLocaleString()} ~ ${maxValue.toLocaleString()} 楓幣`;
+}
+
+function formatMesoRange(meso) {
+  return formatMesoAmountRange(meso?.totalMin, meso?.totalMax);
+}
+
 function yesNo(value) {
   return Number(value) ? "是" : "否";
 }
