@@ -288,6 +288,9 @@ select {
 .skillLayout {
   grid-template-columns: 410px minmax(0, 1fr);
 }
+.accuracyLayout {
+  grid-template-columns: 380px minmax(0, 1fr);
+}
 .monsterList {
   overflow: auto;
   border: 1px solid var(--line);
@@ -526,6 +529,175 @@ h3 {
 .sectionTitle span {
   color: var(--muted);
   font-size: 13px;
+}
+.sectionTitle a {
+  color: var(--blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+.sectionTitle a:hover {
+  text-decoration: underline;
+}
+.accuracyPanel {
+  padding: 0;
+}
+.accuracyPanel summary {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 58px;
+  padding: 12px 14px;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+.accuracyPanel summary::-webkit-details-marker {
+  display: none;
+}
+.accuracyPanel summary::before {
+  content: "▸";
+  grid-row: 1;
+  grid-column: 1;
+  width: 18px;
+  color: var(--accent);
+  font-weight: 900;
+}
+.accuracyPanel[open] summary::before {
+  content: "▾";
+}
+.accuracyPanel summary > span {
+  display: grid;
+  grid-column: 2;
+  gap: 3px;
+}
+.accuracyPanel summary strong {
+  font-size: 18px;
+}
+.accuracyPanel summary em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+}
+.accuracyPanel summary small {
+  grid-column: 3;
+  justify-self: end;
+  border: 1px solid var(--item-glyph-border);
+  border-radius: 8px;
+  background: var(--item-glyph-bg);
+  color: var(--item-glyph-text);
+  padding: 5px 8px;
+  font-weight: 900;
+}
+.accuracyBody {
+  border-top: 1px dashed var(--dash-line);
+}
+.accuracyForm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+.fieldControl {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+.fieldControl > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.fieldControl.isHidden {
+  display: none;
+}
+.segmentedControl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 42px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--control-bg);
+}
+.segmentedControl button {
+  min-width: 0;
+  border: 0;
+  border-right: 1px solid var(--control-border);
+  background: transparent;
+  color: var(--control-text);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.segmentedControl button:last-child {
+  border-right: 0;
+}
+.segmentedControl button:hover {
+  background: var(--control-hover);
+}
+.segmentedControl button.active {
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.accuracyResults .statCell.resultGood,
+.heroCounter.resultGood {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.accuracyResults .statCell.resultGood strong,
+.heroCounter.resultGood strong {
+  color: var(--active-text);
+}
+.accuracyResults .statCell.resultWarn,
+.heroCounter.resultWarn {
+  border-color: rgba(185, 123, 37, 0.7);
+  background: rgba(185, 123, 37, 0.12);
+}
+.accuracyResults .statCell.resultBad,
+.heroCounter.resultBad {
+  border-color: var(--weak-border);
+  background: var(--weak-bg);
+}
+.accuracyResults .statCell.resultBad strong,
+.heroCounter.resultBad strong {
+  color: var(--weak-text);
+}
+.formulaCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  padding: 0 14px 10px;
+}
+.formulaCard {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  border: 1px solid var(--stat-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 10px 11px;
+}
+.formulaCard strong {
+  color: var(--text-strong);
+}
+.formulaCard p {
+  margin: 0;
+  color: var(--plain-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.formulaCard code {
+  display: block;
+  overflow-wrap: anywhere;
+  border: 1px dashed var(--dash-line);
+  border-radius: 6px;
+  background: var(--control-soft);
+  color: var(--plain-text);
+  padding: 6px 7px;
+  font-size: 12px;
+  line-height: 1.35;
 }
 .statsGrid {
   display: grid;
@@ -1058,7 +1230,7 @@ h3 {
     grid-template-columns: 1fr;
     height: auto;
   }
-  .itemLayout, .skillLayout {
+  .itemLayout, .skillLayout, .accuracyLayout {
     grid-template-columns: 1fr;
   }
   .monsterList {
@@ -1073,6 +1245,16 @@ h3 {
   }
   .heroCounter {
     text-align: left;
+  }
+  .accuracyPanel summary {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+  .accuracyPanel summary small {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .formulaCards {
+    grid-template-columns: 1fr;
   }
   .monsterSourceRow, .sourceQuestRow, .craftSourceRow {
     grid-template-columns: 42px minmax(0, 1fr);

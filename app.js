@@ -47,6 +47,11 @@ const state = {
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialMonsterId(),
+  accuracyOpen: cookieBool("ms_accuracy_open"),
+  attackType: cookieValue("ms_accuracy_attack_type", "physical") === "magical" ? "magical" : "physical",
+  characterLevel: positiveNumber(cookieValue("ms_accuracy_level", "50"), 50),
+  mainStat: nonNegativeNumber(cookieValue("ms_accuracy_main", "100"), 100),
+  luk: nonNegativeNumber(cookieValue("ms_accuracy_luk", "4"), 4),
 };
 
 const els = {
@@ -186,6 +191,16 @@ function norm(value) {
   return String(value || "").toLowerCase().trim();
 }
 
+function positiveNumber(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function nonNegativeNumber(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : fallback;
+}
+
 function filteredMonsters() {
   const q = norm(state.query);
   return db.monsters.filter(monster => {
@@ -258,6 +273,25 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
 }
 
+function formatKnownNumber(value) {
+  if (value === null || value === undefined || value === "") return "未知";
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
+}
+
+function formatDecimal(value, digits = 2) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "未知";
+  const fixed = Math.abs(number) >= 100 ? number.toFixed(0) : number.toFixed(digits);
+  return fixed.includes(".") ? fixed.replace(/\.?0+$/, "") : fixed;
+}
+
+function formatPercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "未知";
+  return `${formatDecimal(number, 2)}%`;
+}
+
 function formatMesoAmountRange(min, max) {
   const minValue = Number(min);
   const maxValue = Number(max);
@@ -278,6 +312,18 @@ function hasOwn(object, key) {
   return Object.prototype.hasOwnProperty.call(object || {}, key);
 }
 
+function monsterLevel(monster) {
+  const fromRoot = Number(monster?.level);
+  if (Number.isFinite(fromRoot)) return fromRoot;
+  const fromStats = Number(monster?.stats?.level);
+  return Number.isFinite(fromStats) ? fromStats : null;
+}
+
+function monsterAvoid(monster) {
+  const value = Number(monster?.stats?.eva);
+  return Number.isFinite(value) ? value : null;
+}
+
 function compareMonsters(a, b) {
   const levelDiff = levelRank(a) - levelRank(b);
   if (levelDiff) return levelDiff;
@@ -287,7 +333,7 @@ function compareMonsters(a, b) {
 }
 
 function levelRank(monster) {
-  const level = Number(monster.level);
+  const level = monsterLevel(monster);
   return Number.isFinite(level) ? level : 9999;
 }
 
@@ -388,6 +434,7 @@ function renderDetail() {
     </section>
     ${renderStats(monster)}
     ${renderElements(monster)}
+    ${renderAccuracyCalculator(monster)}
     ${renderMaps(monster)}
     ${renderQuestRequirements(monster)}
     <section class="sectionBlock">
@@ -401,6 +448,202 @@ function renderDetail() {
       </div>
     </section>
   `;
+  bindAccuracyControls(monster);
+}
+
+function renderAccuracyCalculator(monster) {
+  const result = calculateAccuracy(monster);
+  const preview = result.available
+    ? `目前 ${formatPercent(result.ratio)} · 100% 所需 ${formatDecimal(result.acc100, 2)}`
+    : "缺少怪物等級或迴避資料";
+  return `
+    <section class="sectionBlock">
+      <details class="accuracyPanel" ${state.accuracyOpen ? "open" : ""}>
+        <summary>
+          <span>
+            <strong>命中率計算機</strong>
+            <em>依目前選取怪物計算</em>
+          </span>
+          <small id="accuracySummary">${escapeHtml(preview)}</small>
+        </summary>
+        ${result.available ? `
+          <div class="accuracyBody">
+            <div class="accuracyForm">
+              <label class="fieldControl">
+                <span>角色等級</span>
+                <input id="accuracyLevel" type="number" min="1" max="250" step="1" value="${escapeHtml(state.characterLevel)}" />
+              </label>
+              <div class="fieldControl">
+                <span>攻擊類型</span>
+                <div class="segmentedControl" role="group" aria-label="攻擊類型">
+                  <button id="accuracyPhysical" type="button" class="${state.attackType === "physical" ? "active" : ""}" aria-pressed="${state.attackType === "physical"}">物理攻擊</button>
+                  <button id="accuracyMagical" type="button" class="${state.attackType === "magical" ? "active" : ""}" aria-pressed="${state.attackType === "magical"}">魔法攻擊</button>
+                </div>
+              </div>
+              <label class="fieldControl">
+                <span id="accuracyMainLabel">${state.attackType === "magical" ? "智力 INT" : "面板命中 ACC"}</span>
+                <input id="accuracyMain" type="number" min="0" max="9999" step="1" value="${escapeHtml(state.mainStat)}" />
+              </label>
+              <label class="fieldControl ${state.attackType === "magical" ? "" : "isHidden"}" id="accuracyLukField">
+                <span>幸運 LUK</span>
+                <input id="accuracyLuk" type="number" min="0" max="9999" step="1" value="${escapeHtml(state.luk)}" />
+              </label>
+            </div>
+            <div class="statsGrid accuracyResults">
+              <div class="statCell ${resultClass(result)}" id="accuracyHitRateCell"><span>命中率</span><strong id="accuracyHitRate">${formatPercent(result.ratio)}</strong></div>
+              <div class="statCell"><span id="accuracyCurrentLabel">${state.attackType === "magical" ? "魔法命中判定" : "目前命中"}</span><strong id="accuracyCurrent">${formatDecimal(result.current, 2)}</strong></div>
+              <div class="statCell"><span>100% 所需</span><strong id="accuracyFull">${formatDecimal(result.acc100, 2)}</strong></div>
+              <div class="statCell"><span>1% 所需</span><strong id="accuracyMin">${formatDecimal(result.acc1, 2)}</strong></div>
+              <div class="statCell"><span>還差</span><strong id="accuracyGap">${formatDecimal(result.gap, 2)}</strong></div>
+              <div class="statCell"><span>等級差</span><strong id="accuracyDiff">${formatNumber(result.diff)}</strong></div>
+            </div>
+            <div class="formulaCards">
+              ${renderAccuracyFormulaCard()}
+            </div>
+          </div>
+        ` : `<div class="empty">這隻怪物缺少等級或迴避資料，無法計算命中率。</div>`}
+      </details>
+    </section>
+  `;
+}
+
+function renderAccuracyFormulaCard() {
+  if (state.attackType === "magical") {
+    return `
+      <article class="formulaCard">
+        <strong>魔法命中率計算公式</strong>
+        <p>法師技能攻擊怪物時不使用物理命中公式，而是採用特殊魔法命中判定。</p>
+        <code>魔法命中 = floor(智力 ÷ 10) + floor(幸運 ÷ 10)</code>
+        <code>100% 所需 = floor((怪物迴避 + 1) × (1 + 0.04 × 等級差))</code>
+        <code>1% 所需 = round(0.41 × 100% 所需)</code>
+        <p>上述魔法命中輸入值都會無條件向下取整。</p>
+      </article>
+    `;
+  }
+  return `
+    <article class="formulaCard">
+      <strong>物理命中率計算公式</strong>
+      <p>使用角色面板命中、怪物迴避，以及等級差計算。等級差低於 0 時視為 0。</p>
+      <code>100% 所需 = (55.2 + 2.15 × 等級差) × 怪物迴避 ÷ 15</code>
+      <p>不含裝備提供的命中值。</p>
+      <code>初心者 / 劍士 / 法師 = floor(敏捷 × 0.8 + 幸運 × 0.5)</code>
+      <code>盜賊 / 弓箭手 / 海盜 = floor(敏捷 × 0.6 + 幸運 × 0.3)</code>
+      <p>上述基礎命中值會無條件向下取整。</p>
+    </article>
+  `;
+}
+
+function calculateAccuracy(monster) {
+  const monLevel = monsterLevel(monster);
+  const monAvoid = monsterAvoid(monster);
+  if (!Number.isFinite(monLevel) || !Number.isFinite(monAvoid)) {
+    return { available: false, ratio: null, acc100: null };
+  }
+  const charLevel = positiveNumber(state.characterLevel, 1);
+  const mainStat = nonNegativeNumber(state.mainStat, 0);
+  const luk = nonNegativeNumber(state.luk, 0);
+  const diff = Math.max(0, monLevel - charLevel);
+  let current = mainStat;
+  let acc100 = 0;
+  let acc1 = 0;
+  let ratio = 100;
+
+  if (monAvoid > 0 && state.attackType === "magical") {
+    current = Math.floor(mainStat / 10) + Math.floor(luk / 10);
+    acc100 = Math.floor((monAvoid + 1.0) * (1.0 + (0.04 * diff)));
+    acc1 = Math.round(0.41 * acc100);
+    const denominator = acc100 - acc1 + 1;
+    const accPart = denominator <= 0 ? 1 : Math.min(1, (current - acc1 + 1) / denominator);
+    ratio = ((-0.7011618132 * Math.pow(accPart, 2)) + (1.702139835 * accPart)) * 100;
+  } else if (monAvoid > 0) {
+    acc100 = (55.2 + 2.15 * diff) * (monAvoid / 15.0);
+    acc1 = acc100 * 0.5 + 1;
+    ratio = 100 * ((current - (acc100 * 0.5)) / (acc100 * 0.5));
+  }
+
+  ratio = Math.max(0, Math.min(100, ratio));
+  return {
+    available: true,
+    monLevel,
+    monAvoid,
+    charLevel,
+    diff,
+    current,
+    acc100,
+    acc1,
+    ratio,
+    gap: Math.max(0, acc100 - current),
+  };
+}
+
+function resultClass(result) {
+  if (!result.available) return "";
+  if (result.ratio >= 100) return "resultGood";
+  if (result.ratio >= 70) return "resultWarn";
+  return "resultBad";
+}
+
+function bindAccuracyControls(monster) {
+  const details = document.querySelector(".accuracyPanel");
+  details?.addEventListener("toggle", event => {
+    state.accuracyOpen = event.currentTarget.open;
+    saveBool("ms_accuracy_open", state.accuracyOpen);
+  });
+
+  const levelInput = document.getElementById("accuracyLevel");
+  const mainInput = document.getElementById("accuracyMain");
+  const lukInput = document.getElementById("accuracyLuk");
+  const physicalButton = document.getElementById("accuracyPhysical");
+  const magicalButton = document.getElementById("accuracyMagical");
+
+  levelInput?.addEventListener("input", event => {
+    state.characterLevel = positiveNumber(event.target.value, state.characterLevel);
+    writeCookie("ms_accuracy_level", state.characterLevel);
+    updateAccuracyPanel(monster);
+  });
+  mainInput?.addEventListener("input", event => {
+    state.mainStat = nonNegativeNumber(event.target.value, state.mainStat);
+    writeCookie("ms_accuracy_main", state.mainStat);
+    updateAccuracyPanel(monster);
+  });
+  lukInput?.addEventListener("input", event => {
+    state.luk = nonNegativeNumber(event.target.value, state.luk);
+    writeCookie("ms_accuracy_luk", state.luk);
+    updateAccuracyPanel(monster);
+  });
+  physicalButton?.addEventListener("click", () => {
+    if (state.attackType === "physical") return;
+    state.attackType = "physical";
+    writeCookie("ms_accuracy_attack_type", state.attackType);
+    renderDetail();
+  });
+  magicalButton?.addEventListener("click", () => {
+    if (state.attackType === "magical") return;
+    state.attackType = "magical";
+    writeCookie("ms_accuracy_attack_type", state.attackType);
+    renderDetail();
+  });
+}
+
+function updateAccuracyPanel(monster) {
+  const result = calculateAccuracy(monster);
+  if (!result.available) return;
+  const hitClass = resultClass(result);
+  const hitCell = document.getElementById("accuracyHitRateCell");
+  if (hitCell) hitCell.className = `statCell ${hitClass}`;
+  setText("accuracySummary", `目前 ${formatPercent(result.ratio)} · 100% 所需 ${formatDecimal(result.acc100, 2)}`);
+  setText("accuracyHitRate", formatPercent(result.ratio));
+  setText("accuracyCurrent", formatDecimal(result.current, 2));
+  setText("accuracyFull", formatDecimal(result.acc100, 2));
+  setText("accuracyMin", formatDecimal(result.acc1, 2));
+  setText("accuracyGap", formatDecimal(result.gap, 2));
+  setText("accuracyDiff", formatNumber(result.diff));
+  setText("accuracyCurrentLabel", state.attackType === "magical" ? "魔法命中判定" : "目前命中");
+}
+
+function setText(id, text) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = text;
 }
 
 function elementalText(monster) {
