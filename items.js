@@ -740,7 +740,13 @@ function craftNpcText(row) {
     return `${npc.name}${location}`;
   });
   if (names.length) return names.join("、");
-  return "資料表未標注固定 NPC";
+  return "ItemMake 未標注固定 NPC";
+}
+
+function craftNpcImage(row) {
+  const npc = (row.npcs || []).find(candidate => candidate.image) || (row.npcs || [])[0] || null;
+  const name = npc?.name || row.groupLabel || "製作";
+  return assetImage(npc?.image, name, String(name).slice(0, 1) || "製", "sourceMonsterImage");
 }
 
 function requiredQuestText(row) {
@@ -759,16 +765,17 @@ function randomOutputText(row) {
 
 function renderCraftSources(item) {
   const rows = sourceRows(item).crafts;
-  return sourceBlock("合成/製作配方", rows, row => {
+  return sourceBlock("製作技能配方", rows, row => {
     const requirements = row.requirements || [];
     const questText = requiredQuestText(row);
     const outputText = randomOutputText(row);
     return `
       <article class="sourceRow craftSourceRow">
+        ${craftNpcImage(row)}
         <div>
           <strong>${escapeHtml(row.groupLabel || "合成配方")}</strong>
           <span>${escapeHtml(recipeMeta(row))}</span>
-          <p>NPC：${escapeHtml(craftNpcText(row))}</p>
+          <p>NPC 候選：${escapeHtml(craftNpcText(row))}</p>
           ${row.materials?.length ? `<p>材料</p>${recipeChipGroup(row.materials)}` : ""}
           ${requirements.length ? `<p>附加需求</p>${recipeChipGroup(requirements)}` : ""}
           ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
@@ -798,7 +805,7 @@ function renderQuestRequirementSources(item) {
 
 function renderCraftRequirementSources(item) {
   const rows = craftRequirementRows(item);
-  return sourceBlock("被用於合成", rows, row => {
+  return sourceBlock("被用於製作技能", rows, row => {
     const output = row.primaryOutput || row.output || {};
     const ingredient = row.ingredient || {};
     const name = String(output.name || `道具 ${output.id || ""}`);
@@ -810,7 +817,7 @@ function renderCraftRequirementSources(item) {
         <div>
           <strong>${escapeHtml(name)}</strong>
           <span>${escapeHtml(row.groupLabel || "合成配方")}${recipeMeta(row) ? ` · ${escapeHtml(recipeMeta(row))}` : ""}</span>
-          <p>NPC：${escapeHtml(craftNpcText(row))}</p>
+          <p>NPC 候選：${escapeHtml(craftNpcText(row))}</p>
           ${row.materials?.length ? `<p>完整材料</p>${recipeChipGroup(row.materials)}` : ""}
         </div>
         <small>${escapeHtml(requirementText.join(" · "))}</small>

@@ -684,7 +684,7 @@ h3 {
   border-radius: 8px;
   background: var(--card-bg);
 }
-.monsterSourceRow, .sourceQuestRow {
+.monsterSourceRow, .sourceQuestRow, .craftSourceRow {
   grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
 }
@@ -1074,10 +1074,10 @@ h3 {
   .heroCounter {
     text-align: left;
   }
-  .monsterSourceRow, .sourceQuestRow {
+  .monsterSourceRow, .sourceQuestRow, .craftSourceRow {
     grid-template-columns: 42px minmax(0, 1fr);
   }
-  .monsterSourceRow small, .sourceQuestRow small {
+  .monsterSourceRow small, .sourceQuestRow small, .craftSourceRow small {
     grid-column: 2;
     justify-self: start;
   }
