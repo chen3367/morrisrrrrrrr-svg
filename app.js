@@ -297,6 +297,33 @@ function assetImage(src, alt, fallback, className) {
   return `<div class="${className}">${escapeHtml(fallback || "?")}</div>`;
 }
 
+const MESO_ICON_PATHS = {
+  copper: "./assets/meso/copper.png",
+  gold: "./assets/meso/gold.png",
+  bill: "./assets/meso/bill.png",
+  bag: "./assets/meso/bag.png",
+};
+
+function mesoTierForAmount(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return "";
+  if (amount >= 1000) return "bag";
+  if (amount >= 100) return "bill";
+  if (amount >= 50) return "gold";
+  return "copper";
+}
+
+function mesoTierForRange(min, max) {
+  const maxValue = Number(max);
+  const minValue = Number(min);
+  return mesoTierForAmount(Number.isFinite(maxValue) ? maxValue : minValue);
+}
+
+function mesoIconHtml(tier, className = "mesoInlineIcon") {
+  const src = MESO_ICON_PATHS[tier] || MESO_ICON_PATHS.copper;
+  return `<img class="${className}" src="${src}" alt="楓幣" loading="lazy" />`;
+}
+
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
@@ -875,6 +902,7 @@ function renderMesoDrop(monster) {
   const source = meso.sourceLabel || "推估";
   const totalRange = formatMesoRange(meso);
   const perPileRange = formatMesoAmountRange(meso.min, meso.max);
+  const tier = mesoTierForRange(meso.totalMin ?? meso.min, meso.totalMax ?? meso.max);
   const meta = piles > 1
     ? `${piles.toLocaleString()} 包 · 每包 ${perPileRange}`
     : (piles === 1 ? "單包掉落" : "不掉落楓幣");
@@ -885,7 +913,7 @@ function renderMesoDrop(monster) {
         <span>${escapeHtml(source)}</span>
       </div>
       <div class="mesoDropCard">
-        <div class="mesoIcon">楓</div>
+        <div class="mesoIcon">${tier ? mesoIconHtml(tier, "mesoDropIcon") : "楓"}</div>
         <div class="mesoText">
           <strong>${escapeHtml(totalRange)}</strong>
           <span>${escapeHtml(meta)}</span>

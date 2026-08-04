@@ -194,7 +194,7 @@ const EQUIP_FIELD_GROUPS = [
     title: "其他數值",
     fields: [
       ["tuc", "可升級次數"],
-      ["price", "商店價格", formatMeso],
+      ["price", "賣店價格", formatMeso],
       ["islot", "裝備欄位", formatEquipSlot],
       ["vslot", "外觀欄位", formatEquipSlot],
     ],
@@ -216,6 +216,33 @@ function assetImage(src, alt, fallback, className) {
   return `<div class="${className}">${escapeHtml(fallback)}</div>`;
 }
 
+const MESO_ICON_PATHS = {
+  copper: "./assets/meso/copper.png",
+  gold: "./assets/meso/gold.png",
+  bill: "./assets/meso/bill.png",
+  bag: "./assets/meso/bag.png",
+};
+
+function mesoTierForAmount(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return "";
+  if (amount >= 1000) return "bag";
+  if (amount >= 100) return "bill";
+  if (amount >= 50) return "gold";
+  return "copper";
+}
+
+function mesoTierForRange(min, max) {
+  const maxValue = Number(max);
+  const minValue = Number(min);
+  return mesoTierForAmount(Number.isFinite(maxValue) ? maxValue : minValue);
+}
+
+function mesoIconHtml(tier, className = "mesoInlineIcon") {
+  const src = MESO_ICON_PATHS[tier] || MESO_ICON_PATHS.copper;
+  return `<img class="${className}" src="${src}" alt="楓幣" loading="lazy" />`;
+}
+
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
@@ -231,6 +258,12 @@ function formatMeso(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return escapeHtml(value);
   return `${number.toLocaleString()} 楓幣`;
+}
+
+function mesoValueHtml(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return escapeHtml(value);
+  return `<span class="mesoValue">${mesoIconHtml(mesoTierForAmount(number))}<span class="mesoValueText">${number.toLocaleString()} 楓幣</span></span>`;
 }
 
 function formatMesoAmountRange(min, max) {
@@ -620,6 +653,7 @@ function renderDetail() {
       </div>
     </section>
     ${renderEquipmentStats(item)}
+    ${renderSellPrice(item)}
     ${renderMonsterSources(item)}
     ${renderQuestSources(item)}
     ${renderShopSources(item)}
@@ -627,6 +661,27 @@ function renderDetail() {
     ${renderQuestRequirementSources(item)}
     ${renderCraftRequirementSources(item)}
     ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length || craftRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出需求用途" : "目前資料集中沒有取得途徑"}</div>`}
+  `;
+}
+
+function renderSellPrice(item) {
+  if (item.sellPrice === null || item.sellPrice === undefined) return "";
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <h3>賣給商店</h3>
+        <span>可販售價格</span>
+      </div>
+      <div class="sourceList">
+        <article class="sourceRow priceSourceRow">
+          <div>
+            <strong>NPC 商店收購</strong>
+            <span>${mesoValueHtml(item.sellPrice)}</span>
+          </div>
+          <small>賣店</small>
+        </article>
+      </div>
+    </section>
   `;
 }
 
@@ -638,7 +693,8 @@ function renderEquipmentStats(item) {
       const value = stats[key];
       if (!hasEquipValue(key, value)) return "";
       const text = formatter ? formatter(value) : formatNumber(value);
-      return `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${escapeHtml(text)}</strong></div>`;
+      const content = key === "price" ? mesoValueHtml(value) : escapeHtml(text);
+      return `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${content}</strong></div>`;
     }).filter(Boolean);
     if (!rows.length) return "";
     totalRows += rows.length;
@@ -702,13 +758,20 @@ function renderQuestSources(item) {
   `);
 }
 
+function shopPriceHtml(row) {
+  if (row.price === null || row.price === undefined) return "價格未知";
+  const currency = row.currency || "";
+  if (!currency || currency === "楓幣" || currency === "meso") return mesoValueHtml(row.price);
+  return `${formatNumber(row.price)} ${escapeHtml(currency)}`;
+}
+
 function renderShopSources(item) {
   const rows = sourceRows(item).shops;
   return sourceBlock("商人購買", rows, row => `
     <article class="sourceRow">
       <div>
         <strong>${escapeHtml(row.merchantName)}</strong>
-        <span>${row.price === null || row.price === undefined ? "價格未知" : `${formatNumber(row.price)} ${escapeHtml(row.currency || "")}`}${state.showIds && row.sn ? ` · SN ${escapeHtml(row.sn)}` : ""}</span>
+        <span>${shopPriceHtml(row)}${state.showIds && row.sn ? ` · SN ${escapeHtml(row.sn)}` : ""}</span>
         <p>${formatNumber(row.count || 1)} 個</p>
       </div>
       <small>${row.sourceType === "cashShop" ? "商城" : "商店"}</small>
@@ -718,8 +781,7 @@ function renderShopSources(item) {
 
 function recipeMeta(row) {
   const meta = [];
-  if (row.meso !== null && row.meso !== undefined) meta.push(`${formatNumber(row.meso)} 楓幣`);
-  else if (row.sourceKind === "npcDialog") meta.push("費用未標注");
+  if ((row.meso === null || row.meso === undefined) && row.sourceKind === "npcDialog") meta.push("費用未標注");
   if (row.reqLevel) meta.push(`角色 Lv.${formatNumber(row.reqLevel)}+`);
   if (row.reqSkillLevel) meta.push(`製作 Lv.${formatNumber(row.reqSkillLevel)}+`);
   if (row.tuc) meta.push(`TUC ${formatNumber(row.tuc)}`);
@@ -743,10 +805,25 @@ function recipeItemChip(item) {
   `;
 }
 
-function recipeChipGroup(items) {
+function recipeMesoChip(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "";
+  return `
+    <span class="recipeChip recipeMesoChip">
+      ${mesoIconHtml(mesoTierForAmount(number))}
+      <span><strong>楓幣</strong><em>${number.toLocaleString()} 楓幣</em></span>
+    </span>
+  `;
+}
+
+function recipeChipGroup(items, meso = null) {
   const rows = (items || []).filter(Boolean);
-  if (!rows.length) return "";
-  return `<div class="recipeChips">${rows.map(recipeItemChip).join("")}</div>`;
+  const chips = [
+    recipeMesoChip(meso),
+    ...rows.map(recipeItemChip),
+  ].filter(Boolean);
+  if (!chips.length) return "";
+  return `<div class="recipeChips">${chips.join("")}</div>`;
 }
 
 function craftNpcText(row) {
@@ -791,6 +868,8 @@ function renderCraftSources(item) {
     const requirements = row.requirements || [];
     const questText = requiredQuestText(row);
     const outputText = randomOutputText(row);
+    const materialChips = recipeChipGroup(row.materials, row.meso);
+    const requirementChips = recipeChipGroup(requirements);
     return `
       <article class="sourceRow craftSourceRow">
         ${craftNpcImage(row)}
@@ -799,8 +878,8 @@ function renderCraftSources(item) {
           <span>${escapeHtml(recipeMeta(row))}</span>
           ${row.menuLabel ? `<p>菜單：${escapeHtml(row.menuLabel)}</p>` : ""}
           <p>${escapeHtml(craftNpcLabel(row))}：${escapeHtml(craftNpcText(row))}</p>
-          ${row.materials?.length ? `<p>材料</p>${recipeChipGroup(row.materials)}` : ""}
-          ${requirements.length ? `<p>附加需求</p>${recipeChipGroup(requirements)}` : ""}
+          ${materialChips ? `<p>材料</p>${materialChips}` : ""}
+          ${requirementChips ? `<p>附加需求</p>${requirementChips}` : ""}
           ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
           ${outputText ? `<p>可能產物：${escapeHtml(outputText)}</p>` : ""}
           ${row.mesoNote ? `<p class="sourceNote">${escapeHtml(row.mesoNote)}</p>` : ""}
@@ -841,6 +920,7 @@ function renderCraftRequirementSources(item) {
     const name = String(output.name || `道具 ${output.id || ""}`);
     const requirementText = [ingredient.role || "材料"];
     if (ingredient.count) requirementText.push(`${formatNumber(ingredient.count)} 個`);
+    const materialChips = recipeChipGroup(row.materials, row.meso);
     return `
       <article class="sourceRow monsterSourceRow recipeOutputRow">
         ${assetImage(output.image, name, name.slice(0, 1) || "?", "sourceMonsterImage")}
@@ -849,7 +929,7 @@ function renderCraftRequirementSources(item) {
           <span>${escapeHtml(row.groupLabel || "合成配方")}${recipeMeta(row) ? ` · ${escapeHtml(recipeMeta(row))}` : ""}</span>
           ${row.menuLabel ? `<p>菜單：${escapeHtml(row.menuLabel)}</p>` : ""}
           <p>${escapeHtml(craftNpcLabel(row))}：${escapeHtml(craftNpcText(row))}</p>
-          ${row.materials?.length ? `<p>完整材料</p>${recipeChipGroup(row.materials)}` : ""}
+          ${materialChips ? `<p>完整材料</p>${materialChips}` : ""}
           ${row.mesoNote ? `<p class="sourceNote">${escapeHtml(row.mesoNote)}</p>` : ""}
         </div>
         <small>${escapeHtml(requirementText.join(" · "))}</small>
