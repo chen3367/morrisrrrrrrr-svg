@@ -385,7 +385,7 @@ function heroMeta(monster) {
   if (state.showIds) parts.push(`ID ${monster.id}`);
   if (monster.level) parts.push(`Lv.${monster.level}`);
   if (hasOwn(monster.stats, "maxHP")) parts.push(`HP ${formatNumber(monster.stats.maxHP)}`);
-  if (hasOwn(monster.stats, "maxMP")) parts.push(`MP ${formatNumber(monster.stats.maxMP)}`);
+  if (hasOwn(monster.stats, "exp")) parts.push(`經驗值 ${formatNumber(monster.stats.exp)}`);
   return parts.map(escapeHtml).join(" · ");
 }
 
