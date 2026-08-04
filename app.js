@@ -164,7 +164,6 @@ const STAT_FIELDS = [
   ["bodyAttack", "碰撞", yesNo],
   ["firstAttack", "主動", yesNo],
   ["boss", "BOSS", yesNo],
-  ["undead", "不死", yesNo],
   ["rareItemDropLevel", "稀有掉落"],
 ];
 
@@ -376,6 +375,9 @@ function renderDetail() {
 function elementalText(monster) {
   const values = monster.elemental?.values || {};
   const parts = ELEMENT_FIELDS.map(([key, label]) => `${label}${ELEMENT_STATE_LABELS[values[key] || "normal"]}`);
+  if (hasOwn(monster.stats, "undead")) {
+    parts.push(Number(monster.stats.undead) ? "不死是 可被群體治癒攻擊" : "不死否");
+  }
   if (monster.elemental?.summary) parts.push(monster.elemental.summary);
   return parts.join(" ");
 }
@@ -411,7 +413,9 @@ function renderStats(monster) {
 function renderElements(monster) {
   const elemental = monster.elemental || {};
   const values = elemental.values || {};
-  const notable = ELEMENT_FIELDS.filter(([key]) => (values[key] || "normal") !== "normal").length;
+  const isUndead = Number(monster.stats?.undead) ? true : false;
+  const hasUndead = hasOwn(monster.stats, "undead");
+  const notable = ELEMENT_FIELDS.filter(([key]) => (values[key] || "normal") !== "normal").length + (isUndead ? 1 : 0);
   const sourceText = elemental.source === "description" ? "圖鑑描述" : "怪物資料";
   return `
     <section class="sectionBlock">
@@ -421,6 +425,7 @@ function renderElements(monster) {
       </div>
       <div class="elementGrid">
         ${ELEMENT_FIELDS.map(([key, label]) => elementCell(label, values[key] || "normal")).join("")}
+        ${hasUndead ? undeadCell(isUndead) : ""}
       </div>
       ${elemental.source !== "none" ? `<p class="elementSource">來源：${escapeHtml(sourceText)}</p>` : ""}
     </section>
@@ -433,6 +438,16 @@ function elementCell(label, state) {
     <div class="elementCell ${safeState}">
       <span>${escapeHtml(label)}</span>
       <strong>${escapeHtml(ELEMENT_STATE_LABELS[safeState])}</strong>
+    </div>
+  `;
+}
+
+function undeadCell(isUndead) {
+  return `
+    <div class="elementCell ${isUndead ? "undead weak" : ""}">
+      <span>不死</span>
+      <strong>${isUndead ? "是" : "否"}</strong>
+      ${isUndead ? `<em>可被群體治癒攻擊</em>` : ""}
     </div>
   `;
 }
