@@ -288,6 +288,9 @@ select {
 .itemLayout {
   grid-template-columns: 410px minmax(0, 1fr);
 }
+.skillLayout {
+  grid-template-columns: 410px minmax(0, 1fr);
+}
 .monsterList {
   overflow: auto;
   border: 1px solid var(--line);
@@ -376,6 +379,27 @@ select {
 }
 .questMark.assetImage {
   padding: 5px;
+}
+.skillGlyph, .skillMark {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--mini-border);
+  background: var(--accent-soft);
+  color: var(--active-text);
+  font-weight: 900;
+}
+.skillGlyph {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  font-size: 22px;
+  align-self: center;
+}
+.skillMark {
+  width: 66px;
+  height: 66px;
+  border-radius: 8px;
+  font-size: 30px;
 }
 .rowText {
   display: grid;
@@ -746,6 +770,55 @@ h3 {
   grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
   padding: 0;
 }
+.skillTableWrap {
+  overflow: auto;
+  padding: 12px 14px 14px;
+}
+.skillTable {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--plain-text);
+  font-size: 13px;
+}
+.skillTable th, .skillTable td {
+  border-right: 1px solid var(--stat-border);
+  border-bottom: 1px solid var(--stat-border);
+  background: var(--card-bg);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.skillTable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--text-strong);
+  background: var(--hero-bg);
+  font-weight: 900;
+  white-space: nowrap;
+}
+.skillTable th:first-child, .skillTable td:first-child {
+  border-left: 1px solid var(--stat-border);
+}
+.skillTable thead th {
+  border-top: 1px solid var(--stat-border);
+}
+.skillLevelCell {
+  width: 56px;
+  color: var(--text-strong);
+  font-weight: 900;
+}
+.skillValueCell {
+  min-width: 86px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.skillDescCell {
+  min-width: 320px;
+  line-height: 1.45;
+}
 .linkGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -893,7 +966,7 @@ h3 {
     grid-template-columns: 1fr;
     height: auto;
   }
-  .itemLayout {
+  .itemLayout, .skillLayout {
     grid-template-columns: 1fr;
   }
   .monsterList {

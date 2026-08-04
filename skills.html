@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleStory Classic 任務索引</title>
+  <title>MapleStory Classic 技能索引</title>
   <script>
     (function () {
       function readCookie(name) {
@@ -30,30 +30,28 @@
 <body>
   <header class="appHeader">
     <div class="titleArea">
-      <h1>任務索引</h1>
+      <h1>技能索引</h1>
       <nav class="topNav" aria-label="頁面切換">
         <a href="./index.html">怪物</a>
         <a href="./items.html">道具索引</a>
-        <a class="active" href="./quests.html">任務索引</a>
-        <a href="./skills.html">技能索引</a>
+        <a href="./quests.html">任務索引</a>
+        <a class="active" href="./skills.html">技能索引</a>
       </nav>
       <div class="buildMeta" id="buildMeta"></div>
     </div>
     <div class="searchWrap">
-      <input id="questSearch" type="search" autocomplete="off" placeholder="輸入任務、NPC、道具、怪物、地圖或 ID" />
+      <input id="skillSearch" type="search" autocomplete="off" placeholder="輸入技能、職業、效果或 ID" />
       <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
       <span id="resultCount"></span>
       <div id="settingsPanel" class="settingsPanel" hidden>
-        <select id="questCategoryFilter" aria-label="以任務分類篩選">
-          <option value="">全部分類</option>
+        <select id="skillGroupFilter" aria-label="以職業系篩選">
+          <option value="">全部職業系</option>
         </select>
-        <select id="questLevelFilter" aria-label="以任務等級篩選">
-          <option value="">全部等級</option>
-          <option value="none">無等級限制</option>
-          <option value="1-10">Lv.1-10</option>
-          <option value="11-30">Lv.11-30</option>
-          <option value="31-70">Lv.31-70</option>
-          <option value="71+">Lv.71+</option>
+        <select id="advancementFilter" aria-label="以轉職階段篩選">
+          <option value="">全部轉職</option>
+        </select>
+        <select id="skillJobFilter" aria-label="以技能書篩選">
+          <option value="">全部技能書</option>
         </select>
         <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
         <button id="themeToggle" class="toggleThemeButton" type="button" aria-pressed="false">黑底模式</button>
@@ -61,12 +59,12 @@
     </div>
   </header>
 
-  <main class="layout questLayout">
-    <aside class="monsterList questIndexList" id="questList"></aside>
-    <section class="detail questDetailPane" id="questDetail"></section>
+  <main class="layout skillLayout">
+    <aside class="monsterList skillIndexList" id="skillList"></aside>
+    <section class="detail skillDetailPane" id="skillDetail"></section>
   </main>
 
-  <script src="./quests-data.js"></script>
-  <script src="./quests.js"></script>
+  <script src="./skills-data.js"></script>
+  <script src="./skills.js"></script>
 </body>
 </html>
