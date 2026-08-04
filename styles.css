@@ -401,6 +401,15 @@ select {
   border-radius: 8px;
   font-size: 30px;
 }
+.skillGlyph.assetImage, .skillMark.assetImage {
+  object-fit: contain;
+}
+.skillGlyph.assetImage {
+  padding: 5px;
+}
+.skillMark.assetImage {
+  padding: 7px;
+}
 .rowText {
   display: grid;
   min-width: 0;

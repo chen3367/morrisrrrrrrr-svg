@@ -256,7 +256,7 @@ function renderList() {
     : "";
   els.list.innerHTML = visibleRows.map(skill => `
     <button class="monsterRow skillIndexRow ${String(skill.id) === String(state.selectedId) ? "active" : ""}" data-id="${skill.id}">
-      <div class="skillGlyph">技</div>
+      ${assetImage(skill.image, skill.name, "技", "skillGlyph")}
       <span class="rowText">
         <strong>${escapeHtml(skill.name)}</strong>
         <span class="rowMeta">${escapeHtml(skill.jobGroup)} · ${escapeHtml(skill.advancement)}${idMeta(skill.id)}</span>
@@ -281,7 +281,7 @@ function renderDetail() {
   const fields = levelFields(skill);
   els.detail.innerHTML = `
     <section class="monsterHero skillHero">
-      <div class="skillMark">技</div>
+      ${assetImage(skill.image, skill.name, "技", "skillMark")}
       <div class="heroText">
         <h2>${escapeHtml(skill.name)}</h2>
         <p>${escapeHtml(skill.jobGroup)} · ${escapeHtml(skill.advancement)} · ${escapeHtml(skill.jobName)}${idMeta(skill.id)}</p>
