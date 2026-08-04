@@ -247,9 +247,6 @@ select {
 #unnamedMapToggle {
   min-width: 184px;
 }
-#noSourceToggle {
-  min-width: 156px;
-}
 .toggleIdButton {
   min-width: 96px;
 }
@@ -964,9 +961,6 @@ h3 {
   }
   #unnamedMapToggle {
     flex-basis: 184px;
-  }
-  #noSourceToggle {
-    flex-basis: 156px;
   }
   .toggleIdButton, .toggleThemeButton {
     flex-basis: 92px;

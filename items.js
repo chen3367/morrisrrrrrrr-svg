@@ -41,9 +41,7 @@ const state = {
   query: "",
   category: cookieValue("ms_item_category"),
   subcategory: cookieValue("ms_item_subcategory"),
-  source: cookieValue("ms_item_source"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
-  showNoSourceItems: initialShowNoSourceItems(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
@@ -55,9 +53,7 @@ const els = {
   search: document.getElementById("itemSearch"),
   category: document.getElementById("categoryFilter"),
   subcategory: document.getElementById("subcategoryFilter"),
-  source: document.getElementById("sourceFilter"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
-  noSourceToggle: document.getElementById("noSourceToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
@@ -119,12 +115,6 @@ function initialShowUnnamedMapMonsters() {
   return cookieBool("ms_show_unnamed_map_monsters");
 }
 
-function initialShowNoSourceItems() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("showNoSource") === "1") return true;
-  return cookieBool("ms_show_no_source_items");
-}
-
 function setItemUrl(itemId) {
   if (!itemId) return;
   const url = new URL(window.location.href);
@@ -133,11 +123,6 @@ function setItemUrl(itemId) {
     url.searchParams.set("showUnnamedMaps", "1");
   } else {
     url.searchParams.delete("showUnnamedMaps");
-  }
-  if (state.showNoSourceItems) {
-    url.searchParams.set("showNoSource", "1");
-  } else {
-    url.searchParams.delete("showNoSource");
   }
   window.history.replaceState(null, "", url);
 }
@@ -350,21 +335,11 @@ function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
 }
 
-function rawSourceCounts(item) {
-  const raw = item.sourceCounts || { monsterDrops: 0, questRewards: 0, shops: 0 };
-  return {
-    monsterDrops: raw.monsterDrops || 0,
-    questRewards: raw.questRewards || 0,
-    shops: raw.shops || 0,
-  };
-}
-
 function sourceRows(item) {
-  const source = state.source;
   return {
-    monsterDrops: source && source !== "monster" ? [] : monsterSourceRows(item),
-    questRewards: source && source !== "quest" ? [] : (item.sources?.questRewards || []),
-    shops: source && source !== "shop" ? [] : (item.sources?.shops || []),
+    monsterDrops: monsterSourceRows(item),
+    questRewards: item.sources?.questRewards || [],
+    shops: item.sources?.shops || [],
   };
 }
 
@@ -388,25 +363,6 @@ function sourceSummary(item) {
   if (counts.questRewards) parts.push(`任務 ${formatNumber(counts.questRewards)}`);
   if (counts.shops) parts.push(`購買 ${formatNumber(counts.shops)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
-}
-
-function hasSource(item, type) {
-  if (type === "monster") return monsterSourceRows(item).length > 0;
-  const rawCounts = rawSourceCounts(item);
-  if (type === "quest") return rawCounts.questRewards > 0;
-  if (type === "shop") return rawCounts.shops > 0;
-  if (type === "none") return isRawNoSource(item);
-  return true;
-}
-
-function isRawNoSource(item) {
-  const counts = rawSourceCounts(item);
-  return !counts.monsterDrops && !counts.questRewards && !counts.shops;
-}
-
-function hasVisibleSource(item) {
-  const counts = sourceCounts(item);
-  return Boolean(counts.monsterDrops || counts.questRewards || counts.shops);
 }
 
 function searchableText(item) {
@@ -462,17 +418,6 @@ function filteredItems() {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
     if (state.category && item.category !== state.category) return false;
     if (state.subcategory && item.subcategory !== state.subcategory) return false;
-    const rawNoSource = isRawNoSource(item);
-    if (state.source === "none") {
-      if (!state.showNoSourceItems || !rawNoSource) return false;
-    } else {
-      if (rawNoSource) {
-        if (!state.showNoSourceItems || state.source) return false;
-      } else {
-        if (state.source && !hasSource(item, state.source)) return false;
-        if (!hasVisibleSource(item)) return false;
-      }
-    }
     if (q && !searchableText(item).includes(q)) return false;
     return true;
   }).sort(compareItems);
@@ -531,8 +476,6 @@ function syncControls() {
   els.category.value = state.category;
   state.category = els.category.value;
   updateSubcategoryFilter();
-  els.source.value = state.source;
-  state.source = els.source.value;
 }
 
 function updateToggles() {
@@ -540,8 +483,6 @@ function updateToggles() {
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
   els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
   els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名怪物/地圖" : "顯示未命名怪物/地圖";
-  els.noSourceToggle.setAttribute("aria-pressed", String(state.showNoSourceItems));
-  els.noSourceToggle.textContent = state.showNoSourceItems ? "隱藏無來源道具" : "顯示無來源道具";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
 }
@@ -776,22 +717,9 @@ els.subcategory.addEventListener("change", event => {
   render();
 });
 
-els.source.addEventListener("change", event => {
-  state.source = event.target.value;
-  writeCookie("ms_item_source", state.source);
-  render();
-});
-
 els.unnamedMapToggle.addEventListener("click", () => {
   state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
   saveBool("ms_show_unnamed_map_monsters", state.showUnnamedMapMonsters);
-  setItemUrl(state.selectedId);
-  render();
-});
-
-els.noSourceToggle.addEventListener("click", () => {
-  state.showNoSourceItems = !state.showNoSourceItems;
-  saveBool("ms_show_no_source_items", state.showNoSourceItems);
   setItemUrl(state.selectedId);
   render();
 });
