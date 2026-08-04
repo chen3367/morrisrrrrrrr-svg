@@ -724,6 +724,55 @@ h3 {
   padding: 4px 7px;
   font-weight: 800;
 }
+.recipeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.recipeChip {
+  display: inline-grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  max-width: 260px;
+  min-height: 36px;
+  padding: 4px 7px 4px 4px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 78%, transparent);
+  color: inherit;
+  text-decoration: none;
+}
+.recipeChip:hover {
+  border-color: var(--link-hover-border);
+  background: var(--link-hover-bg);
+}
+.recipeIcon {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--mini-border);
+  border-radius: 6px;
+  background: var(--icon-bg);
+  object-fit: contain;
+  padding: 2px;
+  color: var(--text-strong);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+.recipeChip strong, .recipeChip em {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recipeChip em, .sourceNote {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+}
 .listLimit {
   padding: 12px;
   color: var(--muted);

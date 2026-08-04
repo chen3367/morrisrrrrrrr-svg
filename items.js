@@ -138,6 +138,13 @@ function questUrl(questId) {
   return `./quests.html?quest=${encodeURIComponent(questId)}`;
 }
 
+function itemUrl(itemId) {
+  const url = new URL("./items.html", window.location.href);
+  url.searchParams.set("item", itemId);
+  if (state.showUnnamedMapMonsters) url.searchParams.set("showUnnamedMaps", "1");
+  return `${url.pathname.split("/").pop()}${url.search}`;
+}
+
 function questNpcImage(row, className = "sourceMonsterImage") {
   const npc = row.startNpc || row.endNpc || null;
   return assetImage(npc?.image, npc?.name || row.questName || "任務", "任", className);
@@ -340,11 +347,16 @@ function sourceRows(item) {
     monsterDrops: monsterSourceRows(item),
     questRewards: item.sources?.questRewards || [],
     shops: item.sources?.shops || [],
+    crafts: item.sources?.crafts || [],
   };
 }
 
 function questRequirementRows(item) {
   return item.sources?.questRequirements || [];
+}
+
+function craftRequirementRows(item) {
+  return item.sources?.craftRequirements || [];
 }
 
 function sourceCounts(item) {
@@ -353,6 +365,7 @@ function sourceCounts(item) {
     monsterDrops: rows.monsterDrops.length,
     questRewards: rows.questRewards.length,
     shops: rows.shops.length,
+    crafts: rows.crafts.length,
   };
 }
 
@@ -362,6 +375,7 @@ function sourceSummary(item) {
   if (counts.monsterDrops) parts.push(`怪物 ${formatNumber(counts.monsterDrops)}`);
   if (counts.questRewards) parts.push(`任務 ${formatNumber(counts.questRewards)}`);
   if (counts.shops) parts.push(`購買 ${formatNumber(counts.shops)}`);
+  if (counts.crafts) parts.push(`合成 ${formatNumber(counts.crafts)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
 }
 
@@ -384,6 +398,16 @@ function searchableText(item) {
     row.merchantName,
     row.sn,
   ]);
+  const craftText = sources.crafts.flatMap(row => [
+    row.recipeId,
+    row.groupLabel,
+    row.output?.name,
+    row.primaryOutput?.name,
+    ...(row.materials || []).flatMap(item => [item.id, item.name, item.category, item.subcategory]),
+    ...(row.requirements || []).flatMap(item => [item.id, item.name, item.role]),
+    ...(row.outputs || []).flatMap(item => [item.id, item.name]),
+    ...(row.npcs || []).flatMap(npc => [npc.id, npc.name, npc.locationText, ...(npc.maps || []).flatMap(map => [map.id, map.name, map.street])]),
+  ]);
   const questRequirementText = questRequirementRows(item).flatMap(row => [
     row.questId,
     row.questName,
@@ -392,6 +416,17 @@ function searchableText(item) {
     row.stageLabel,
     row.startNpc?.name,
     row.endNpc?.name,
+  ]);
+  const craftRequirementText = craftRequirementRows(item).flatMap(row => [
+    row.recipeId,
+    row.groupLabel,
+    row.ingredient?.role,
+    row.primaryOutput?.id,
+    row.primaryOutput?.name,
+    ...(row.materials || []).flatMap(item => [item.id, item.name, item.category, item.subcategory]),
+    ...(row.requirements || []).flatMap(item => [item.id, item.name, item.role]),
+    ...(row.outputs || []).flatMap(item => [item.id, item.name]),
+    ...(row.npcs || []).flatMap(npc => [npc.id, npc.name, npc.locationText]),
   ]);
   return [
     item.id,
@@ -403,7 +438,9 @@ function searchableText(item) {
     ...monsterText,
     ...questText,
     ...shopText,
+    ...craftText,
     ...questRequirementText,
+    ...craftRequirementText,
   ].map(norm).join(" ");
 }
 
@@ -521,7 +558,7 @@ function renderList() {
 
 function totalSources(item) {
   const counts = sourceCounts(item);
-  return counts.monsterDrops + counts.questRewards + counts.shops;
+  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts;
 }
 
 function selectedItem() {
@@ -553,14 +590,17 @@ function renderDetail() {
         <div class="statCell"><span>怪物掉落</span><strong>${formatNumber(counts.monsterDrops)}</strong></div>
         <div class="statCell"><span>任務獲取</span><strong>${formatNumber(counts.questRewards)}</strong></div>
         <div class="statCell"><span>商人購買</span><strong>${formatNumber(counts.shops)}</strong></div>
+        <div class="statCell"><span>合成取得</span><strong>${formatNumber(counts.crafts)}</strong></div>
       </div>
     </section>
     ${renderEquipmentStats(item)}
     ${renderMonsterSources(item)}
     ${renderQuestSources(item)}
     ${renderShopSources(item)}
+    ${renderCraftSources(item)}
     ${renderQuestRequirementSources(item)}
-    ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出任務需求" : "目前資料集中沒有取得途徑"}</div>`}
+    ${renderCraftRequirementSources(item)}
+    ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length || craftRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出需求用途" : "目前資料集中沒有取得途徑"}</div>`}
   `;
 }
 
@@ -650,6 +690,85 @@ function renderShopSources(item) {
   `);
 }
 
+function recipeMeta(row) {
+  const meta = [];
+  if (row.meso !== null && row.meso !== undefined) meta.push(`${formatNumber(row.meso)} 楓幣`);
+  if (row.reqLevel) meta.push(`角色 Lv.${formatNumber(row.reqLevel)}+`);
+  if (row.reqSkillLevel) meta.push(`製作 Lv.${formatNumber(row.reqSkillLevel)}+`);
+  if (row.tuc) meta.push(`TUC ${formatNumber(row.tuc)}`);
+  if (row.randomReward) meta.push("隨機產物");
+  if (state.showIds) meta.push(row.recipeId);
+  return meta.join(" · ") || "合成配方";
+}
+
+function recipeItemChip(item) {
+  const name = String(item?.name || `道具 ${item?.id || ""}`);
+  const meta = [];
+  if (item?.role) meta.push(item.role);
+  if (item?.count) meta.push(`${formatNumber(item.count)} 個`);
+  if (item?.chanceWeight !== null && item?.chanceWeight !== undefined) meta.push(`權重 ${formatNumber(item.chanceWeight)}`);
+  if (state.showIds && item?.id) meta.push(`ID ${item.id}`);
+  return `
+    <a class="recipeChip" href="${itemUrl(item.id)}">
+      ${assetImage(item?.image, name, name.slice(0, 1) || "?", "recipeIcon")}
+      <span><strong>${escapeHtml(name)}</strong><em>${escapeHtml(meta.join(" · ") || item?.subcategory || item?.category || "道具")}</em></span>
+    </a>
+  `;
+}
+
+function recipeChipGroup(items) {
+  const rows = (items || []).filter(Boolean);
+  if (!rows.length) return "";
+  return `<div class="recipeChips">${rows.map(recipeItemChip).join("")}</div>`;
+}
+
+function craftNpcText(row) {
+  const names = (row.npcs || []).map(npc => {
+    const location = npc.locationText ? `（${npc.locationText}）` : "";
+    return `${npc.name}${location}`;
+  });
+  if (names.length) return names.join("、");
+  return "資料表未標注固定 NPC";
+}
+
+function requiredQuestText(row) {
+  const quests = row.requiredQuests || [];
+  if (!quests.length) return "";
+  return quests.map(quest => `任務 ${quest.id}${quest.state !== null && quest.state !== undefined ? ` / 狀態 ${quest.state}` : ""}`).join("、");
+}
+
+function randomOutputText(row) {
+  if (!row.randomReward || !(row.outputs || []).length) return "";
+  return row.outputs.map(output => {
+    const weight = output.chanceWeight !== null && output.chanceWeight !== undefined ? ` 權重 ${formatNumber(output.chanceWeight)}` : "";
+    return `${output.name}${weight}`;
+  }).join("、");
+}
+
+function renderCraftSources(item) {
+  const rows = sourceRows(item).crafts;
+  return sourceBlock("合成/製作配方", rows, row => {
+    const requirements = row.requirements || [];
+    const questText = requiredQuestText(row);
+    const outputText = randomOutputText(row);
+    return `
+      <article class="sourceRow craftSourceRow">
+        <div>
+          <strong>${escapeHtml(row.groupLabel || "合成配方")}</strong>
+          <span>${escapeHtml(recipeMeta(row))}</span>
+          <p>NPC：${escapeHtml(craftNpcText(row))}</p>
+          ${row.materials?.length ? `<p>材料</p>${recipeChipGroup(row.materials)}` : ""}
+          ${requirements.length ? `<p>附加需求</p>${recipeChipGroup(requirements)}` : ""}
+          ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
+          ${outputText ? `<p>可能產物：${escapeHtml(outputText)}</p>` : ""}
+          <p class="sourceNote">${escapeHtml(row.npcNote || "")}</p>
+        </div>
+        <small>${row.output?.chanceWeight !== null && row.output?.chanceWeight !== undefined ? `權重 ${formatNumber(row.output.chanceWeight)}` : "合成"}</small>
+      </article>
+    `;
+  });
+}
+
 function renderQuestRequirementSources(item) {
   const rows = questRequirementRows(item);
   return sourceBlock("任務需求", rows, row => `
@@ -663,6 +782,29 @@ function renderQuestRequirementSources(item) {
       <small>需要 ${formatNumber(row.count)} 個</small>
     </a>
   `);
+}
+
+function renderCraftRequirementSources(item) {
+  const rows = craftRequirementRows(item);
+  return sourceBlock("被用於合成", rows, row => {
+    const output = row.primaryOutput || row.output || {};
+    const ingredient = row.ingredient || {};
+    const name = String(output.name || `道具 ${output.id || ""}`);
+    const requirementText = [ingredient.role || "材料"];
+    if (ingredient.count) requirementText.push(`${formatNumber(ingredient.count)} 個`);
+    return `
+      <a class="sourceRow sourceLinkRow monsterSourceRow recipeOutputRow" href="${itemUrl(output.id)}">
+        ${assetImage(output.image, name, name.slice(0, 1) || "?", "sourceMonsterImage")}
+        <div>
+          <strong>${escapeHtml(name)}</strong>
+          <span>${escapeHtml(row.groupLabel || "合成配方")}${recipeMeta(row) ? ` · ${escapeHtml(recipeMeta(row))}` : ""}</span>
+          <p>NPC：${escapeHtml(craftNpcText(row))}</p>
+          ${row.materials?.length ? `<p>完整材料</p>${recipeChipGroup(row.materials)}` : ""}
+        </div>
+        <small>${escapeHtml(requirementText.join(" · "))}</small>
+      </a>
+    `;
+  });
 }
 
 function sourceBlock(title, rows, renderRow) {
