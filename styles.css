@@ -197,6 +197,39 @@ input {
   flex: 1 1 260px;
   min-width: 180px;
 }
+.nameOnlySearchControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 42px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: var(--control-soft);
+  color: var(--control-text);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.nameOnlySearchControl input {
+  width: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+}
+.nameOnlySearchControl:hover {
+  background: var(--control-hover);
+}
+.nameOnlySearchControl.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
 select {
   width: 156px;
   flex: 0 0 156px;
@@ -354,6 +387,7 @@ select {
 :root[data-theme="dark"] .toggleButton[aria-pressed="true"],
 :root[data-theme="dark"] .toggleIdButton[aria-pressed="true"],
 :root[data-theme="dark"] .toggleThemeButton[aria-pressed="true"],
+:root[data-theme="dark"] .nameOnlySearchControl.active,
 :root[data-theme="dark"] .settingsToggle.active,
 :root[data-theme="dark"] .topNav a.active {
   border-color: var(--accent);
@@ -1306,6 +1340,10 @@ h3 {
   }
   .settingsToggle {
     flex-basis: 42px;
+  }
+  .nameOnlySearchControl {
+    flex-basis: calc(100% - 52px);
+    justify-content: center;
   }
   .settingsPanel {
     padding: 9px;

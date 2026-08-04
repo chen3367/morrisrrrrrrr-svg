@@ -42,6 +42,7 @@ const state = {
   jobGroup: cookieValue("ms_skill_job_group"),
   advancement: cookieValue("ms_skill_advancement"),
   jobId: cookieValue("ms_skill_job_id"),
+  nameOnlySearch: cookieBool("ms_skill_name_only_search"),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
@@ -53,6 +54,8 @@ const els = {
   group: document.getElementById("skillGroupFilter"),
   advancement: document.getElementById("advancementFilter"),
   job: document.getElementById("skillJobFilter"),
+  nameOnlySearch: document.getElementById("nameOnlySearch"),
+  nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
   settingsToggle: document.getElementById("settingsToggle"),
@@ -176,7 +179,8 @@ function filteredSkills() {
     if (state.jobGroup && skill.jobGroup !== state.jobGroup) return false;
     if (state.advancement && skill.advancement !== state.advancement) return false;
     if (state.jobId && String(skill.jobId) !== String(state.jobId)) return false;
-    if (q && !searchableText(skill).includes(q)) return false;
+    const searchText = state.nameOnlySearch ? norm(skill.name) : searchableText(skill);
+    if (q && !searchText.includes(q)) return false;
     return true;
   }).sort(compareSkills);
 }
@@ -229,6 +233,7 @@ function populateJobFilter() {
 
 function syncControls() {
   els.search.value = state.query;
+  if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
   els.group.value = state.jobGroup;
   state.jobGroup = els.group.value;
   els.advancement.value = state.advancement;
@@ -239,6 +244,10 @@ function syncControls() {
 }
 
 function updateToggles() {
+  if (els.nameOnlySearch && els.nameOnlySearchControl) {
+    els.nameOnlySearch.checked = state.nameOnlySearch;
+    els.nameOnlySearchControl.classList.toggle("active", state.nameOnlySearch);
+  }
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
 }
@@ -406,6 +415,12 @@ function render() {
 
 els.search.addEventListener("input", event => {
   state.query = event.target.value;
+  render();
+});
+
+els.nameOnlySearch.addEventListener("change", event => {
+  state.nameOnlySearch = event.target.checked;
+  saveBool("ms_skill_name_only_search", state.nameOnlySearch);
   render();
 });
 

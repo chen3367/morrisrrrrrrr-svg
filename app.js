@@ -37,6 +37,7 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+const DEFAULT_HIDDEN_CONTINENTS = new Set(["楓葉世界", "日本"]);
 const EVENT_CONTINENTS = new Set(["楓葉世界"]);
 
 function initialSelectedContinents() {
@@ -49,6 +50,7 @@ function initialSelectedContinents() {
 const state = {
   query: "",
   continents: initialSelectedContinents(),
+  nameOnlySearch: cookieBool("ms_monster_name_only_search"),
   showUnknownContinents: cookieBool("ms_show_unknown_continents"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
@@ -69,6 +71,8 @@ const els = {
   continentButton: document.getElementById("continentMenuButton"),
   continentOptions: document.getElementById("continentOptions"),
   continentClear: document.getElementById("continentClear"),
+  nameOnlySearch: document.getElementById("nameOnlySearch"),
+  nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   unknownToggle: document.getElementById("unknownToggle"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
@@ -220,7 +224,9 @@ function filteredMonsters() {
     const unnamedMapOk = state.showUnnamedMapMonsters || !onlyUnnamedMapMonster(monster);
     const continentOk = matchesSelectedContinents(monster);
     const drops = visibleDrops(monster);
-    const queryOk = !q ||
+    const queryOk = !q || (state.nameOnlySearch
+      ? norm(monster.name).includes(q)
+      :
       norm(monster.id).includes(q) ||
       norm(monster.name).includes(q) ||
       norm(elementalText(monster)).includes(q) ||
@@ -228,7 +234,7 @@ function filteredMonsters() {
       monster.continents.some(continent => norm(continent).includes(q)) ||
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
       (monster.questRequirements || []).some(row => norm(row.questId).includes(q) || norm(row.questName).includes(q) || norm(row.category).includes(q) || norm(row.parent).includes(q)) ||
-      drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q));
+      drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q)));
     return visibleContinentOk && unnamedMapOk && continentOk && queryOk;
   }).sort(compareMonsters);
 }
@@ -241,14 +247,14 @@ function onlyUnnamedMapMonster(monster) {
   return Boolean(monster.onlyUnnamedMaps);
 }
 
-function onlyEventContinentMonster(monster) {
+function hasDefaultHiddenContinent(monster) {
   const continents = (monster.continents || []).filter(Boolean);
-  return continents.length > 0 && continents.every(continent => EVENT_CONTINENTS.has(continent));
+  return continents.some(continent => DEFAULT_HIDDEN_CONTINENTS.has(continent));
 }
 
 function matchesSelectedContinents(monster) {
   const selected = state.continents || [];
-  if (!selected.length) return !onlyEventContinentMonster(monster);
+  if (!selected.length) return !hasDefaultHiddenContinent(monster);
   return (monster.continents || []).some(continent => selected.includes(continent));
 }
 
@@ -385,7 +391,14 @@ function populateFilters() {
 
 function syncControls() {
   els.search.value = state.query;
+  if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
   syncContinentInputs();
+}
+
+function updateNameOnlySearchControl() {
+  if (!els.nameOnlySearch || !els.nameOnlySearchControl) return;
+  els.nameOnlySearch.checked = state.nameOnlySearch;
+  els.nameOnlySearchControl.classList.toggle("active", state.nameOnlySearch);
 }
 
 function selectedContinentValues() {
@@ -952,6 +965,7 @@ function shorten(value, size) {
 
 function render() {
   updateSettingsPanel();
+  updateNameOnlySearchControl();
   updateUnknownToggle();
   updateUnnamedMapToggle();
   updateUnnamedToggle();
@@ -962,6 +976,12 @@ function render() {
 
 els.search.addEventListener("input", event => {
   state.query = event.target.value;
+  render();
+});
+
+els.nameOnlySearch.addEventListener("change", event => {
+  state.nameOnlySearch = event.target.checked;
+  saveBool("ms_monster_name_only_search", state.nameOnlySearch);
   render();
 });
 

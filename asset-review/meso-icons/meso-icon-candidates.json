@@ -1,0 +1,965 @@
+[
+  {
+    "label": "tier-copper-possible-animation",
+    "intended": "Possible 1-49 copper coin icon",
+    "id": "a724200c454c4fcf878b0a3cdbb706d6",
+    "type": "animationclip",
+    "category": "item",
+    "names": null,
+    "dname": "animationclip-31147",
+    "width": 21,
+    "height": 24,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/a724200c454c4fcf878b0a3cdbb706d6.gif",
+    "localImage": "tier-copper-possible-animation.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "1894266eb6d74d45a3cb2b6b1076f0b6",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": -5,
+          "y": -4,
+          "nx": -0.2083,
+          "ny": -0.1667
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "66a361cb13d8433b80a7b419acd5af87",
+        "width": 28,
+        "height": 24,
+        "pivot": {
+          "x": -4,
+          "y": -4,
+          "nx": -0.1429,
+          "ny": -0.1667
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "38df758abbe9455985180b694e75cd82",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": -5,
+          "y": -4,
+          "nx": -0.2083,
+          "ny": -0.1667
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "382f016d56444b4b91c6f4f1e490e865",
+        "width": 8,
+        "height": 24,
+        "pivot": {
+          "x": -14,
+          "y": -4,
+          "nx": -1.75,
+          "ny": -0.1667
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "1894266eb6d74d45a3cb2b6b1076f0b6",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/tier-copper-possible-animation-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "66a361cb13d8433b80a7b419acd5af87",
+        "width": 28,
+        "height": 24,
+        "localImage": "frames/tier-copper-possible-animation-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "38df758abbe9455985180b694e75cd82",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/tier-copper-possible-animation-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "382f016d56444b4b91c6f4f1e490e865",
+        "width": 8,
+        "height": 24,
+        "localImage": "frames/tier-copper-possible-animation-frame-03.png"
+      }
+    ]
+  },
+  {
+    "label": "tier-gold-animation",
+    "intended": "Possible 50-99 gold coin icon",
+    "id": "5c78b56b91964dcaa83c1d30b8cd3cce",
+    "type": "animationclip",
+    "category": "item",
+    "names": {
+      "ko": [
+        "금색 메소"
+      ]
+    },
+    "dname": "animationclip-673464",
+    "width": 21,
+    "height": 24,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/5c78b56b91964dcaa83c1d30b8cd3cce.gif",
+    "localImage": "tier-gold-animation.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "eb5cddcd2be64f95904bf5397dad58d7",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": -5,
+          "y": -5,
+          "nx": -0.2083,
+          "ny": -0.2083
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "5d32af5239f14f5e8ed43be50d9578da",
+        "width": 28,
+        "height": 24,
+        "pivot": {
+          "x": -4,
+          "y": -5,
+          "nx": -0.1429,
+          "ny": -0.2083
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "025346ea59b34740b60002440893bcc3",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": -5,
+          "y": -5,
+          "nx": -0.2083,
+          "ny": -0.2083
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "aee7be36effc4b65aedccbca3e5a4c53",
+        "width": 8,
+        "height": 24,
+        "pivot": {
+          "x": -14,
+          "y": -5,
+          "nx": -1.75,
+          "ny": -0.2083
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "eb5cddcd2be64f95904bf5397dad58d7",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/tier-gold-animation-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "5d32af5239f14f5e8ed43be50d9578da",
+        "width": 28,
+        "height": 24,
+        "localImage": "frames/tier-gold-animation-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "025346ea59b34740b60002440893bcc3",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/tier-gold-animation-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "aee7be36effc4b65aedccbca3e5a4c53",
+        "width": 8,
+        "height": 24,
+        "localImage": "frames/tier-gold-animation-frame-03.png"
+      }
+    ]
+  },
+  {
+    "label": "tier-bill-sprite",
+    "intended": "Possible 100-999 bill icon",
+    "id": "44d1a6167dbf495782cd5f2e12d6f038",
+    "type": "sprite",
+    "category": "etc",
+    "names": null,
+    "dname": "sprite-9149370",
+    "width": 40,
+    "height": 24,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/44d1a6167dbf495782cd5f2e12d6f038.png",
+    "localImage": "tier-bill-sprite.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "tier-money-bag-animation",
+    "intended": "Possible 1000+ money bag icon",
+    "id": "d98847481c0d4844bbf29315a29e6b35",
+    "type": "animationclip",
+    "category": "etc",
+    "names": null,
+    "dname": "animationclip-678711",
+    "width": 44,
+    "height": 52,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/d98847481c0d4844bbf29315a29e6b35.gif",
+    "localImage": "tier-money-bag-animation.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "da0158cd8fb54811a5ef0f29bd4ae399",
+        "width": 44,
+        "height": 52,
+        "pivot": {
+          "x": 21,
+          "y": 25,
+          "nx": 0.4773,
+          "ny": 0.4808
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "2bb95ddb89fa4355a99c173b96f1d589",
+        "width": 44,
+        "height": 52,
+        "pivot": {
+          "x": 21,
+          "y": 25,
+          "nx": 0.4773,
+          "ny": 0.4808
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "b456a500ed8f441f8ffc929fe732bdcf",
+        "width": 44,
+        "height": 52,
+        "pivot": {
+          "x": 21,
+          "y": 25,
+          "nx": 0.4773,
+          "ny": 0.4808
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "da0158cd8fb54811a5ef0f29bd4ae399",
+        "width": 44,
+        "height": 52,
+        "localImage": "frames/tier-money-bag-animation-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "2bb95ddb89fa4355a99c173b96f1d589",
+        "width": 44,
+        "height": 52,
+        "localImage": "frames/tier-money-bag-animation-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "b456a500ed8f441f8ffc929fe732bdcf",
+        "width": 44,
+        "height": 52,
+        "localImage": "frames/tier-money-bag-animation-frame-02.png"
+      }
+    ]
+  },
+  {
+    "label": "alt-silver-meso-animation",
+    "intended": "Alternative coin: named silver meso",
+    "id": "7b417b1a1b0b40469077a4a261b00cbf",
+    "type": "animationclip",
+    "category": "item",
+    "names": {
+      "ko": [
+        "은색 메소"
+      ]
+    },
+    "dname": "animationclip-674387",
+    "width": 21,
+    "height": 24,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/7b417b1a1b0b40469077a4a261b00cbf.gif",
+    "localImage": "alt-silver-meso-animation.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "bd3b0c1faf4844bf9d6cb6889c38ad17",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": -5,
+          "y": -5,
+          "nx": -0.2083,
+          "ny": -0.2083
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "6dc65c8e575f4a18a435dee1133942ca",
+        "width": 28,
+        "height": 24,
+        "pivot": {
+          "x": -4,
+          "y": -5,
+          "nx": -0.1429,
+          "ny": -0.2083
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "aeac477c980844cc8a71440d234db69b",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": -5,
+          "y": -5,
+          "nx": -0.2083,
+          "ny": -0.2083
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "f1fb859874a649fba79cf2ad9242b92a",
+        "width": 8,
+        "height": 24,
+        "pivot": {
+          "x": -14,
+          "y": -5,
+          "nx": -1.75,
+          "ny": -0.2083
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "bd3b0c1faf4844bf9d6cb6889c38ad17",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/alt-silver-meso-animation-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "6dc65c8e575f4a18a435dee1133942ca",
+        "width": 28,
+        "height": 24,
+        "localImage": "frames/alt-silver-meso-animation-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "aeac477c980844cc8a71440d234db69b",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/alt-silver-meso-animation-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "f1fb859874a649fba79cf2ad9242b92a",
+        "width": 8,
+        "height": 24,
+        "localImage": "frames/alt-silver-meso-animation-frame-03.png"
+      }
+    ]
+  },
+  {
+    "label": "alt-gold-meso-sprite",
+    "intended": "Alternative static coin: named gold meso",
+    "id": "02a489cccff24a139a6c3582a5871f58",
+    "type": "sprite",
+    "category": "item",
+    "names": {
+      "ko": [
+        "금색 메소",
+        "동전",
+        "메소",
+        "선구자의 금화 14k",
+        "선구자의 금화 18k",
+        "선구자의 금화 24k",
+        "슈미의 동전"
+      ]
+    },
+    "dname": "sprite-122091",
+    "width": 28,
+    "height": 24,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/02a489cccff24a139a6c3582a5871f58.png",
+    "localImage": "alt-gold-meso-sprite.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "alt-silver-meso-sprite",
+    "intended": "Alternative static coin: named silver meso",
+    "id": "9a8432ee58654e75b5c6e3c984ca9efd",
+    "type": "sprite",
+    "category": "item",
+    "names": {
+      "ko": [
+        "은색 메소"
+      ]
+    },
+    "dname": "sprite-136966",
+    "width": 24,
+    "height": 24,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/9a8432ee58654e75b5c6e3c984ca9efd.png",
+    "localImage": "alt-silver-meso-sprite.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "alt-bronze-meso-bag",
+    "intended": "Alternative bag: named bronze meso bag",
+    "id": "94b7d89e2f514e269e04250dd4b7d989",
+    "type": "sprite",
+    "category": "item",
+    "names": {
+      "ko": [
+        "브론즈 메소주머니"
+      ]
+    },
+    "dname": "sprite-136385",
+    "width": 32,
+    "height": 32,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/94b7d89e2f514e269e04250dd4b7d989.png",
+    "localImage": "alt-bronze-meso-bag.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "alt-gold-meso-bag",
+    "intended": "Alternative bag: named gold meso bag",
+    "id": "ee54373fe3ae46cdaa922b229f1b3f55",
+    "type": "sprite",
+    "category": "item",
+    "names": {
+      "ko": [
+        "골드 메소주머니"
+      ]
+    },
+    "dname": "sprite-145382",
+    "width": 32,
+    "height": 32,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/ee54373fe3ae46cdaa922b229f1b3f55.png",
+    "localImage": "alt-gold-meso-bag.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "alt-silver-meso-bag",
+    "intended": "Alternative bag: named silver meso bag",
+    "id": "274944cb495b4dec9144d69e60ec24bb",
+    "type": "sprite",
+    "category": "item",
+    "names": {
+      "ko": [
+        "실버 메소주머니"
+      ]
+    },
+    "dname": "sprite-125694",
+    "width": 32,
+    "height": 32,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/274944cb495b4dec9144d69e60ec24bb.png",
+    "localImage": "alt-silver-meso-bag.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "alt-money-bag-item",
+    "intended": "Alternative bag: named money / meso bag",
+    "id": "0bc56bdb2ba54b3dbdf43ff07cddb57f",
+    "type": "sprite",
+    "category": "item",
+    "names": {
+      "ko": [
+        "돈 주머니",
+        "레프러콘",
+        "메소주머니",
+        "정착금 교환권",
+        "주문의 흔적"
+      ]
+    },
+    "dname": "sprite-122979",
+    "width": 32,
+    "height": 32,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/0bc56bdb2ba54b3dbdf43ff07cddb57f.png",
+    "localImage": "alt-money-bag-item.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "alt-bill-sprite-2",
+    "intended": "Alternative bill-like sprite",
+    "id": "662385c286bb43aa9dd6c2ae11f30738",
+    "type": "sprite",
+    "category": "etc",
+    "names": null,
+    "dname": "sprite-7482996",
+    "width": 36,
+    "height": 32,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/662385c286bb43aa9dd6c2ae11f30738.png",
+    "localImage": "alt-bill-sprite-2.png",
+    "frames": [],
+    "localFrames": []
+  },
+  {
+    "label": "effect-candidate-1041161",
+    "intended": "Likely sparkle effect, probably not a meso icon",
+    "id": "5542826f767a4bbd989ca62f22a53fa3",
+    "type": "animationclip",
+    "category": "etc",
+    "names": null,
+    "dname": "animationclip-1041161",
+    "width": 27,
+    "height": 26,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/5542826f767a4bbd989ca62f22a53fa3.gif",
+    "localImage": "effect-candidate-1041161.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "116fa13e560642c38c998d51578fff27",
+        "width": 32,
+        "height": 32,
+        "pivot": {
+          "x": 16,
+          "y": 18,
+          "nx": 0.5,
+          "ny": 0.5625
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "48598edf2d984f70b2a824e30fb44a20",
+        "width": 44,
+        "height": 44,
+        "pivot": {
+          "x": 21,
+          "y": 26,
+          "nx": 0.4773,
+          "ny": 0.5909
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "6b8491964edb45ea87631214181f4bc2",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": 11,
+          "y": 14,
+          "nx": 0.4583,
+          "ny": 0.5833
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "362efdbd101f4486affc07f28d9f78d5",
+        "width": 20,
+        "height": 20,
+        "pivot": {
+          "x": 9,
+          "y": 11,
+          "nx": 0.45,
+          "ny": 0.55
+        }
+      },
+      {
+        "index": 4,
+        "spriteRuid": "cb4490828ebe43558efc26f74ead21ff",
+        "width": 16,
+        "height": 12,
+        "pivot": {
+          "x": 6,
+          "y": 7,
+          "nx": 0.375,
+          "ny": 0.5833
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "116fa13e560642c38c998d51578fff27",
+        "width": 32,
+        "height": 32,
+        "localImage": "frames/effect-candidate-1041161-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "48598edf2d984f70b2a824e30fb44a20",
+        "width": 44,
+        "height": 44,
+        "localImage": "frames/effect-candidate-1041161-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "6b8491964edb45ea87631214181f4bc2",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/effect-candidate-1041161-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "362efdbd101f4486affc07f28d9f78d5",
+        "width": 20,
+        "height": 20,
+        "localImage": "frames/effect-candidate-1041161-frame-03.png"
+      },
+      {
+        "index": 4,
+        "spriteRuid": "cb4490828ebe43558efc26f74ead21ff",
+        "width": 16,
+        "height": 12,
+        "localImage": "frames/effect-candidate-1041161-frame-04.png"
+      }
+    ]
+  },
+  {
+    "label": "effect-candidate-1041162",
+    "intended": "Likely sparkle effect, probably not a meso icon",
+    "id": "a6224d981fce4f6e8932ce10af8e58fc",
+    "type": "animationclip",
+    "category": "etc",
+    "names": null,
+    "dname": "animationclip-1041162",
+    "width": 10,
+    "height": 10,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/a6224d981fce4f6e8932ce10af8e58fc.gif",
+    "localImage": "effect-candidate-1041162.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "3c79360de1a2433fa7607250ccc0569e",
+        "width": 12,
+        "height": 12,
+        "pivot": {
+          "x": 5,
+          "y": 7,
+          "nx": 0.4167,
+          "ny": 0.5833
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "9dd35a33899343ceba964294964f9a64",
+        "width": 20,
+        "height": 20,
+        "pivot": {
+          "x": 8,
+          "y": 12,
+          "nx": 0.4,
+          "ny": 0.6
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "041583eb200041d0a6aba0cc90af7995",
+        "width": 8,
+        "height": 8,
+        "pivot": {
+          "x": 3,
+          "y": 5,
+          "nx": 0.375,
+          "ny": 0.625
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "ee813ffbd8764a78898ea65eb695575a",
+        "width": 8,
+        "height": 8,
+        "pivot": {
+          "x": 2,
+          "y": 6,
+          "nx": 0.25,
+          "ny": 0.75
+        }
+      },
+      {
+        "index": 4,
+        "spriteRuid": "3aeca7da8e4b47abbb241768b0919e79",
+        "width": 4,
+        "height": 4,
+        "pivot": {
+          "x": 1,
+          "y": 3,
+          "nx": 0.25,
+          "ny": 0.75
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "3c79360de1a2433fa7607250ccc0569e",
+        "width": 12,
+        "height": 12,
+        "localImage": "frames/effect-candidate-1041162-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "9dd35a33899343ceba964294964f9a64",
+        "width": 20,
+        "height": 20,
+        "localImage": "frames/effect-candidate-1041162-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "041583eb200041d0a6aba0cc90af7995",
+        "width": 8,
+        "height": 8,
+        "localImage": "frames/effect-candidate-1041162-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "ee813ffbd8764a78898ea65eb695575a",
+        "width": 8,
+        "height": 8,
+        "localImage": "frames/effect-candidate-1041162-frame-03.png"
+      },
+      {
+        "index": 4,
+        "spriteRuid": "3aeca7da8e4b47abbb241768b0919e79",
+        "width": 4,
+        "height": 4,
+        "localImage": "frames/effect-candidate-1041162-frame-04.png"
+      }
+    ]
+  },
+  {
+    "label": "effect-candidate-1041163",
+    "intended": "Likely sparkle effect, probably not a meso icon",
+    "id": "6bda1ce4971840bfa0f867e27aa75426",
+    "type": "animationclip",
+    "category": "etc",
+    "names": null,
+    "dname": "animationclip-1041163",
+    "width": 26,
+    "height": 26,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/6bda1ce4971840bfa0f867e27aa75426.gif",
+    "localImage": "effect-candidate-1041163.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "2c8d4a145bf44510b94ad2f9ca125b8f",
+        "width": 32,
+        "height": 32,
+        "pivot": {
+          "x": 16,
+          "y": 18,
+          "nx": 0.5,
+          "ny": 0.5625
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "d9f4ad4c95db4a9ca909894f10f563ea",
+        "width": 44,
+        "height": 44,
+        "pivot": {
+          "x": 21,
+          "y": 26,
+          "nx": 0.4773,
+          "ny": 0.5909
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "e383309c09fc4fe9b70d99550f5e5529",
+        "width": 20,
+        "height": 24,
+        "pivot": {
+          "x": 9,
+          "y": 14,
+          "nx": 0.45,
+          "ny": 0.5833
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "7d46992e4c044108a33671762317e041",
+        "width": 20,
+        "height": 20,
+        "pivot": {
+          "x": 9,
+          "y": 11,
+          "nx": 0.45,
+          "ny": 0.55
+        }
+      },
+      {
+        "index": 4,
+        "spriteRuid": "0296d5e6d1c04a29897f02881b639758",
+        "width": 16,
+        "height": 12,
+        "pivot": {
+          "x": 6,
+          "y": 7,
+          "nx": 0.375,
+          "ny": 0.5833
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "2c8d4a145bf44510b94ad2f9ca125b8f",
+        "width": 32,
+        "height": 32,
+        "localImage": "frames/effect-candidate-1041163-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "d9f4ad4c95db4a9ca909894f10f563ea",
+        "width": 44,
+        "height": 44,
+        "localImage": "frames/effect-candidate-1041163-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "e383309c09fc4fe9b70d99550f5e5529",
+        "width": 20,
+        "height": 24,
+        "localImage": "frames/effect-candidate-1041163-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "7d46992e4c044108a33671762317e041",
+        "width": 20,
+        "height": 20,
+        "localImage": "frames/effect-candidate-1041163-frame-03.png"
+      },
+      {
+        "index": 4,
+        "spriteRuid": "0296d5e6d1c04a29897f02881b639758",
+        "width": 16,
+        "height": 12,
+        "localImage": "frames/effect-candidate-1041163-frame-04.png"
+      }
+    ]
+  },
+  {
+    "label": "effect-candidate-1041164",
+    "intended": "Likely sparkle effect, probably not a meso icon",
+    "id": "853e6c9e637343a297b2628b122134bf",
+    "type": "animationclip",
+    "category": "etc",
+    "names": null,
+    "dname": "animationclip-1041164",
+    "width": 17,
+    "height": 17,
+    "thumbnail": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/853e6c9e637343a297b2628b122134bf.gif",
+    "localImage": "effect-candidate-1041164.gif",
+    "frames": [
+      {
+        "index": 0,
+        "spriteRuid": "086ce28222bf4ebfbc0e3069d1571859",
+        "width": 20,
+        "height": 20,
+        "pivot": {
+          "x": 9,
+          "y": 11,
+          "nx": 0.45,
+          "ny": 0.55
+        }
+      },
+      {
+        "index": 1,
+        "spriteRuid": "608478e949914648b5bd368d9a8d917f",
+        "width": 24,
+        "height": 24,
+        "pivot": {
+          "x": 10,
+          "y": 14,
+          "nx": 0.4167,
+          "ny": 0.5833
+        }
+      },
+      {
+        "index": 2,
+        "spriteRuid": "5b32cd00f55146ae896f98c0e12eca72",
+        "width": 20,
+        "height": 20,
+        "pivot": {
+          "x": 9,
+          "y": 11,
+          "nx": 0.45,
+          "ny": 0.55
+        }
+      },
+      {
+        "index": 3,
+        "spriteRuid": "5d4a6cc6691d44ec8623f2fa23846aa6",
+        "width": 12,
+        "height": 12,
+        "pivot": {
+          "x": 4,
+          "y": 8,
+          "nx": 0.3333,
+          "ny": 0.6667
+        }
+      },
+      {
+        "index": 4,
+        "spriteRuid": "c69147c5e0334e899805a9d6d00a6478",
+        "width": 8,
+        "height": 8,
+        "pivot": {
+          "x": 2,
+          "y": 6,
+          "nx": 0.25,
+          "ny": 0.75
+        }
+      }
+    ],
+    "localFrames": [
+      {
+        "index": 0,
+        "spriteRuid": "086ce28222bf4ebfbc0e3069d1571859",
+        "width": 20,
+        "height": 20,
+        "localImage": "frames/effect-candidate-1041164-frame-00.png"
+      },
+      {
+        "index": 1,
+        "spriteRuid": "608478e949914648b5bd368d9a8d917f",
+        "width": 24,
+        "height": 24,
+        "localImage": "frames/effect-candidate-1041164-frame-01.png"
+      },
+      {
+        "index": 2,
+        "spriteRuid": "5b32cd00f55146ae896f98c0e12eca72",
+        "width": 20,
+        "height": 20,
+        "localImage": "frames/effect-candidate-1041164-frame-02.png"
+      },
+      {
+        "index": 3,
+        "spriteRuid": "5d4a6cc6691d44ec8623f2fa23846aa6",
+        "width": 12,
+        "height": 12,
+        "localImage": "frames/effect-candidate-1041164-frame-03.png"
+      },
+      {
+        "index": 4,
+        "spriteRuid": "c69147c5e0334e899805a9d6d00a6478",
+        "width": 8,
+        "height": 8,
+        "localImage": "frames/effect-candidate-1041164-frame-04.png"
+      }
+    ]
+  }
+]

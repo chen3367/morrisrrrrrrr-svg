@@ -41,6 +41,7 @@ const state = {
   query: "",
   category: cookieValue("ms_item_category"),
   subcategory: cookieValue("ms_item_subcategory"),
+  nameOnlySearch: cookieBool("ms_item_name_only_search"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   showDuplicateNoSourceItems: cookieBool("ms_show_duplicate_no_source_items"),
@@ -54,6 +55,8 @@ const els = {
   search: document.getElementById("itemSearch"),
   category: document.getElementById("categoryFilter"),
   subcategory: document.getElementById("subcategoryFilter"),
+  nameOnlySearch: document.getElementById("nameOnlySearch"),
+  nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   duplicateNoSourceToggle: document.getElementById("duplicateNoSourceToggle"),
@@ -470,7 +473,8 @@ function filteredItems() {
     if (!state.showDuplicateNoSourceItems && item.hiddenDuplicateNoSource) return false;
     if (state.category && item.category !== state.category) return false;
     if (state.subcategory && item.subcategory !== state.subcategory) return false;
-    if (q && !searchableText(item).includes(q)) return false;
+    const searchText = state.nameOnlySearch ? norm(item.name) : searchableText(item);
+    if (q && !searchText.includes(q)) return false;
     return true;
   }).sort(compareItems);
 }
@@ -525,12 +529,17 @@ function updateSubcategoryFilter() {
 
 function syncControls() {
   els.search.value = state.query;
+  if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
   els.category.value = state.category;
   state.category = els.category.value;
   updateSubcategoryFilter();
 }
 
 function updateToggles() {
+  if (els.nameOnlySearch && els.nameOnlySearchControl) {
+    els.nameOnlySearch.checked = state.nameOnlySearch;
+    els.nameOnlySearchControl.classList.toggle("active", state.nameOnlySearch);
+  }
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
   els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
@@ -888,6 +897,12 @@ function render() {
 
 els.search.addEventListener("input", event => {
   state.query = event.target.value;
+  render();
+});
+
+els.nameOnlySearch.addEventListener("change", event => {
+  state.nameOnlySearch = event.target.checked;
+  saveBool("ms_item_name_only_search", state.nameOnlySearch);
   render();
 });
 

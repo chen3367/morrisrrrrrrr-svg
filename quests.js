@@ -41,6 +41,7 @@ const state = {
   query: "",
   category: cookieValue("ms_quest_category"),
   level: cookieValue("ms_quest_level"),
+  nameOnlySearch: cookieBool("ms_quest_name_only_search"),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
@@ -51,6 +52,8 @@ const els = {
   search: document.getElementById("questSearch"),
   category: document.getElementById("questCategoryFilter"),
   level: document.getElementById("questLevelFilter"),
+  nameOnlySearch: document.getElementById("nameOnlySearch"),
+  nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
   settingsToggle: document.getElementById("settingsToggle"),
@@ -245,7 +248,8 @@ function filteredQuests() {
   return (db.quests || []).filter(quest => {
     if (state.category && quest.category !== state.category) return false;
     if (!levelMatches(quest)) return false;
-    if (q && !searchableText(quest).includes(q)) return false;
+    const searchText = state.nameOnlySearch ? norm(quest.name) : searchableText(quest);
+    if (q && !searchText.includes(q)) return false;
     return true;
   }).sort(compareQuests);
 }
@@ -272,6 +276,7 @@ function populateFilters() {
 
 function syncControls() {
   els.search.value = state.query;
+  if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
   els.category.value = state.category;
   state.category = els.category.value;
   els.level.value = state.level;
@@ -279,6 +284,10 @@ function syncControls() {
 }
 
 function updateToggles() {
+  if (els.nameOnlySearch && els.nameOnlySearchControl) {
+    els.nameOnlySearch.checked = state.nameOnlySearch;
+    els.nameOnlySearchControl.classList.toggle("active", state.nameOnlySearch);
+  }
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
 }
@@ -583,6 +592,12 @@ function render() {
 
 els.search.addEventListener("input", event => {
   state.query = event.target.value;
+  render();
+});
+
+els.nameOnlySearch.addEventListener("change", event => {
+  state.nameOnlySearch = event.target.checked;
+  saveBool("ms_quest_name_only_search", state.nameOnlySearch);
   render();
 });
 
