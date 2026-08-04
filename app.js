@@ -37,6 +37,14 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+function parseCookieSet(name) {
+  return new Set(cookieValue(name).split("|").map(value => value.trim()).filter(Boolean));
+}
+
+function writeCookieSet(name, values) {
+  writeCookie(name, [...values].join("|"));
+}
+
 const SEARCH_HISTORY_COOKIE = "ms_search_history";
 const SEARCH_HISTORY_LIMIT = 20;
 const SEARCH_HISTORY_MAX_LENGTH = 40;
@@ -129,6 +137,7 @@ const state = {
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialMonsterId(),
+  preserveSelectedDetail: Boolean(initialMonsterId()),
   accuracyOpen: cookieBool("ms_accuracy_open"),
   attackType: cookieValue("ms_accuracy_attack_type", "physical") === "magical" ? "magical" : "physical",
   characterLevel: positiveNumber(cookieValue("ms_accuracy_level", "50"), 50),
@@ -229,6 +238,14 @@ function questUrl(questId) {
   return `./quests.html?quest=${encodeURIComponent(questId)}`;
 }
 
+function mapUrl(map) {
+  const url = new URL("./maps.html", window.location.href);
+  url.searchParams.set("map", map.id);
+  if (map.unnamed) url.searchParams.set("showUnnamedMaps", "1");
+  if (map.specialMap) url.searchParams.set("showSpecialMaps", "1");
+  return `${url.pathname.split("/").pop()}${url.search}`;
+}
+
 function questNpcImage(row, className = "sourceMonsterImage") {
   const npc = row.startNpc || row.endNpc || null;
   return assetImage(npc?.image, npc?.name || row.questName || "任務", "任", className);
@@ -308,6 +325,10 @@ function filteredMonsters() {
       drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q)));
     return visibleContinentOk && unnamedMapOk && continentOk && queryOk;
   }).sort(compareMonsters);
+}
+
+function monsterById(monsterId) {
+  return (db.monsters || []).find(monster => String(monster.id) === String(monsterId));
 }
 
 function hasKnownContinent(monster) {
@@ -572,12 +593,13 @@ function updateSettingsPanel() {
 
 function renderList() {
   const rows = filteredMonsters();
-  if (!rows.some(m => m.id === state.selectedId)) {
-    state.selectedId = rows[0]?.id || null;
+  if (!rows.some(m => String(m.id) === String(state.selectedId))) {
+    const preserved = state.preserveSelectedDetail && monsterById(state.selectedId);
+    if (!preserved) state.selectedId = rows[0]?.id || null;
   }
   els.count.textContent = `${rows.length.toLocaleString()} 隻`;
   els.list.innerHTML = rows.slice(0, 500).map(monster => `
-    <button class="monsterRow ${monster.id === state.selectedId ? "active" : ""}" data-id="${monster.id}">
+    <button class="monsterRow ${String(monster.id) === String(state.selectedId) ? "active" : ""}" data-id="${monster.id}">
       ${assetImage(monster.image, monster.name, monster.name.slice(0, 1), "rowMonsterImage")}
       <span class="rowText">
         <strong>${escapeHtml(monster.name)}</strong>
@@ -591,7 +613,9 @@ function renderList() {
 
 function renderDetail() {
   const rows = filteredMonsters();
-  const monster = rows.find(m => m.id === state.selectedId) || rows[0];
+  const monster = (state.preserveSelectedDetail && monsterById(state.selectedId))
+    || rows.find(m => String(m.id) === String(state.selectedId))
+    || rows[0];
   if (!monster) {
     els.detail.innerHTML = `<div class="empty">找不到符合的怪物</div>`;
     return;
@@ -925,18 +949,21 @@ function mapCard(map) {
   if (map.regionName) meta.push(map.regionName);
   if (map.areaName && map.areaName !== map.regionName) meta.push(map.areaName);
   if (map.street && !meta.includes(map.street)) meta.push(map.street);
+  if (map.specialMap) meta.push(map.specialMapReason || "特殊地圖");
   if (!meta.length) meta.push("未知區域");
   if (state.showIds) meta.push(map.id);
   if (state.showIds && map.regionKey) meta.push(map.regionKey);
+  const spawnCount = Number(map.spawnCount || 0);
+  const spawnText = spawnCount > 0 ? `${formatNumber(spawnCount)} 個重生點` : (map.spawnNote || "重生點未標註");
   return `
-    <article class="mapCard ${map.markImage ? "withMapMark" : ""}">
+    <a class="mapCard mapLinkCard ${map.markImage ? "withMapMark" : ""}" href="${escapeHtml(mapUrl(map))}">
       ${map.markImage ? `<img class="mapMarkImage" src="${escapeHtml(map.markImage)}" alt="${escapeHtml(map.markKey || map.regionName || map.street || "地圖圖示")}" loading="lazy">` : ""}
       <div>
         <strong>${escapeHtml(map.name)}</strong>
         <span>${meta.map(escapeHtml).join(" · ")}</span>
-        ${map.desc || map.areaDesc ? `<p>${escapeHtml(shorten(map.desc || map.areaDesc, 88))}</p>` : ""}
+        <p>${escapeHtml(spawnText)}${map.desc || map.areaDesc ? ` · ${escapeHtml(shorten(map.desc || map.areaDesc, 72))}` : ""}</p>
       </div>
-    </article>
+    </a>
   `;
 }
 
@@ -1074,12 +1101,14 @@ function render() {
 }
 
 els.search.addEventListener("input", event => {
+  state.preserveSelectedDetail = false;
   state.query = event.target.value;
   scheduleRememberSearchTerm(state.query);
   render();
 });
 
 els.nameOnlySearch.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.nameOnlySearch = event.target.checked;
   saveBool("ms_monster_name_only_search", state.nameOnlySearch);
   render();
@@ -1091,6 +1120,7 @@ els.continentButton.addEventListener("click", () => {
 
 els.continentOptions.addEventListener("change", event => {
   if (!event.target.matches('input[type="checkbox"]')) return;
+  state.preserveSelectedDetail = false;
   state.continents = selectedContinentValues();
   saveSelectedContinents();
   updateContinentSummary();
@@ -1099,6 +1129,7 @@ els.continentOptions.addEventListener("change", event => {
 
 els.continentOptions.addEventListener("click", event => {
   if (!event.target.closest("#continentClear")) return;
+  state.preserveSelectedDetail = false;
   state.continents = [];
   saveSelectedContinents();
   syncContinentInputs();
@@ -1110,12 +1141,14 @@ document.addEventListener("click", event => {
 });
 
 els.unknownToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showUnknownContinents = !state.showUnknownContinents;
   saveBool("ms_show_unknown_continents", state.showUnknownContinents);
   render();
 });
 
 els.unnamedMapToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
   saveBool("ms_show_unnamed_map_monsters", state.showUnnamedMapMonsters);
   setMonsterUrl(state.selectedId);
@@ -1123,6 +1156,7 @@ els.unnamedMapToggle.addEventListener("click", () => {
 });
 
 els.unnamedToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showUnnamedItems = !state.showUnnamedItems;
   saveBool("ms_show_unnamed_items", state.showUnnamedItems);
   render();
@@ -1147,6 +1181,7 @@ els.settingsToggle.addEventListener("click", () => {
 els.list.addEventListener("click", event => {
   const button = event.target.closest(".monsterRow");
   if (!button) return;
+  state.preserveSelectedDetail = false;
   state.selectedId = button.dataset.id;
   setMonsterUrl(state.selectedId);
   render();

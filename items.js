@@ -37,6 +37,14 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+function parseCookieSet(name) {
+  return new Set(cookieValue(name).split("|").map(value => value.trim()).filter(Boolean));
+}
+
+function writeCookieSet(name, values) {
+  writeCookie(name, [...values].join("|"));
+}
+
 const SEARCH_HISTORY_COOKIE = "ms_search_history";
 const SEARCH_HISTORY_LIMIT = 20;
 const SEARCH_HISTORY_MAX_LENGTH = 40;
@@ -116,11 +124,12 @@ const state = {
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showItemMakeCrafts: cookieBool("ms_show_item_make_crafts"),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
-  showDuplicateNoSourceItems: cookieBool("ms_show_duplicate_no_source_items"),
+  showDuplicateNoSourceItems: initialShowDuplicateNoSourceItems(),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialItemId(),
+  preserveSelectedDetail: Boolean(initialItemId()),
 };
 
 const els = {
@@ -191,6 +200,12 @@ function initialShowUnnamedMapMonsters() {
   const params = new URLSearchParams(window.location.search);
   if (params.get("showUnnamedMaps") === "1") return true;
   return cookieBool("ms_show_unnamed_map_monsters");
+}
+
+function initialShowDuplicateNoSourceItems() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("showNoSource") === "1") return true;
+  return cookieBool("ms_show_duplicate_no_source_items");
 }
 
 function setItemUrl(itemId) {
@@ -610,6 +625,10 @@ function filteredItems() {
   }).sort(compareItems);
 }
 
+function itemById(itemId) {
+  return (db.items || []).find(item => String(item.id) === String(itemId));
+}
+
 function compareItems(a, b) {
   const orderDiff = Number(a.categoryOrder || 999) - Number(b.categoryOrder || 999);
   if (orderDiff) return orderDiff;
@@ -695,7 +714,8 @@ function updateSettingsPanel() {
 function renderList() {
   const rows = filteredItems();
   if (!rows.some(item => String(item.id) === String(state.selectedId))) {
-    state.selectedId = rows[0]?.id || null;
+    const preserved = state.preserveSelectedDetail && itemById(state.selectedId);
+    if (!preserved) state.selectedId = rows[0]?.id || null;
   }
   els.count.textContent = `${rows.length.toLocaleString()} 項`;
   const visibleRows = rows.slice(0, 900);
@@ -722,7 +742,9 @@ function totalSources(item) {
 
 function selectedItem() {
   const rows = filteredItems();
-  return rows.find(item => String(item.id) === String(state.selectedId)) || rows[0];
+  return (state.preserveSelectedDetail && itemById(state.selectedId))
+    || rows.find(item => String(item.id) === String(state.selectedId))
+    || rows[0];
 }
 
 function renderDetail() {
@@ -1086,18 +1108,21 @@ function render() {
 }
 
 els.search.addEventListener("input", event => {
+  state.preserveSelectedDetail = false;
   state.query = event.target.value;
   scheduleRememberSearchTerm(state.query);
   render();
 });
 
 els.nameOnlySearch.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.nameOnlySearch = event.target.checked;
   saveBool("ms_item_name_only_search", state.nameOnlySearch);
   render();
 });
 
 els.category.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.category = event.target.value;
   writeCookie("ms_item_category", state.category);
   updateSubcategoryFilter();
@@ -1106,12 +1131,14 @@ els.category.addEventListener("change", event => {
 });
 
 els.subcategory.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.subcategory = event.target.value;
   writeCookie("ms_item_subcategory", state.subcategory);
   render();
 });
 
 els.unnamedMapToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showUnnamedMapMonsters = !state.showUnnamedMapMonsters;
   saveBool("ms_show_unnamed_map_monsters", state.showUnnamedMapMonsters);
   setItemUrl(state.selectedId);
@@ -1119,18 +1146,21 @@ els.unnamedMapToggle.addEventListener("click", () => {
 });
 
 els.itemMakeCraftToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showItemMakeCrafts = !state.showItemMakeCrafts;
   saveBool("ms_show_item_make_crafts", state.showItemMakeCrafts);
   render();
 });
 
 els.unnamedToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showUnnamedItems = !state.showUnnamedItems;
   saveBool("ms_show_unnamed_items", state.showUnnamedItems);
   render();
 });
 
 els.duplicateNoSourceToggle.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
   state.showDuplicateNoSourceItems = !state.showDuplicateNoSourceItems;
   saveBool("ms_show_duplicate_no_source_items", state.showDuplicateNoSourceItems);
   render();
@@ -1155,6 +1185,7 @@ els.settingsToggle.addEventListener("click", () => {
 els.list.addEventListener("click", event => {
   const button = event.target.closest(".itemIndexRow");
   if (!button) return;
+  state.preserveSelectedDetail = false;
   state.selectedId = Number(button.dataset.id);
   setItemUrl(state.selectedId);
   render();

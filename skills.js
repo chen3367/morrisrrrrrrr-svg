@@ -118,6 +118,7 @@ const state = {
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialSkillId(),
+  preserveSelectedDetail: Boolean(initialSkillId()),
 };
 
 const els = {
@@ -256,6 +257,10 @@ function filteredSkills() {
   }).sort(compareSkills);
 }
 
+function skillById(skillId) {
+  return (db.skills || []).find(skill => String(skill.id) === String(skillId));
+}
+
 function compareSkills(a, b) {
   const groupDiff = Number(a.jobGroupOrder || 9999) - Number(b.jobGroupOrder || 9999);
   if (groupDiff) return groupDiff;
@@ -335,7 +340,8 @@ function updateSettingsPanel() {
 function renderList() {
   const rows = filteredSkills();
   if (!rows.some(skill => String(skill.id) === String(state.selectedId))) {
-    state.selectedId = rows[0]?.id || null;
+    const preserved = state.preserveSelectedDetail && skillById(state.selectedId);
+    if (!preserved) state.selectedId = rows[0]?.id || null;
   }
   els.count.textContent = `${rows.length.toLocaleString()} 個`;
   const visibleRows = rows.slice(0, 1000);
@@ -357,7 +363,9 @@ function renderList() {
 
 function selectedSkill() {
   const rows = filteredSkills();
-  return rows.find(skill => String(skill.id) === String(state.selectedId)) || rows[0];
+  return (state.preserveSelectedDetail && skillById(state.selectedId))
+    || rows.find(skill => String(skill.id) === String(state.selectedId))
+    || rows[0];
 }
 
 function renderDetail() {
@@ -485,18 +493,21 @@ function render() {
 }
 
 els.search.addEventListener("input", event => {
+  state.preserveSelectedDetail = false;
   state.query = event.target.value;
   scheduleRememberSearchTerm(state.query);
   render();
 });
 
 els.nameOnlySearch.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.nameOnlySearch = event.target.checked;
   saveBool("ms_skill_name_only_search", state.nameOnlySearch);
   render();
 });
 
 els.group.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.jobGroup = event.target.value;
   writeCookie("ms_skill_job_group", state.jobGroup);
   populateJobFilter();
@@ -505,6 +516,7 @@ els.group.addEventListener("change", event => {
 });
 
 els.advancement.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.advancement = event.target.value;
   writeCookie("ms_skill_advancement", state.advancement);
   populateJobFilter();
@@ -513,6 +525,7 @@ els.advancement.addEventListener("change", event => {
 });
 
 els.job.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.jobId = event.target.value;
   writeCookie("ms_skill_job_id", state.jobId);
   render();
@@ -537,6 +550,7 @@ els.settingsToggle.addEventListener("click", () => {
 els.list.addEventListener("click", event => {
   const button = event.target.closest(".skillIndexRow");
   if (!button) return;
+  state.preserveSelectedDetail = false;
   state.selectedId = button.dataset.id;
   setSkillUrl(state.selectedId);
   render();

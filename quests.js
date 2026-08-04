@@ -117,6 +117,7 @@ const state = {
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialQuestId(),
+  preserveSelectedDetail: Boolean(initialQuestId()),
 };
 
 const els = {
@@ -325,6 +326,10 @@ function filteredQuests() {
   }).sort(compareQuests);
 }
 
+function questById(questId) {
+  return (db.quests || []).find(quest => String(quest.id) === String(questId));
+}
+
 function compareQuests(a, b) {
   const categoryDiff = Number(a.categoryOrder || 9999) - Number(b.categoryOrder || 9999);
   if (categoryDiff) return categoryDiff;
@@ -375,7 +380,8 @@ function updateSettingsPanel() {
 function renderList() {
   const rows = filteredQuests();
   if (!rows.some(quest => String(quest.id) === String(state.selectedId))) {
-    state.selectedId = rows[0]?.id || null;
+    const preserved = state.preserveSelectedDetail && questById(state.selectedId);
+    if (!preserved) state.selectedId = rows[0]?.id || null;
   }
   els.count.textContent = `${rows.length.toLocaleString()} 個`;
   const visibleRows = rows.slice(0, 900);
@@ -406,7 +412,9 @@ function questRewardCount(quest) {
 
 function selectedQuest() {
   const rows = filteredQuests();
-  return rows.find(quest => String(quest.id) === String(state.selectedId)) || rows[0];
+  return (state.preserveSelectedDetail && questById(state.selectedId))
+    || rows.find(quest => String(quest.id) === String(state.selectedId))
+    || rows[0];
 }
 
 function renderDetail() {
@@ -662,24 +670,28 @@ function render() {
 }
 
 els.search.addEventListener("input", event => {
+  state.preserveSelectedDetail = false;
   state.query = event.target.value;
   scheduleRememberSearchTerm(state.query);
   render();
 });
 
 els.nameOnlySearch.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.nameOnlySearch = event.target.checked;
   saveBool("ms_quest_name_only_search", state.nameOnlySearch);
   render();
 });
 
 els.category.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.category = event.target.value;
   writeCookie("ms_quest_category", state.category);
   render();
 });
 
 els.level.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
   state.level = event.target.value;
   writeCookie("ms_quest_level", state.level);
   render();
@@ -704,6 +716,7 @@ els.settingsToggle.addEventListener("click", () => {
 els.list.addEventListener("click", event => {
   const button = event.target.closest(".questIndexRow");
   if (!button) return;
+  state.preserveSelectedDetail = false;
   state.selectedId = button.dataset.id;
   setQuestUrl(state.selectedId);
   render();
