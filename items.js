@@ -43,6 +43,7 @@ const state = {
   subcategory: cookieValue("ms_item_subcategory"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
+  showDuplicateNoSourceItems: cookieBool("ms_show_duplicate_no_source_items"),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
@@ -55,6 +56,7 @@ const els = {
   subcategory: document.getElementById("subcategoryFilter"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
+  duplicateNoSourceToggle: document.getElementById("duplicateNoSourceToggle"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
   settingsToggle: document.getElementById("settingsToggle"),
@@ -465,6 +467,7 @@ function filteredItems() {
   const q = norm(state.query);
   return (db.items || []).filter(item => {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
+    if (!state.showDuplicateNoSourceItems && item.hiddenDuplicateNoSource) return false;
     if (state.category && item.category !== state.category) return false;
     if (state.subcategory && item.subcategory !== state.subcategory) return false;
     if (q && !searchableText(item).includes(q)) return false;
@@ -534,6 +537,8 @@ function updateToggles() {
   els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名怪物/地圖" : "顯示未命名怪物/地圖";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
+  els.duplicateNoSourceToggle.setAttribute("aria-pressed", String(state.showDuplicateNoSourceItems));
+  els.duplicateNoSourceToggle.textContent = state.showDuplicateNoSourceItems ? "隱藏重複無來源道具" : "顯示重複無來源道具";
 }
 
 function updateSettingsPanel() {
@@ -910,6 +915,12 @@ els.unnamedMapToggle.addEventListener("click", () => {
 els.unnamedToggle.addEventListener("click", () => {
   state.showUnnamedItems = !state.showUnnamedItems;
   saveBool("ms_show_unnamed_items", state.showUnnamedItems);
+  render();
+});
+
+els.duplicateNoSourceToggle.addEventListener("click", () => {
+  state.showDuplicateNoSourceItems = !state.showDuplicateNoSourceItems;
+  saveBool("ms_show_duplicate_no_source_items", state.showDuplicateNoSourceItems);
   render();
 });
 
