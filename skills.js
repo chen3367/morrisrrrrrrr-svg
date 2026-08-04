@@ -121,6 +121,13 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
+function assetImage(src, alt, fallback, className) {
+  if (src) {
+    return `<img class="${className} assetImage" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
+  }
+  return `<div class="${className}">${escapeHtml(fallback || "?")}</div>`;
+}
+
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
