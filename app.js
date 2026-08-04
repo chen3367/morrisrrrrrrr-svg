@@ -37,9 +37,18 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+const EVENT_CONTINENTS = new Set(["楓葉世界"]);
+
+function initialSelectedContinents() {
+  const raw = cookieValue("ms_monster_continents");
+  if (raw) return raw.split("|").map(value => value.trim()).filter(Boolean);
+  const legacy = cookieValue("ms_monster_continent");
+  return legacy ? [legacy] : [];
+}
+
 const state = {
   query: "",
-  continent: cookieValue("ms_monster_continent"),
+  continents: initialSelectedContinents(),
   showUnknownContinents: cookieBool("ms_show_unknown_continents"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
@@ -57,6 +66,9 @@ const state = {
 const els = {
   search: document.getElementById("search"),
   continent: document.getElementById("continentFilter"),
+  continentButton: document.getElementById("continentMenuButton"),
+  continentOptions: document.getElementById("continentOptions"),
+  continentClear: document.getElementById("continentClear"),
   unknownToggle: document.getElementById("unknownToggle"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
@@ -206,7 +218,7 @@ function filteredMonsters() {
   return db.monsters.filter(monster => {
     const visibleContinentOk = state.showUnknownContinents || hasKnownContinent(monster);
     const unnamedMapOk = state.showUnnamedMapMonsters || !onlyUnnamedMapMonster(monster);
-    const continentOk = !state.continent || monster.continents.includes(state.continent);
+    const continentOk = matchesSelectedContinents(monster);
     const drops = visibleDrops(monster);
     const queryOk = !q ||
       norm(monster.id).includes(q) ||
@@ -227,6 +239,17 @@ function hasKnownContinent(monster) {
 
 function onlyUnnamedMapMonster(monster) {
   return Boolean(monster.onlyUnnamedMaps);
+}
+
+function onlyEventContinentMonster(monster) {
+  const continents = (monster.continents || []).filter(Boolean);
+  return continents.length > 0 && continents.every(continent => EVENT_CONTINENTS.has(continent));
+}
+
+function matchesSelectedContinents(monster) {
+  const selected = state.continents || [];
+  if (!selected.length) return !onlyEventContinentMonster(monster);
+  return (monster.continents || []).some(continent => selected.includes(continent));
 }
 
 function isUnnamedItem(item) {
@@ -345,16 +368,62 @@ function continentText(monster) {
 
 function populateFilters() {
   const continents = [...(db.filters?.continents || [])].sort((a, b) => a.localeCompare(b, "zh-Hant"));
-  els.continent.innerHTML = `
-    <option value="">全部大陸</option>
-    ${continents.map(continent => `<option value="${escapeHtml(continent)}">${escapeHtml(continent)}</option>`).join("")}
+  const validContinents = new Set(continents);
+  state.continents = (state.continents || []).filter(continent => validContinents.has(continent));
+  els.continentOptions.innerHTML = `
+    <button id="continentClear" class="multiSelectClear" type="button">清除選取</button>
+    ${continents.map(continent => `
+      <label class="multiSelectOption">
+        <input type="checkbox" value="${escapeHtml(continent)}" />
+        <span>${escapeHtml(continent)}${EVENT_CONTINENTS.has(continent) ? "（活動）" : ""}</span>
+      </label>
+    `).join("")}
   `;
+  els.continentClear = document.getElementById("continentClear");
+  syncContinentInputs();
 }
 
 function syncControls() {
   els.search.value = state.query;
-  els.continent.value = state.continent;
-  state.continent = els.continent.value;
+  syncContinentInputs();
+}
+
+function selectedContinentValues() {
+  return [...els.continentOptions.querySelectorAll('input[type="checkbox"]:checked')]
+    .map(input => input.value)
+    .filter(Boolean);
+}
+
+function saveSelectedContinents() {
+  writeCookie("ms_monster_continents", (state.continents || []).join("|"));
+  writeCookie("ms_monster_continent", "");
+}
+
+function syncContinentInputs() {
+  if (!els.continentOptions) return;
+  const selected = new Set(state.continents || []);
+  els.continentOptions.querySelectorAll('input[type="checkbox"]').forEach(input => {
+    input.checked = selected.has(input.value);
+  });
+  updateContinentSummary();
+}
+
+function updateContinentSummary() {
+  if (!els.continentButton) return;
+  const selected = state.continents || [];
+  if (!selected.length) {
+    els.continentButton.textContent = "全部一般大陸";
+  } else if (selected.length === 1) {
+    els.continentButton.textContent = selected[0];
+  } else {
+    els.continentButton.textContent = `已選 ${selected.length} 個大陸`;
+  }
+}
+
+function setContinentMenu(open) {
+  if (!els.continentButton || !els.continentOptions) return;
+  els.continentButton.setAttribute("aria-expanded", String(open));
+  els.continentOptions.hidden = !open;
 }
 
 function idMeta(id) {
@@ -896,10 +965,28 @@ els.search.addEventListener("input", event => {
   render();
 });
 
-els.continent.addEventListener("change", event => {
-  state.continent = event.target.value;
-  writeCookie("ms_monster_continent", state.continent);
+els.continentButton.addEventListener("click", () => {
+  setContinentMenu(els.continentButton.getAttribute("aria-expanded") !== "true");
+});
+
+els.continentOptions.addEventListener("change", event => {
+  if (!event.target.matches('input[type="checkbox"]')) return;
+  state.continents = selectedContinentValues();
+  saveSelectedContinents();
+  updateContinentSummary();
   render();
+});
+
+els.continentOptions.addEventListener("click", event => {
+  if (!event.target.closest("#continentClear")) return;
+  state.continents = [];
+  saveSelectedContinents();
+  syncContinentInputs();
+  render();
+});
+
+document.addEventListener("click", event => {
+  if (!els.continent.contains(event.target)) setContinentMenu(false);
 });
 
 els.unknownToggle.addEventListener("click", () => {

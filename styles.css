@@ -201,6 +201,96 @@ select {
   width: 156px;
   flex: 0 0 156px;
 }
+.multiSelect {
+  position: relative;
+  width: 184px;
+  flex: 0 0 184px;
+  z-index: 20;
+}
+.multiSelectButton {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 0 34px 0 12px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+.multiSelectButton::after {
+  content: "";
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+}
+.multiSelectButton[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.multiSelectOptions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(280px, 76vw);
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 6px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.multiSelectOptions[hidden] {
+  display: none;
+}
+.multiSelectClear {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--control-border);
+  border-radius: 7px;
+  margin-bottom: 4px;
+  background: var(--control-soft);
+  color: var(--control-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.multiSelectOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border-radius: 7px;
+  padding: 7px 8px;
+  color: var(--control-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.multiSelectOption:hover,
+.multiSelectClear:hover {
+  background: var(--control-hover);
+}
+.multiSelectOption input {
+  width: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+}
 .settingsToggle, .toggleButton, .toggleIdButton, .toggleThemeButton {
   flex: 0 0 auto;
   min-height: 42px;
@@ -1223,6 +1313,13 @@ h3 {
   select {
     width: 132px;
     flex-basis: 132px;
+  }
+  .multiSelect {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .multiSelectOptions {
+    width: 100%;
   }
   .toggleButton {
     flex-basis: 142px;

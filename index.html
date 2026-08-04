@@ -45,9 +45,12 @@
       <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
       <span id="resultCount"></span>
       <div id="settingsPanel" class="settingsPanel" hidden>
-        <select id="continentFilter" aria-label="以大陸篩選">
-          <option value="">全部大陸</option>
-        </select>
+        <div id="continentFilter" class="multiSelect">
+          <button id="continentMenuButton" class="multiSelectButton" type="button" aria-expanded="false" aria-controls="continentOptions">全部一般大陸</button>
+          <div id="continentOptions" class="multiSelectOptions" role="group" aria-label="以大陸複選篩選" hidden>
+            <button id="continentClear" class="multiSelectClear" type="button">清除選取</button>
+          </div>
+        </div>
         <button id="unknownToggle" class="toggleButton" type="button" aria-pressed="false">顯示未知大陸</button>
         <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖怪物</button>
         <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>
