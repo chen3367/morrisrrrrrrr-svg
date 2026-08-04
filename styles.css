@@ -884,6 +884,13 @@ h3 {
   background: var(--link-hover-bg);
   transform: translateY(-1px);
 }
+.inlineSourceLink {
+  color: inherit;
+  text-decoration: none;
+}
+.inlineSourceLink:hover {
+  color: var(--blue);
+}
 .sourceRow strong {
   display: block;
   overflow-wrap: anywhere;

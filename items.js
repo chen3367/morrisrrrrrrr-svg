@@ -705,6 +705,7 @@ function renderShopSources(item) {
 function recipeMeta(row) {
   const meta = [];
   if (row.meso !== null && row.meso !== undefined) meta.push(`${formatNumber(row.meso)} 楓幣`);
+  else if (row.sourceKind === "npcDialog") meta.push("費用未標注");
   if (row.reqLevel) meta.push(`角色 Lv.${formatNumber(row.reqLevel)}+`);
   if (row.reqSkillLevel) meta.push(`製作 Lv.${formatNumber(row.reqSkillLevel)}+`);
   if (row.tuc) meta.push(`TUC ${formatNumber(row.tuc)}`);
@@ -740,7 +741,12 @@ function craftNpcText(row) {
     return `${npc.name}${location}`;
   });
   if (names.length) return names.join("、");
+  if (row.sourceKind === "npcDialog") return "NPC 對話腳本未標注 NPC";
   return "ItemMake 未標注固定 NPC";
+}
+
+function craftNpcLabel(row) {
+  return row.sourceKind === "npcDialog" ? "NPC" : "候選工作台 NPC";
 }
 
 function craftNpcImage(row) {
@@ -765,7 +771,9 @@ function randomOutputText(row) {
 
 function renderCraftSources(item) {
   const rows = sourceRows(item).crafts;
-  return sourceBlock("製作技能配方", rows, row => {
+  const npcRows = rows.filter(row => row.sourceKind === "npcDialog");
+  const makerRows = rows.filter(row => row.sourceKind !== "npcDialog");
+  const renderRow = row => {
     const requirements = row.requirements || [];
     const questText = requiredQuestText(row);
     const outputText = randomOutputText(row);
@@ -775,17 +783,23 @@ function renderCraftSources(item) {
         <div>
           <strong>${escapeHtml(row.groupLabel || "合成配方")}</strong>
           <span>${escapeHtml(recipeMeta(row))}</span>
-          <p>NPC 候選：${escapeHtml(craftNpcText(row))}</p>
+          ${row.menuLabel ? `<p>菜單：${escapeHtml(row.menuLabel)}</p>` : ""}
+          <p>${escapeHtml(craftNpcLabel(row))}：${escapeHtml(craftNpcText(row))}</p>
           ${row.materials?.length ? `<p>材料</p>${recipeChipGroup(row.materials)}` : ""}
           ${requirements.length ? `<p>附加需求</p>${recipeChipGroup(requirements)}` : ""}
           ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
           ${outputText ? `<p>可能產物：${escapeHtml(outputText)}</p>` : ""}
-          <p class="sourceNote">${escapeHtml(row.npcNote || "")}</p>
+          ${row.mesoNote ? `<p class="sourceNote">${escapeHtml(row.mesoNote)}</p>` : ""}
+          ${row.npcNote ? `<p class="sourceNote">${escapeHtml(row.npcNote)}</p>` : ""}
         </div>
-        <small>${row.output?.chanceWeight !== null && row.output?.chanceWeight !== undefined ? `權重 ${formatNumber(row.output.chanceWeight)}` : "合成"}</small>
+        <small>${row.output?.chanceWeight !== null && row.output?.chanceWeight !== undefined ? `權重 ${formatNumber(row.output.chanceWeight)}` : row.sourceKind === "npcDialog" ? "NPC" : "強化合成"}</small>
       </article>
     `;
-  });
+  };
+  return [
+    sourceBlock("NPC 對話合成配方", npcRows, renderRow),
+    sourceBlock("0轉技能「強化合成」特殊配方", makerRows, renderRow),
+  ].join("");
 }
 
 function renderQuestRequirementSources(item) {
@@ -805,25 +819,33 @@ function renderQuestRequirementSources(item) {
 
 function renderCraftRequirementSources(item) {
   const rows = craftRequirementRows(item);
-  return sourceBlock("被用於製作技能", rows, row => {
+  const npcRows = rows.filter(row => row.sourceKind === "npcDialog");
+  const makerRows = rows.filter(row => row.sourceKind !== "npcDialog");
+  const renderRow = row => {
     const output = row.primaryOutput || row.output || {};
     const ingredient = row.ingredient || {};
     const name = String(output.name || `道具 ${output.id || ""}`);
     const requirementText = [ingredient.role || "材料"];
     if (ingredient.count) requirementText.push(`${formatNumber(ingredient.count)} 個`);
     return `
-      <a class="sourceRow sourceLinkRow monsterSourceRow recipeOutputRow" href="${itemUrl(output.id)}">
+      <article class="sourceRow monsterSourceRow recipeOutputRow">
         ${assetImage(output.image, name, name.slice(0, 1) || "?", "sourceMonsterImage")}
         <div>
-          <strong>${escapeHtml(name)}</strong>
+          <a class="inlineSourceLink" href="${itemUrl(output.id)}"><strong>${escapeHtml(name)}</strong></a>
           <span>${escapeHtml(row.groupLabel || "合成配方")}${recipeMeta(row) ? ` · ${escapeHtml(recipeMeta(row))}` : ""}</span>
-          <p>NPC 候選：${escapeHtml(craftNpcText(row))}</p>
+          ${row.menuLabel ? `<p>菜單：${escapeHtml(row.menuLabel)}</p>` : ""}
+          <p>${escapeHtml(craftNpcLabel(row))}：${escapeHtml(craftNpcText(row))}</p>
           ${row.materials?.length ? `<p>完整材料</p>${recipeChipGroup(row.materials)}` : ""}
+          ${row.mesoNote ? `<p class="sourceNote">${escapeHtml(row.mesoNote)}</p>` : ""}
         </div>
         <small>${escapeHtml(requirementText.join(" · "))}</small>
-      </a>
+      </article>
     `;
-  });
+  };
+  return [
+    sourceBlock("被用於 NPC 對話合成", npcRows, renderRow),
+    sourceBlock("被用於 0轉技能「強化合成」", makerRows, renderRow),
+  ].join("");
 }
 
 function sourceBlock(title, rows, renderRow) {
