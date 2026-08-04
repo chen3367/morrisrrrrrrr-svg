@@ -141,8 +141,8 @@ function skillUrl(skillId) {
   return `./skills.html?skill=${encodeURIComponent(skillId)}`;
 }
 
-function statLabel(field) {
-  return db.statLabels?.[field] || field;
+function statLabel(skill, field) {
+  return skill?.valueLabels?.[field] || db.statLabels?.[field] || field;
 }
 
 function levelText(skill) {
@@ -154,7 +154,7 @@ function searchableText(skill) {
   const levelText = (skill.levels || []).map(level => [
     level.level,
     level.description,
-    Object.entries(level.values || {}).map(([key, value]) => `${key} ${value}`).join(" "),
+    Object.entries(level.values || {}).map(([key, value]) => `${key} ${statLabel(skill, key)} ${value}`).join(" "),
   ].join(" ")).join(" ");
   return [
     skill.id,
@@ -165,6 +165,7 @@ function searchableText(skill) {
     skill.advancement,
     skill.description,
     skill.formula,
+    ...(Object.values(skill.valueLabels || {})),
     levelText,
   ].map(norm).join(" ");
 }
@@ -331,7 +332,9 @@ function renderSkillMeta(skill) {
 function renderSkillText(skill) {
   const rows = [];
   if (skill.description) rows.push(["技能描述", skill.description]);
-  if (skill.formula) rows.push(["效果公式", skill.formula]);
+  const fields = levelFields(skill);
+  const labels = fields.map(field => statLabel(skill, field)).filter(Boolean);
+  if (labels.length) rows.push(["數值欄位", [...new Set(labels)].join("、")]);
   if (!rows.length) return "";
   return `
     <section class="sectionBlock">
@@ -364,7 +367,7 @@ function renderLevelTable(skill, fields) {
   if (!levels.length) {
     return `<div class="empty">目前資料集中沒有此技能的逐級數值描述</div>`;
   }
-  const fieldHeads = fields.map(field => `<th>${escapeHtml(statLabel(field))}</th>`).join("");
+  const fieldHeads = fields.map(field => `<th>${escapeHtml(statLabel(skill, field))}</th>`).join("");
   const rows = levels.map(level => `
     <tr>
       <td class="skillLevelCell">${escapeHtml(level.level)}</td>
