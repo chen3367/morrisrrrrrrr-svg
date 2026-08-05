@@ -118,6 +118,9 @@ function bindSearchHistory() {
 
 const DEFAULT_HIDDEN_CONTINENTS = new Set(["楓葉世界", "日本"]);
 const EVENT_CONTINENTS = new Set(["楓葉世界"]);
+const UNKNOWN_CONTINENT_OPTION = "未知地區";
+const ELEMENT_FILTER_KEYS = ["fire", "ice", "lightning", "poison", "holy", "undead"];
+let availableContinents = [];
 
 function initialSelectedContinents() {
   const raw = cookieValue("ms_monster_continents");
@@ -126,11 +129,21 @@ function initialSelectedContinents() {
   return legacy ? [legacy] : [];
 }
 
+function initialWeaknessFilters() {
+  const validKeys = new Set(ELEMENT_FILTER_KEYS);
+  return cookieValue("ms_monster_weakness_filters")
+    .split("|")
+    .map(value => value.trim())
+    .filter(value => validKeys.has(value));
+}
+
 const state = {
   query: "",
   continents: initialSelectedContinents(),
+  levelMin: cookieValue("ms_monster_level_min"),
+  levelMax: cookieValue("ms_monster_level_max"),
+  weaknessFilters: initialWeaknessFilters(),
   nameOnlySearch: cookieBool("ms_monster_name_only_search"),
-  showUnknownContinents: cookieBool("ms_show_unknown_continents"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   showIds: cookieBool("ms_show_ids"),
@@ -153,7 +166,11 @@ const els = {
   continentClear: document.getElementById("continentClear"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
-  unknownToggle: document.getElementById("unknownToggle"),
+  advancedSummaryTitle: document.getElementById("advancedSummaryTitle"),
+  levelMin: document.getElementById("levelMin"),
+  levelMax: document.getElementById("levelMax"),
+  weaknessFilter: document.getElementById("weaknessFilter"),
+  advancedClear: document.getElementById("advancedClear"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
@@ -307,12 +324,64 @@ function nonNegativeNumber(value, fallback) {
   return Number.isFinite(number) && number >= 0 ? number : fallback;
 }
 
+function numericFilterText(value) {
+  return String(value || "").replace(/[^\d]/g, "").slice(0, 3);
+}
+
+function levelFilterValue(value) {
+  const number = Number(numericFilterText(value));
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
+function selectedWeaknessValues() {
+  if (!els.weaknessFilter) return [];
+  return [...els.weaknessFilter.querySelectorAll('input[type="checkbox"]:checked')]
+    .map(input => input.value)
+    .filter(value => ELEMENT_FILTER_KEYS.includes(value));
+}
+
+function saveAdvancedFilters() {
+  writeCookie("ms_monster_level_min", state.levelMin || "");
+  writeCookie("ms_monster_level_max", state.levelMax || "");
+  writeCookie("ms_monster_weakness_filters", (state.weaknessFilters || []).join("|"));
+}
+
+function activeAdvancedFilterCount() {
+  let count = 0;
+  if (levelFilterValue(state.levelMin) !== null) count += 1;
+  if (levelFilterValue(state.levelMax) !== null) count += 1;
+  count += (state.weaknessFilters || []).length;
+  return count;
+}
+
+function matchesLevelFilters(monster) {
+  const minLevel = levelFilterValue(state.levelMin);
+  const maxLevel = levelFilterValue(state.levelMax);
+  if (minLevel === null && maxLevel === null) return true;
+  const level = monsterLevel(monster);
+  if (!Number.isFinite(level)) return false;
+  if (minLevel !== null && level < minLevel) return false;
+  if (maxLevel !== null && level > maxLevel) return false;
+  return true;
+}
+
+function matchesWeaknessFilters(monster) {
+  const selected = state.weaknessFilters || [];
+  if (!selected.length) return true;
+  const values = monster.elemental?.values || {};
+  return selected.some(key => {
+    if (key === "undead") return Number(monster.stats?.undead) === 1;
+    return values[key] === "weak";
+  });
+}
+
 function filteredMonsters() {
   const q = norm(state.query);
   return db.monsters.filter(monster => {
-    const visibleContinentOk = state.showUnknownContinents || hasKnownContinent(monster);
     const unnamedMapOk = state.showUnnamedMapMonsters || !onlyUnnamedMapMonster(monster);
     const continentOk = matchesSelectedContinents(monster);
+    const levelOk = matchesLevelFilters(monster);
+    const weaknessOk = matchesWeaknessFilters(monster);
     const drops = visibleDrops(monster);
     const queryOk = !q || (state.nameOnlySearch
       ? norm(monster.name).includes(q)
@@ -325,7 +394,7 @@ function filteredMonsters() {
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
       (monster.questRequirements || []).some(row => norm(row.questId).includes(q) || norm(row.questName).includes(q) || norm(row.category).includes(q) || norm(row.parent).includes(q)) ||
       drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q)));
-    return visibleContinentOk && unnamedMapOk && continentOk && queryOk;
+    return unnamedMapOk && continentOk && levelOk && weaknessOk && queryOk;
   }).sort(compareMonsters);
 }
 
@@ -348,8 +417,10 @@ function hasDefaultHiddenContinent(monster) {
 
 function matchesSelectedContinents(monster) {
   const selected = state.continents || [];
-  if (!selected.length) return !hasDefaultHiddenContinent(monster);
-  return (monster.continents || []).some(continent => selected.includes(continent));
+  const continents = (monster.continents || []).filter(Boolean);
+  if (!selected.length) return continents.length > 0 && !hasDefaultHiddenContinent(monster);
+  if (!continents.length) return selected.includes(UNKNOWN_CONTINENT_OPTION);
+  return continents.some(continent => selected.includes(continent));
 }
 
 function isUnnamedItem(item) {
@@ -488,18 +559,19 @@ function levelRank(monster) {
 }
 
 function continentText(monster) {
-  if (!monster.continents.length) return "未知大陸";
+  if (!monster.continents.length) return UNKNOWN_CONTINENT_OPTION;
   if (monster.continents.length <= 2) return monster.continents.join("、");
   return `${monster.continents.slice(0, 2).join("、")} +${monster.continents.length - 2}`;
 }
 
 function populateFilters() {
-  const continents = [...(db.filters?.continents || [])].sort((a, b) => a.localeCompare(b, "zh-Hant"));
-  const validContinents = new Set(continents);
+  const continents = [...(db.filters?.continents || [])].filter(Boolean);
+  availableContinents = continents.includes(UNKNOWN_CONTINENT_OPTION) ? continents : [...continents, UNKNOWN_CONTINENT_OPTION];
+  const validContinents = new Set(availableContinents);
   state.continents = (state.continents || []).filter(continent => validContinents.has(continent));
   els.continentOptions.innerHTML = `
     <button id="continentClear" class="multiSelectClear" type="button">清除選取</button>
-    ${continents.map(continent => `
+    ${availableContinents.map(continent => `
       <label class="multiSelectOption">
         <input type="checkbox" value="${escapeHtml(continent)}" />
         <span>${escapeHtml(continent)}${EVENT_CONTINENTS.has(continent) ? "（活動）" : ""}</span>
@@ -513,13 +585,34 @@ function populateFilters() {
 function syncControls() {
   els.search.value = state.query;
   if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
+  if (els.levelMin) els.levelMin.value = state.levelMin || "";
+  if (els.levelMax) els.levelMax.value = state.levelMax || "";
   syncContinentInputs();
+  syncWeaknessInputs();
 }
 
 function updateNameOnlySearchControl() {
   if (!els.nameOnlySearch || !els.nameOnlySearchControl) return;
   els.nameOnlySearch.checked = state.nameOnlySearch;
   els.nameOnlySearchControl.classList.toggle("active", state.nameOnlySearch);
+}
+
+function syncWeaknessInputs() {
+  if (!els.weaknessFilter) return;
+  const selected = new Set(state.weaknessFilters || []);
+  els.weaknessFilter.querySelectorAll('input[type="checkbox"]').forEach(input => {
+    input.checked = selected.has(input.value);
+  });
+}
+
+function updateAdvancedPanel() {
+  const activeCount = activeAdvancedFilterCount();
+  if (els.advancedSummaryTitle) {
+    els.advancedSummaryTitle.textContent = activeCount ? `進階查詢 (${activeCount})` : "進階查詢";
+  }
+  if (els.levelMin && document.activeElement !== els.levelMin) els.levelMin.value = state.levelMin || "";
+  if (els.levelMax && document.activeElement !== els.levelMax) els.levelMax.value = state.levelMax || "";
+  syncWeaknessInputs();
 }
 
 function selectedContinentValues() {
@@ -546,11 +639,11 @@ function updateContinentSummary() {
   if (!els.continentButton) return;
   const selected = state.continents || [];
   if (!selected.length) {
-    els.continentButton.textContent = "全部一般大陸";
-  } else if (selected.length === 1) {
-    els.continentButton.textContent = selected[0];
+    els.continentButton.textContent = "全部一般地區";
+  } else if (selected.length <= 4) {
+    els.continentButton.textContent = selected.join("、");
   } else {
-    els.continentButton.textContent = `已選 ${selected.length} 個大陸`;
+    els.continentButton.textContent = `${selected.slice(0, 3).join("、")} +${selected.length - 3}`;
   }
 }
 
@@ -569,11 +662,6 @@ function updateIdToggle() {
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
 }
 
-function updateUnknownToggle() {
-  els.unknownToggle.setAttribute("aria-pressed", String(state.showUnknownContinents));
-  els.unknownToggle.textContent = state.showUnknownContinents ? "隱藏未知大陸" : "顯示未知大陸";
-}
-
 function updateUnnamedMapToggle() {
   els.unnamedMapToggle.setAttribute("aria-pressed", String(state.showUnnamedMapMonsters));
   els.unnamedMapToggle.textContent = state.showUnnamedMapMonsters ? "隱藏未命名地圖怪物" : "顯示未命名地圖怪物";
@@ -588,9 +676,15 @@ function updateSettingsPanel() {
   if (!els.settingsToggle || !els.settingsPanel) return;
   els.settingsPanel.hidden = !state.settingsOpen;
   els.settingsToggle.setAttribute("aria-expanded", String(state.settingsOpen));
-  els.settingsToggle.classList.toggle("active", state.settingsOpen);
-  els.settingsToggle.title = state.settingsOpen ? "隱藏設定" : "顯示設定";
-  els.settingsToggle.setAttribute("aria-label", state.settingsOpen ? "隱藏設定" : "顯示設定");
+  const activeCount = activeAdvancedFilterCount();
+  els.settingsToggle.classList.toggle("active", state.settingsOpen || activeCount > 0);
+  const label = state.settingsOpen
+    ? "隱藏設定"
+    : activeCount
+      ? `顯示設定，進階條件 ${activeCount} 個`
+      : "顯示設定";
+  els.settingsToggle.title = label;
+  els.settingsToggle.setAttribute("aria-label", label);
 }
 
 function renderList() {
@@ -1093,8 +1187,8 @@ function shorten(value, size) {
 
 function render() {
   updateSettingsPanel();
+  updateAdvancedPanel();
   updateNameOnlySearchControl();
-  updateUnknownToggle();
   updateUnnamedMapToggle();
   updateUnnamedToggle();
   updateIdToggle();
@@ -1113,6 +1207,34 @@ els.nameOnlySearch.addEventListener("change", event => {
   state.preserveSelectedDetail = false;
   state.nameOnlySearch = event.target.checked;
   saveBool("ms_monster_name_only_search", state.nameOnlySearch);
+  render();
+});
+
+function handleLevelFilterInput(key, event) {
+  state.preserveSelectedDetail = false;
+  state[key] = numericFilterText(event.target.value);
+  event.target.value = state[key];
+  saveAdvancedFilters();
+  render();
+}
+
+els.levelMin.addEventListener("input", event => handleLevelFilterInput("levelMin", event));
+els.levelMax.addEventListener("input", event => handleLevelFilterInput("levelMax", event));
+
+els.weaknessFilter.addEventListener("change", event => {
+  if (!event.target.matches('input[type="checkbox"]')) return;
+  state.preserveSelectedDetail = false;
+  state.weaknessFilters = selectedWeaknessValues();
+  saveAdvancedFilters();
+  render();
+});
+
+els.advancedClear.addEventListener("click", () => {
+  state.preserveSelectedDetail = false;
+  state.levelMin = "";
+  state.levelMax = "";
+  state.weaknessFilters = [];
+  saveAdvancedFilters();
   render();
 });
 
@@ -1140,13 +1262,6 @@ els.continentOptions.addEventListener("click", event => {
 
 document.addEventListener("click", event => {
   if (!els.continent.contains(event.target)) setContinentMenu(false);
-});
-
-els.unknownToggle.addEventListener("click", () => {
-  state.preserveSelectedDetail = false;
-  state.showUnknownContinents = !state.showUnknownContinents;
-  saveBool("ms_show_unknown_continents", state.showUnknownContinents);
-  render();
 });
 
 els.unnamedMapToggle.addEventListener("click", () => {

@@ -1,4 +1,5 @@
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 :root {
   color-scheme: light;
   --ink: #1f2933;
@@ -359,6 +360,64 @@ select {
   background: var(--accent-soft);
   color: var(--active-text);
 }
+.advancedField {
+  display: grid;
+  gap: 5px;
+  width: 118px;
+  color: var(--control-text);
+  font-size: 12px;
+  font-weight: 850;
+}
+.advancedField input {
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 10px;
+}
+.weaknessFilter {
+  display: flex;
+  flex: 1 1 340px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+  margin: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  padding: 7px 9px 8px;
+  color: var(--control-text);
+}
+.weaknessFilter legend {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+.weaknessOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--control-border);
+  border-radius: 7px;
+  padding: 4px 9px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.weaknessOption:hover {
+  background: var(--control-hover);
+}
+.weaknessOption input {
+  width: 15px;
+  min-width: 15px;
+  min-height: 15px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+}
 .settingsPanel {
   display: flex;
   flex: 1 0 100%;
@@ -372,6 +431,26 @@ select {
 }
 .settingsPanel[hidden] {
   display: none;
+}
+.settingsSection {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+.settingsAdvancedSection {
+  border-top: 1px solid var(--control-border);
+  padding-top: 10px;
+}
+.settingsSectionTitle {
+  flex: 1 0 100%;
+  color: var(--control-text);
+  font-size: 13px;
+  font-weight: 900;
+}
+.advancedClearButton {
+  min-width: 136px;
 }
 .toggleButton {
   min-width: 146px;
@@ -855,6 +934,7 @@ h3 {
   padding: 12px 14px 14px;
 }
 .statCell {
+  min-width: 0;
   min-height: 56px;
   border: 1px solid var(--stat-border);
   border-radius: 8px;
@@ -868,9 +948,12 @@ h3 {
 }
 .statCell strong {
   display: block;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 3px;
   overflow-wrap: anywhere;
   font-size: 19px;
+  line-height: 1.2;
 }
 .statCell em {
   display: block;
@@ -1340,17 +1423,29 @@ h3 {
 }
 .statCell strong .mesoValue, .sourceRow .mesoValue {
   display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
   margin: 0;
   color: inherit;
   font-size: inherit;
   line-height: inherit;
 }
+.statCell strong .mesoValue {
+  width: 100%;
+  flex-wrap: wrap;
+  white-space: normal;
+}
 .statCell strong .mesoValueText, .sourceRow .mesoValueText {
   display: inline;
+  min-width: 0;
   color: inherit;
   font-size: inherit;
   margin: 0;
   line-height: inherit;
+}
+.statCell strong .mesoValueText {
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 .mesoText strong {
   display: block;
@@ -1927,6 +2022,16 @@ h3 {
   }
   .settingsPanel {
     padding: 9px;
+  }
+  .advancedField {
+    flex: 1 1 calc(50% - 10px);
+    width: auto;
+  }
+  .weaknessFilter {
+    flex: 1 1 100%;
+  }
+  .advancedClearButton {
+    flex: 1 1 100%;
   }
   select {
     width: 132px;

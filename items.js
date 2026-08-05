@@ -120,6 +120,10 @@ const state = {
   query: "",
   category: cookieValue("ms_item_category"),
   subcategory: cookieValue("ms_item_subcategory"),
+  equipmentGroup: cookieValue("ms_item_equipment_group"),
+  equipmentJob: cookieValue("ms_item_equipment_job"),
+  itemLevelMin: cookieValue("ms_item_level_min"),
+  itemLevelMax: cookieValue("ms_item_level_max"),
   nameOnlySearch: cookieBool("ms_item_name_only_search"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showItemMakeCrafts: cookieBool("ms_show_item_make_crafts"),
@@ -136,6 +140,11 @@ const els = {
   search: document.getElementById("itemSearch"),
   category: document.getElementById("categoryFilter"),
   subcategory: document.getElementById("subcategoryFilter"),
+  equipmentGroup: document.getElementById("equipmentGroupFilter"),
+  equipmentJob: document.getElementById("equipmentJobFilter"),
+  itemLevelMin: document.getElementById("itemLevelMin"),
+  itemLevelMax: document.getElementById("itemLevelMax"),
+  itemLevelFields: Array.from(document.querySelectorAll(".itemLevelField")),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
@@ -291,8 +300,32 @@ const EQUIP_FIELD_GROUPS = [
   },
 ];
 
+const EQUIPMENT_CATEGORY = "裝備";
+const EQUIPMENT_GROUP_SUBCATEGORIES = {
+  armor: ["上衣", "手套", "盾牌", "套服", "帽子", "披風", "鞋子", "褲裙"],
+  weapon: ["弓", "火槍", "矛", "弩", "長杖", "指虎", "拳套", "單手斧", "單手鈍器", "單手劍", "短刀", "短杖", "槍", "雙手斧", "雙手鈍器", "雙手劍"],
+  accessory: ["耳環", "戒指", "眼飾", "腰帶", "墜飾", "勳章", "臉飾"],
+  other: ["裝備", "騎寵", "騎寵鞍座"],
+};
+const EQUIPMENT_JOB_BITS = {
+  warrior: 1,
+  magician: 2,
+  bowman: 4,
+  thief: 8,
+  pirate: 16,
+};
+
 function norm(value) {
   return String(value || "").toLowerCase().trim();
+}
+
+function numericItemLevelText(value) {
+  return String(value || "").replace(/[^\d]/g, "").slice(0, 3);
+}
+
+function itemLevelFilterValue(value) {
+  const number = Number(numericItemLevelText(value));
+  return Number.isFinite(number) && number > 0 ? number : null;
 }
 
 function escapeHtml(value) {
@@ -451,7 +484,7 @@ function formatReqJob(value) {
   const jobs = [
     [1, "劍士"],
     [2, "法師"],
-    [4, "弓手"],
+    [4, "弓箭手"],
     [8, "盜賊"],
     [16, "海盜"],
   ];
@@ -622,6 +655,56 @@ function craftSourceRows(item) {
   return (item.sources?.crafts || []).filter(visibleCraftRecipe);
 }
 
+function hasEquipmentAdvancedFilters() {
+  return Boolean(
+    state.equipmentGroup ||
+    state.equipmentJob ||
+    itemLevelFilterValue(state.itemLevelMin) !== null ||
+    itemLevelFilterValue(state.itemLevelMax) !== null
+  );
+}
+
+function itemIsEquipment(item) {
+  return item.category === EQUIPMENT_CATEGORY;
+}
+
+function itemMatchesEquipmentGroup(item) {
+  if (!state.equipmentGroup) return true;
+  const rows = EQUIPMENT_GROUP_SUBCATEGORIES[state.equipmentGroup] || [];
+  return rows.includes(item.subcategory || "");
+}
+
+function itemMatchesEquipmentJob(item) {
+  if (!state.equipmentJob) return true;
+  const bit = EQUIPMENT_JOB_BITS[state.equipmentJob];
+  if (!bit) return true;
+  const rawMask = item.equipStats?.reqJob;
+  if (rawMask === null || rawMask === undefined || rawMask === "") return false;
+  const mask = Number(rawMask);
+  if (!Number.isFinite(mask)) return false;
+  if (mask <= 0) return true;
+  return (mask & bit) === bit;
+}
+
+function itemMatchesEquipmentLevel(item) {
+  const minLevel = itemLevelFilterValue(state.itemLevelMin);
+  const maxLevel = itemLevelFilterValue(state.itemLevelMax);
+  if (minLevel === null && maxLevel === null) return true;
+  const rawLevel = item.equipStats?.reqLevel;
+  if (rawLevel === null || rawLevel === undefined || rawLevel === "") return false;
+  const level = Number(rawLevel);
+  if (!Number.isFinite(level)) return false;
+  if (minLevel !== null && level < minLevel) return false;
+  if (maxLevel !== null && level > maxLevel) return false;
+  return true;
+}
+
+function itemMatchesEquipmentAdvancedFilters(item) {
+  if (!hasEquipmentAdvancedFilters()) return true;
+  if (!itemIsEquipment(item)) return false;
+  return itemMatchesEquipmentGroup(item) && itemMatchesEquipmentJob(item) && itemMatchesEquipmentLevel(item);
+}
+
 function filteredItems() {
   const q = norm(state.query);
   return (db.items || []).filter(item => {
@@ -629,6 +712,7 @@ function filteredItems() {
     if (!state.showDuplicateNoSourceItems && item.hiddenDuplicateNoSource) return false;
     if (state.category && item.category !== state.category) return false;
     if (state.subcategory && item.subcategory !== state.subcategory) return false;
+    if (!itemMatchesEquipmentAdvancedFilters(item)) return false;
     const searchText = state.nameOnlySearch ? norm(item.name) : searchableText(item);
     if (q && !searchText.includes(q)) return false;
     return true;
@@ -659,8 +743,62 @@ function populateFilters() {
   `;
 }
 
+function clearEquipmentFilters(save = false) {
+  state.equipmentGroup = "";
+  state.equipmentJob = "";
+  state.itemLevelMin = "";
+  state.itemLevelMax = "";
+  if (save) {
+    writeCookie("ms_item_equipment_group", "");
+    writeCookie("ms_item_equipment_job", "");
+    writeCookie("ms_item_level_min", "");
+    writeCookie("ms_item_level_max", "");
+  }
+}
+
+function equipmentControlsAvailable() {
+  return !state.category || state.category === EQUIPMENT_CATEGORY;
+}
+
+function setFilterControlVisible(control, visible) {
+  if (!control) return;
+  control.hidden = !visible;
+  control.disabled = !visible;
+}
+
+function syncEquipmentControls() {
+  const available = equipmentControlsAvailable();
+  if (!available && hasEquipmentAdvancedFilters()) clearEquipmentFilters(true);
+  if (els.equipmentGroup) {
+    els.equipmentGroup.value = state.equipmentGroup;
+    if (els.equipmentGroup.value !== state.equipmentGroup) state.equipmentGroup = "";
+    setFilterControlVisible(els.equipmentGroup, available);
+  }
+  if (els.equipmentJob) {
+    els.equipmentJob.value = state.equipmentJob;
+    if (els.equipmentJob.value !== state.equipmentJob) state.equipmentJob = "";
+    setFilterControlVisible(els.equipmentJob, available);
+  }
+  els.itemLevelFields.forEach(field => { field.hidden = !available; });
+  if (els.itemLevelMin) {
+    if (document.activeElement !== els.itemLevelMin) els.itemLevelMin.value = state.itemLevelMin || "";
+    els.itemLevelMin.disabled = !available;
+  }
+  if (els.itemLevelMax) {
+    if (document.activeElement !== els.itemLevelMax) els.itemLevelMax.value = state.itemLevelMax || "";
+    els.itemLevelMax.disabled = !available;
+  }
+}
+
 function subcategoriesForCategory(category) {
   const byCategory = db.filters?.itemSubcategoriesByCategory || {};
+  const equipmentSubcategories = byCategory[EQUIPMENT_CATEGORY] || [];
+  const equipmentContext = category === EQUIPMENT_CATEGORY || (!category && hasEquipmentAdvancedFilters());
+  if (equipmentContext) {
+    const groupRows = EQUIPMENT_GROUP_SUBCATEGORIES[state.equipmentGroup] || [];
+    if (groupRows.length) return equipmentSubcategories.filter(subcategory => groupRows.includes(subcategory));
+    return equipmentSubcategories;
+  }
   if (category) return byCategory[category] || [];
   const seen = new Set();
   Object.values(byCategory).forEach(rows => {
@@ -672,6 +810,7 @@ function subcategoriesForCategory(category) {
 }
 
 function updateSubcategoryFilter() {
+  syncEquipmentControls();
   const options = subcategoriesForCategory(state.category);
   els.subcategory.innerHTML = `
     <option value="">全部子分類</option>
@@ -684,14 +823,20 @@ function updateSubcategoryFilter() {
     els.subcategory.value = "";
     writeCookie("ms_item_subcategory", "");
   }
-  els.subcategory.disabled = options.length === 0;
+  setFilterControlVisible(els.subcategory, options.length > 0);
 }
 
 function syncControls() {
   els.search.value = state.query;
   if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
+  if (!state.category && hasEquipmentAdvancedFilters()) {
+    state.category = EQUIPMENT_CATEGORY;
+    writeCookie("ms_item_category", state.category);
+  }
+  if (state.category && state.category !== EQUIPMENT_CATEGORY) clearEquipmentFilters(true);
   els.category.value = state.category;
   state.category = els.category.value;
+  syncEquipmentControls();
   updateSubcategoryFilter();
 }
 
@@ -1134,6 +1279,7 @@ els.nameOnlySearch.addEventListener("change", event => {
 els.category.addEventListener("change", event => {
   state.preserveSelectedDetail = false;
   state.category = event.target.value;
+  if (state.category && state.category !== EQUIPMENT_CATEGORY) clearEquipmentFilters(true);
   writeCookie("ms_item_category", state.category);
   updateSubcategoryFilter();
   writeCookie("ms_item_subcategory", state.subcategory);
@@ -1146,6 +1292,50 @@ els.subcategory.addEventListener("change", event => {
   writeCookie("ms_item_subcategory", state.subcategory);
   render();
 });
+
+els.equipmentGroup.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
+  state.equipmentGroup = event.target.value;
+  if (!state.category) {
+    state.category = EQUIPMENT_CATEGORY;
+    els.category.value = state.category;
+    writeCookie("ms_item_category", state.category);
+  }
+  writeCookie("ms_item_equipment_group", state.equipmentGroup);
+  updateSubcategoryFilter();
+  writeCookie("ms_item_subcategory", state.subcategory);
+  render();
+});
+
+els.equipmentJob.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
+  state.equipmentJob = event.target.value;
+  if (!state.category) {
+    state.category = EQUIPMENT_CATEGORY;
+    els.category.value = state.category;
+    writeCookie("ms_item_category", state.category);
+    updateSubcategoryFilter();
+  }
+  writeCookie("ms_item_equipment_job", state.equipmentJob);
+  render();
+});
+
+function handleItemLevelInput(key, event) {
+  state.preserveSelectedDetail = false;
+  state[key] = numericItemLevelText(event.target.value);
+  event.target.value = state[key];
+  if (!state.category) {
+    state.category = EQUIPMENT_CATEGORY;
+    els.category.value = state.category;
+    writeCookie("ms_item_category", state.category);
+    updateSubcategoryFilter();
+  }
+  writeCookie(key === "itemLevelMin" ? "ms_item_level_min" : "ms_item_level_max", state[key]);
+  render();
+}
+
+els.itemLevelMin.addEventListener("input", event => handleItemLevelInput("itemLevelMin", event));
+els.itemLevelMax.addEventListener("input", event => handleItemLevelInput("itemLevelMax", event));
 
 els.unnamedMapToggle.addEventListener("click", () => {
   state.preserveSelectedDetail = false;

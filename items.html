@@ -56,9 +56,32 @@
         <select id="categoryFilter" aria-label="以分類篩選">
           <option value="">全部分類</option>
         </select>
+        <select id="equipmentGroupFilter" aria-label="以裝備群組篩選">
+          <option value="">整體</option>
+          <option value="armor">防具</option>
+          <option value="weapon">武器</option>
+          <option value="accessory">飾品</option>
+          <option value="other">其他</option>
+        </select>
         <select id="subcategoryFilter" aria-label="以子分類篩選">
           <option value="">全部子分類</option>
         </select>
+        <select id="equipmentJobFilter" aria-label="以裝備可用職業篩選">
+          <option value="">整體</option>
+          <option value="warrior">劍士</option>
+          <option value="magician">法師</option>
+          <option value="bowman">弓箭手</option>
+          <option value="thief">盜賊</option>
+          <option value="pirate">海盜</option>
+        </select>
+        <label class="advancedField itemLevelField">
+          <span>最低等級</span>
+          <input id="itemLevelMin" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="下限" autocomplete="off" />
+        </label>
+        <label class="advancedField itemLevelField">
+          <span>最高等級</span>
+          <input id="itemLevelMax" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="上限" autocomplete="off" />
+        </label>
         <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未定位/未命名NPC與地圖</button>
         <button id="itemMakeCraftToggle" class="toggleButton" type="button" aria-pressed="false">顯示強化合成配方</button>
         <button id="unnamedToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名道具</button>

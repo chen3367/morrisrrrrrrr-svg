@@ -56,14 +56,14 @@
         <select id="questCategoryFilter" aria-label="以任務分類篩選">
           <option value="">全部分類</option>
         </select>
-        <select id="questLevelFilter" aria-label="以任務等級篩選">
-          <option value="">全部等級</option>
-          <option value="none">無等級限制</option>
-          <option value="1-10">Lv.1-10</option>
-          <option value="11-30">Lv.11-30</option>
-          <option value="31-70">Lv.31-70</option>
-          <option value="71+">Lv.71+</option>
-        </select>
+        <label class="advancedField questLevelField">
+          <span>最低等級</span>
+          <input id="questLevelMin" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="下限" autocomplete="off" />
+        </label>
+        <label class="advancedField questLevelField">
+          <span>最高等級</span>
+          <input id="questLevelMax" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="上限" autocomplete="off" />
+        </label>
         <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
       </div>
     </div>

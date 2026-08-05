@@ -111,7 +111,8 @@ function bindSearchHistory() {
 const state = {
   query: "",
   category: cookieValue("ms_quest_category"),
-  level: cookieValue("ms_quest_level"),
+  levelMin: cookieValue("ms_quest_level_min"),
+  levelMax: cookieValue("ms_quest_level_max"),
   nameOnlySearch: cookieBool("ms_quest_name_only_search"),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
@@ -123,7 +124,8 @@ const state = {
 const els = {
   search: document.getElementById("questSearch"),
   category: document.getElementById("questCategoryFilter"),
-  level: document.getElementById("questLevelFilter"),
+  levelMin: document.getElementById("questLevelMin"),
+  levelMax: document.getElementById("questLevelMax"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   idToggle: document.getElementById("idToggle"),
@@ -204,6 +206,15 @@ function norm(value) {
   return String(value || "").toLowerCase().trim();
 }
 
+function numericQuestLevelText(value) {
+  return String(value || "").replace(/[^\d]/g, "").slice(0, 3);
+}
+
+function questLevelFilterValue(value) {
+  const number = Number(numericQuestLevelText(value));
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
@@ -275,12 +286,10 @@ function levelText(quest) {
 
 function levelMatches(quest) {
   const level = Number(quest.minLevel || 0);
-  if (!state.level) return true;
-  if (state.level === "none") return !level;
-  if (state.level === "1-10") return level >= 1 && level <= 10;
-  if (state.level === "11-30") return level >= 11 && level <= 30;
-  if (state.level === "31-70") return level >= 31 && level <= 70;
-  if (state.level === "71+") return level >= 71;
+  const minLevel = questLevelFilterValue(state.levelMin);
+  const maxLevel = questLevelFilterValue(state.levelMax);
+  if (minLevel !== null && level < minLevel) return false;
+  if (maxLevel !== null && level > maxLevel) return false;
   return true;
 }
 
@@ -292,20 +301,26 @@ function searchableText(quest) {
   const reqQuests = reqs.flatMap(row => row.quests || []);
   const reqNpcs = reqs.map(row => row.npc).filter(Boolean);
   const rewardItems = acts.flatMap(row => row.items || []);
+  const dependentQuests = quest.dependentQuests || [];
   const refs = quest.refs || {};
   const allNpcs = [quest.startNpc, quest.endNpc, ...reqNpcs, ...(refs.npcs || [])].filter(Boolean);
+  const linkedQuestNpcs = [quest.nextQuest, ...dependentQuests, ...reqQuests]
+    .flatMap(row => [row?.startNpc, row?.endNpc])
+    .filter(Boolean);
   return [
     quest.id,
     quest.name,
     quest.category,
     quest.parent,
-    ...allNpcs.flatMap(npc => [
+    ...[...allNpcs, ...linkedQuestNpcs].flatMap(npc => [
       npc.id,
       npc.name,
       npc.locationText,
       ...(npc.maps || []).flatMap(map => [map.id, map.name, map.street, map.label]),
     ]),
     quest.nextQuest?.name,
+    quest.nextQuest?.id,
+    ...dependentQuests.flatMap(row => [row.id, row.name, row.category, row.parent]),
     ...(quest.texts || []).map(row => row.text),
     ...reqItems.flatMap(item => [item.id, item.name, item.category]),
     ...rewardItems.flatMap(item => [item.id, item.name, item.category]),
@@ -357,8 +372,8 @@ function syncControls() {
   if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
   els.category.value = state.category;
   state.category = els.category.value;
-  els.level.value = state.level;
-  state.level = els.level.value;
+  if (els.levelMin) els.levelMin.value = state.levelMin || "";
+  if (els.levelMax) els.levelMax.value = state.levelMax || "";
 }
 
 function updateToggles() {
@@ -439,6 +454,7 @@ function renderDetail() {
     </section>
     ${renderQuestTexts(quest)}
     ${renderQuestMeta(quest)}
+    ${renderContinuationQuests(quest)}
     ${renderRequirements("接取條件", quest.startRequirements)}
     ${renderRequirements("完成條件", quest.completeRequirements)}
     ${renderRewards("接取時給予", quest.startRewards)}
@@ -589,6 +605,25 @@ function renderRewards(title, act = {}, nextQuest = null) {
   `;
 }
 
+function renderContinuationQuests(quest) {
+  const rows = quest.dependentQuests || [];
+  if (!rows.length) return "";
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <h3>接續任務</h3>
+        <span>${rows.length.toLocaleString()} 個</span>
+      </div>
+      <div class="questGroups">
+        <div class="requirementGroup">
+          <strong>以該任務為前置任務</strong>
+          <div class="linkGrid">${rows.map(questLink).join("")}</div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function renderRefs(quest) {
   const refs = quest.refs || {};
   const parts = [];
@@ -633,12 +668,16 @@ function monsterLink(monster) {
 }
 
 function questLink(quest) {
+  const npc = npcForQuest(quest);
   const meta = [];
-  if (quest.stateLabel) meta.push(quest.stateLabel);
+  if (quest.requirementStage) meta.push(quest.requirementStage);
+  if (quest.requiredStateLabel) meta.push(`需${quest.requiredStateLabel}`);
+  if (!quest.requiredStateLabel && quest.stateLabel) meta.push(quest.stateLabel);
+  if (npc?.name) meta.push(npc.name);
   if (state.showIds) meta.push(`ID ${quest.id}`);
   return `
     <a class="miniLink" href="${questUrl(quest.id)}">
-      <div class="miniIcon">任</div>
+      ${assetImage(npc?.image, npc?.name || quest.name, "任", "miniIcon")}
       <span><strong>${escapeHtml(quest.name)}</strong><em>${escapeHtml(meta.join(" · ") || "任務")}</em></span>
     </a>
   `;
@@ -692,12 +731,16 @@ els.category.addEventListener("change", event => {
   render();
 });
 
-els.level.addEventListener("change", event => {
+function handleQuestLevelInput(key, event) {
   state.preserveSelectedDetail = false;
-  state.level = event.target.value;
-  writeCookie("ms_quest_level", state.level);
+  state[key] = numericQuestLevelText(event.target.value);
+  event.target.value = state[key];
+  writeCookie(key === "levelMin" ? "ms_quest_level_min" : "ms_quest_level_max", state[key]);
   render();
-});
+}
+
+els.levelMin.addEventListener("input", event => handleQuestLevelInput("levelMin", event));
+els.levelMax.addEventListener("input", event => handleQuestLevelInput("levelMax", event));
 
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;
