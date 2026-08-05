@@ -639,6 +639,14 @@ h3 {
   color: var(--item-glyph-text);
   font-size: 13px;
 }
+.mapHero:not(.worldMapHero) .heroCounters {
+  grid-template-columns: repeat(3, minmax(72px, auto));
+}
+.mapHero:not(.worldMapHero) .heroCounter {
+  min-width: 72px;
+  padding: 8px 8px;
+  white-space: nowrap;
+}
 .sectionBlock {
   border-bottom: 1px dashed var(--dash-line);
   background: var(--shell);
@@ -1932,6 +1940,12 @@ h3 {
   }
   .heroCounter {
     text-align: left;
+  }
+  .mapHero:not(.worldMapHero) .heroCounters {
+    grid-template-columns: repeat(3, minmax(72px, 1fr));
+  }
+  .mapHero:not(.worldMapHero) .heroCounter {
+    text-align: center;
   }
   .worldMapCanvas {
     min-height: 360px;
