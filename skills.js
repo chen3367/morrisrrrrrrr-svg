@@ -172,9 +172,11 @@ function applyTheme() {
   const isDark = state.theme === "dark";
   document.documentElement.dataset.theme = isDark ? "dark" : "light";
   if (!els.themeToggle) return;
+  const themeLabel = isDark ? "切換為白底" : "切換為黑底";
   els.themeToggle.setAttribute("aria-pressed", String(isDark));
-  els.themeToggle.textContent = isDark ? "白底模式" : "黑底模式";
-  els.themeToggle.title = isDark ? "切換為白底" : "切換為黑底";
+  els.themeToggle.setAttribute("aria-label", themeLabel);
+  els.themeToggle.textContent = isDark ? "☀" : "☾";
+  els.themeToggle.title = themeLabel;
 }
 
 function setTheme(theme) {

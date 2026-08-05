@@ -175,9 +175,11 @@ function applyTheme() {
   const isDark = state.theme === "dark";
   document.documentElement.dataset.theme = isDark ? "dark" : "light";
   if (!els.themeToggle) return;
+  const themeLabel = isDark ? "切換為白底" : "切換為黑底";
   els.themeToggle.setAttribute("aria-pressed", String(isDark));
-  els.themeToggle.textContent = isDark ? "白底模式" : "黑底模式";
-  els.themeToggle.title = isDark ? "切換為白底" : "切換為黑底";
+  els.themeToggle.setAttribute("aria-label", themeLabel);
+  els.themeToggle.textContent = isDark ? "☀" : "☾";
+  els.themeToggle.title = themeLabel;
 }
 
 function setTheme(theme) {
@@ -587,6 +589,14 @@ function monsterSourceRows(item) {
   return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps && !row.unnamedMonster);
 }
 
+function monsterDropSourceLabel(row) {
+  if (row.sourceLabel) return row.sourceLabel;
+  if (row.source === "quest") return "任務掉落";
+  if (row.source === "miniGame") return "小遊戲材料";
+  if (row.source === "supplemental") return "補充資料";
+  return "圖鑑";
+}
+
 function shopSourceRows(item) {
   const rows = item.sources?.shops || [];
   return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps);
@@ -859,7 +869,7 @@ function renderMonsterSources(item) {
           ${maps.length ? `<p>${escapeHtml(maps.join("、"))}${(row.maps || []).length > maps.length ? ` +${(row.maps || []).length - maps.length}` : ""}</p>` : ""}
           ${questNote}
         </div>
-        <small>${row.source === "quest" ? "任務掉落" : "圖鑑"}</small>
+        <small>${escapeHtml(monsterDropSourceLabel(row))}</small>
       </a>
     `;
   });

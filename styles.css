@@ -345,6 +345,15 @@ select {
   font-size: 21px;
   line-height: 1;
 }
+.themeIconButton {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
 .settingsToggle:hover, .settingsToggle.active {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -376,6 +385,9 @@ select {
 .toggleThemeButton {
   min-width: 104px;
 }
+.themeIconButton.toggleThemeButton {
+  min-width: 42px;
+}
 .toggleButton:hover, .toggleIdButton:hover, .toggleThemeButton:hover {
   background: var(--control-hover);
 }
@@ -403,7 +415,6 @@ select {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
   gap: 14px;
-  height: calc(100vh - 67px);
   padding: 12px;
 }
 .itemLayout {
@@ -1885,17 +1896,33 @@ h3 {
   height: 0;
   border-top: 2px solid #2f7d5b;
 }
+@media (min-width: 861px) {
+  body {
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .appHeader {
+    flex: 0 0 auto;
+  }
+  .layout {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
 @media (max-width: 860px) {
   .appHeader { display: block; }
   .searchWrap {
     width: 100%;
     margin-top: 10px;
   }
-  .settingsToggle {
+  .settingsToggle,
+  .themeIconButton {
     flex-basis: 42px;
   }
   .nameOnlySearchControl {
-    flex-basis: calc(100% - 52px);
+    flex-basis: calc(100% - 104px);
     justify-content: center;
   }
   .settingsPanel {
@@ -1920,6 +1947,9 @@ h3 {
   }
   .toggleIdButton, .toggleThemeButton {
     flex-basis: 92px;
+  }
+  .themeIconButton.toggleThemeButton {
+    flex-basis: 42px;
   }
   .layout {
     grid-template-columns: 1fr;
