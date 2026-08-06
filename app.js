@@ -119,6 +119,7 @@ function bindSearchHistory() {
 const DEFAULT_HIDDEN_CONTINENTS = new Set(["楓葉世界", "日本"]);
 const EVENT_CONTINENTS = new Set(["楓葉世界"]);
 const UNKNOWN_CONTINENT_OPTION = "未知地區";
+const CURRENT_VERSION_CONTINENTS = ["楓之島", "維多利亞島", "奇幻村"];
 const ELEMENT_FILTER_KEYS = ["fire", "ice", "lightning", "poison", "holy", "undead"];
 let availableContinents = [];
 
@@ -126,7 +127,7 @@ function initialSelectedContinents() {
   const raw = cookieValue("ms_monster_continents");
   if (raw) return raw.split("|").map(value => value.trim()).filter(Boolean);
   const legacy = cookieValue("ms_monster_continent");
-  return legacy ? [legacy] : [];
+  return legacy ? [legacy] : [...CURRENT_VERSION_CONTINENTS];
 }
 
 function initialWeaknessFilters() {
@@ -142,11 +143,13 @@ const state = {
   continents: initialSelectedContinents(),
   levelMin: cookieValue("ms_monster_level_min"),
   levelMax: cookieValue("ms_monster_level_max"),
+  bossOnly: cookieBool("ms_monster_boss_only"),
   weaknessFilters: initialWeaknessFilters(),
   nameOnlySearch: cookieBool("ms_monster_name_only_search"),
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   showIds: cookieBool("ms_show_ids"),
+  showDropItemDetails: cookieBool("ms_monster_drop_item_details", true),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialMonsterId(),
@@ -169,6 +172,7 @@ const els = {
   advancedSummaryTitle: document.getElementById("advancedSummaryTitle"),
   levelMin: document.getElementById("levelMin"),
   levelMax: document.getElementById("levelMax"),
+  bossOnly: document.getElementById("bossOnly"),
   weaknessFilter: document.getElementById("weaknessFilter"),
   advancedClear: document.getElementById("advancedClear"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
@@ -281,10 +285,10 @@ const STAT_FIELDS = [
   ["maxHP", "HP"],
   ["maxMP", "MP"],
   ["exp", "經驗值"],
-  ["PADamage", "物攻"],
-  ["PDDamage", "物防"],
-  ["MADamage", "魔攻"],
-  ["MDDamage", "魔防"],
+  ["PADamage", "物理攻擊力"],
+  ["PDDamage", "物理防禦力"],
+  ["MADamage", "魔法攻擊力"],
+  ["MDDamage", "魔法防禦力"],
   ["acc", "命中"],
   ["eva", "迴避"],
   ["speed", "移速"],
@@ -343,6 +347,7 @@ function selectedWeaknessValues() {
 function saveAdvancedFilters() {
   writeCookie("ms_monster_level_min", state.levelMin || "");
   writeCookie("ms_monster_level_max", state.levelMax || "");
+  writeCookie("ms_monster_boss_only", state.bossOnly ? "1" : "");
   writeCookie("ms_monster_weakness_filters", (state.weaknessFilters || []).join("|"));
 }
 
@@ -350,6 +355,7 @@ function activeAdvancedFilterCount() {
   let count = 0;
   if (levelFilterValue(state.levelMin) !== null) count += 1;
   if (levelFilterValue(state.levelMax) !== null) count += 1;
+  if (state.bossOnly) count += 1;
   count += (state.weaknessFilters || []).length;
   return count;
 }
@@ -375,12 +381,17 @@ function matchesWeaknessFilters(monster) {
   });
 }
 
+function matchesBossFilter(monster) {
+  return !state.bossOnly || Number(monster.stats?.boss) > 0;
+}
+
 function filteredMonsters() {
   const q = norm(state.query);
   return db.monsters.filter(monster => {
     const unnamedMapOk = state.showUnnamedMapMonsters || !onlyUnnamedMapMonster(monster);
     const continentOk = matchesSelectedContinents(monster);
     const levelOk = matchesLevelFilters(monster);
+    const bossOk = matchesBossFilter(monster);
     const weaknessOk = matchesWeaknessFilters(monster);
     const drops = visibleDrops(monster);
     const queryOk = !q || (state.nameOnlySearch
@@ -394,7 +405,7 @@ function filteredMonsters() {
       monster.maps.some(map => norm(map.id).includes(q) || norm(map.name).includes(q) || norm(map.street).includes(q)) ||
       (monster.questRequirements || []).some(row => norm(row.questId).includes(q) || norm(row.questName).includes(q) || norm(row.category).includes(q) || norm(row.parent).includes(q)) ||
       drops.some(item => norm(item.id).includes(q) || norm(item.name).includes(q)));
-    return unnamedMapOk && continentOk && levelOk && weaknessOk && queryOk;
+    return unnamedMapOk && continentOk && levelOk && bossOk && weaknessOk && queryOk;
   }).sort(compareMonsters);
 }
 
@@ -492,6 +503,130 @@ function mesoIconHtml(tier, className = "mesoInlineIcon") {
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
+}
+
+function formatSigned(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return escapeHtml(value);
+  return `${number > 0 ? "+" : ""}${number.toLocaleString()}`;
+}
+
+const EQUIP_RANGE_LABELS = {
+  incSTR: "力量",
+  incDEX: "敏捷",
+  incINT: "智力",
+  incLUK: "幸運",
+  incMHP: "MaxHP",
+  incMMP: "MaxMP",
+  incPAD: "攻擊力",
+  incMAD: "魔法攻擊力",
+  incPDD: "防禦力",
+  incMDD: "魔法防禦力",
+  incACC: "命中",
+  incEVA: "迴避",
+  incSpeed: "移動速度",
+  incJump: "跳躍",
+  incCraft: "熟練",
+};
+const EQUIP_RANGE_PRIORITY = ["incPAD", "incMAD", "incSTR", "incDEX", "incINT", "incLUK", "incACC", "incEVA", "incPDD", "incMDD", "incMHP", "incMMP", "incSpeed", "incJump", "incCraft"];
+
+function formatReqJob(value) {
+  const mask = Number(value);
+  if (!Number.isFinite(mask) || mask <= 0) return "全職";
+  const jobs = [
+    [1, "劍士"],
+    [2, "法師"],
+    [4, "弓箭手"],
+    [8, "盜賊"],
+    [16, "海盜"],
+  ];
+  const labels = jobs.filter(([bit]) => (mask & bit) === bit).map(([, label]) => label);
+  return labels.length ? labels.join(" / ") : formatNumber(mask);
+}
+
+function formatEquipRequirementLevel(stats) {
+  if (!Object.hasOwn(stats, "reqLevel")) return "未知";
+  const level = Number(stats.reqLevel);
+  if (!Number.isFinite(level)) return String(stats.reqLevel);
+  return level > 0 ? `Lv.${level.toLocaleString()}` : "無限制";
+}
+
+function formatEquipRequirementAttributes(stats) {
+  const fields = [
+    ["reqSTR", "力量"],
+    ["reqDEX", "敏捷"],
+    ["reqINT", "智力"],
+    ["reqLUK", "幸運"],
+    ["reqPOP", "人氣"],
+  ];
+  const parts = fields.map(([key, label]) => {
+    const value = stats[key];
+    const number = Number(value);
+    if (Number.isFinite(number)) return number > 0 ? `${label} ${number.toLocaleString()}` : "";
+    return value ? `${label} ${value}` : "";
+  }).filter(Boolean);
+  return parts.length ? parts.join(" / ") : "";
+}
+
+function formatEquipUpgradeSlots(stats) {
+  if (!Object.hasOwn(stats, "tuc")) return "未知";
+  const tuc = Number(stats.tuc);
+  return Number.isFinite(tuc) ? tuc.toLocaleString() : String(stats.tuc);
+}
+
+function equipRequirementRowsHtml(item) {
+  const stats = item?.equipStats;
+  if (!stats || typeof stats !== "object") return "";
+  const requirements = formatEquipRequirementAttributes(stats);
+  const rows = [
+    ["裝備需求", requirements],
+  ].filter(([, value]) => value);
+  return `<div class="equipRequirementLines">
+    <p class="equipRequirementPrimary"><strong>${escapeHtml(formatEquipRequirementLevel(stats))} · ${escapeHtml(formatReqJob(stats.reqJob))}</strong></p>
+    ${rows.map(([label, value]) => `
+    <p><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></p>
+  `).join("")}</div>`;
+}
+
+function equipUpgradeRowsHtml(item) {
+  const stats = item?.equipStats;
+  if (!stats || typeof stats !== "object") return "";
+  return `<div class="equipRangeLines equipUpgradeLines"><p>可強化次數: ${escapeHtml(formatEquipUpgradeSlots(stats))}</p></div>`;
+}
+
+function formatRangeBound(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString() : "";
+}
+
+function formatEquipRangeValue(range) {
+  const min = Number(range?.min);
+  const max = Number(range?.max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return "";
+  if (min === max) return formatRangeBound(min);
+  return `${formatRangeBound(min)} ~ ${formatRangeBound(max)}`;
+}
+
+function equipRangeLine(key, range) {
+  const base = Number(range?.base);
+  const baseText = Number.isFinite(base) ? formatSigned(base) : "";
+  const rangeText = formatEquipRangeValue(range);
+  if (!baseText && !rangeText) return "";
+  return `${EQUIP_RANGE_LABELS[key] || key}: ${baseText}${rangeText ? ` (${rangeText})` : ""}`;
+}
+
+function equipRangeRows(item) {
+  const ranges = item?.equipStatRanges || {};
+  return EQUIP_RANGE_PRIORITY
+    .filter(key => ranges[key])
+    .map(key => equipRangeLine(key, ranges[key]))
+    .filter(Boolean);
+}
+
+function equipRangeRowsHtml(item) {
+  const rows = equipRangeRows(item);
+  if (!rows.length) return "";
+  return `<div class="equipRangeLines">${rows.map(row => `<p>${escapeHtml(row)}</p>`).join("")}</div>`;
 }
 
 function formatKnownNumber(value) {
@@ -612,6 +747,7 @@ function updateAdvancedPanel() {
   }
   if (els.levelMin && document.activeElement !== els.levelMin) els.levelMin.value = state.levelMin || "";
   if (els.levelMax && document.activeElement !== els.levelMax) els.levelMax.value = state.levelMax || "";
+  if (els.bossOnly) els.bossOnly.checked = state.bossOnly;
   syncWeaknessInputs();
 }
 
@@ -639,12 +775,20 @@ function updateContinentSummary() {
   if (!els.continentButton) return;
   const selected = state.continents || [];
   if (!selected.length) {
-    els.continentButton.textContent = "全部一般地區";
+    els.continentButton.textContent = "全部地區";
+  } else if (sameSelection(selected, CURRENT_VERSION_CONTINENTS)) {
+    els.continentButton.textContent = "當前版本地區";
   } else if (selected.length <= 4) {
     els.continentButton.textContent = selected.join("、");
   } else {
     els.continentButton.textContent = `${selected.slice(0, 3).join("、")} +${selected.length - 3}`;
   }
+}
+
+function sameSelection(selected, expected) {
+  if ((selected || []).length !== expected.length) return false;
+  const values = new Set(selected || []);
+  return expected.every(value => values.has(value));
 }
 
 function setContinentMenu(open) {
@@ -738,9 +882,14 @@ function renderDetail() {
     ${renderMaps(monster)}
     ${renderQuestRequirements(monster)}
     <section class="sectionBlock">
-      <div class="sectionTitle">
+      <div class="sectionTitle dropSectionTitle">
         <h3>掉落</h3>
-        <span>${drops.length.toLocaleString()} 項道具${hasMesoDrop ? ` · 楓幣 ${formatMesoRange(monster.mesoDrop)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
+        <div class="sectionTitleActions">
+          <button id="dropItemDetailsToggle" class="inlineToggleButton" type="button" aria-pressed="${state.showDropItemDetails ? "true" : "false"}">
+            ${state.showDropItemDetails ? "隱藏道具詳細資訊" : "顯示道具詳細資訊"}
+          </button>
+          <span>${drops.length.toLocaleString()} 項道具${hasMesoDrop ? ` · 楓幣 ${formatMesoRange(monster.mesoDrop)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
+        </div>
       </div>
       <div class="dropGroups">
         ${renderMesoDrop(monster)}
@@ -990,7 +1139,6 @@ function renderElements(monster) {
   const isUndead = Number(monster.stats?.undead) ? true : false;
   const hasUndead = hasOwn(monster.stats, "undead");
   const notable = ELEMENT_FIELDS.filter(([key]) => (values[key] || "normal") !== "normal").length + (isUndead ? 1 : 0);
-  const sourceText = elemental.source === "description" ? "圖鑑描述" : "怪物資料";
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
@@ -1001,7 +1149,6 @@ function renderElements(monster) {
         ${ELEMENT_FIELDS.map(([key, label]) => elementCell(label, values[key] || "normal")).join("")}
         ${hasUndead ? undeadCell(isUndead) : ""}
       </div>
-      ${elemental.source !== "none" ? `<p class="elementSource">來源：${escapeHtml(sourceText)}</p>` : ""}
     </section>
   `;
 }
@@ -1019,9 +1166,8 @@ function elementCell(label, state) {
 function undeadCell(isUndead) {
   return `
     <div class="elementCell ${isUndead ? "undead weak" : ""}">
-      <span>不死</span>
+      <span>可被群體治癒攻擊</span>
       <strong>${isUndead ? "是" : "否"}</strong>
-      ${isUndead ? `<em>可被群體治癒攻擊</em>` : ""}
     </div>
   `;
 }
@@ -1161,13 +1307,20 @@ function itemCard(item) {
   metaParts.push(item.source === "quest" ? "任務掉落" : itemTypeText(item));
   if (item.source === "quest" && item.questNames?.length) metaParts.push(`任務：${item.questNames.slice(0, 2).join("、")}`);
   const meta = metaParts.map(escapeHtml).join(" · ");
+  const requirementRows = equipRequirementRowsHtml(item);
+  const rangeRows = equipRangeRowsHtml(item);
+  const upgradeRows = equipUpgradeRowsHtml(item);
+  const equipmentDetails = `${requirementRows}${rangeRows}${upgradeRows}`;
+  const fallbackDescription = item.desc ? `<p>${escapeHtml(shorten(item.desc, 92))}</p>` : "";
+  const detailHtml = state.showDropItemDetails
+    ? `<span>${meta}</span>${equipmentDetails || fallbackDescription}`
+    : "";
   return `
-    <a class="itemCard itemLinkCard" href="${itemUrl(item)}">
+    <a class="itemCard itemLinkCard ${state.showDropItemDetails ? "" : "compactDropItemCard"}" href="${itemUrl(item)}">
       ${assetImage(item.image, item.name, item.name.slice(0, 1), "itemIcon")}
       <div class="itemText">
         <strong>${escapeHtml(item.name)}</strong>
-        <span>${meta}</span>
-        ${item.desc ? `<p>${escapeHtml(shorten(item.desc, 92))}</p>` : ""}
+        ${detailHtml}
       </div>
     </a>
   `;
@@ -1221,6 +1374,13 @@ function handleLevelFilterInput(key, event) {
 els.levelMin.addEventListener("input", event => handleLevelFilterInput("levelMin", event));
 els.levelMax.addEventListener("input", event => handleLevelFilterInput("levelMax", event));
 
+els.bossOnly.addEventListener("change", event => {
+  state.preserveSelectedDetail = false;
+  state.bossOnly = Boolean(event.target.checked);
+  saveAdvancedFilters();
+  render();
+});
+
 els.weaknessFilter.addEventListener("change", event => {
   if (!event.target.matches('input[type="checkbox"]')) return;
   state.preserveSelectedDetail = false;
@@ -1233,6 +1393,7 @@ els.advancedClear.addEventListener("click", () => {
   state.preserveSelectedDetail = false;
   state.levelMin = "";
   state.levelMax = "";
+  state.bossOnly = false;
   state.weaknessFilters = [];
   saveAdvancedFilters();
   render();
@@ -1287,6 +1448,15 @@ els.idToggle.addEventListener("click", () => {
 
 els.themeToggle.addEventListener("click", () => {
   setTheme(state.theme === "dark" ? "light" : "dark");
+});
+
+els.detail.addEventListener("click", event => {
+  const button = event.target.closest("#dropItemDetailsToggle");
+  if (!button) return;
+  event.preventDefault();
+  state.showDropItemDetails = !state.showDropItemDetails;
+  saveBool("ms_monster_drop_item_details", state.showDropItemDetails);
+  renderDetail();
 });
 
 els.settingsToggle.addEventListener("click", () => {

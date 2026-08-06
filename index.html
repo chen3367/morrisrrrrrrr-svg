@@ -54,7 +54,7 @@
       <span id="resultCount"></span>
       <div id="settingsPanel" class="settingsPanel" hidden>
         <div id="continentFilter" class="multiSelect">
-          <button id="continentMenuButton" class="multiSelectButton" type="button" aria-expanded="false" aria-controls="continentOptions">一般大陸</button>
+          <button id="continentMenuButton" class="multiSelectButton" type="button" aria-expanded="false" aria-controls="continentOptions">當前版本地區</button>
           <div id="continentOptions" class="multiSelectOptions" role="group" aria-label="以大陸複選篩選" hidden>
             <button id="continentClear" class="multiSelectClear" type="button">清除選取</button>
           </div>
@@ -72,6 +72,10 @@
             <span>最高等級</span>
             <input id="levelMax" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="上限" autocomplete="off" />
           </label>
+          <label class="weaknessOption bossFilterOption">
+            <input id="bossOnly" type="checkbox" autocomplete="off" />
+            <span>只顯示 BOSS</span>
+          </label>
           <fieldset id="weaknessFilter" class="weaknessFilter">
             <legend>屬性弱點</legend>
             <label class="weaknessOption"><input type="checkbox" value="fire" autocomplete="off" /><span>火</span></label>
@@ -79,7 +83,7 @@
             <label class="weaknessOption"><input type="checkbox" value="lightning" autocomplete="off" /><span>雷</span></label>
             <label class="weaknessOption"><input type="checkbox" value="poison" autocomplete="off" /><span>毒</span></label>
             <label class="weaknessOption"><input type="checkbox" value="holy" autocomplete="off" /><span>聖</span></label>
-            <label class="weaknessOption"><input type="checkbox" value="undead" autocomplete="off" /><span>不死</span></label>
+            <label class="weaknessOption"><input type="checkbox" value="undead" autocomplete="off" /><span>治癒</span></label>
           </fieldset>
           <button id="advancedClear" class="toggleButton advancedClearButton" type="button">清除進階條件</button>
         </div>

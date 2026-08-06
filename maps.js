@@ -302,11 +302,19 @@ function updateMapRegionSummary() {
   const selected = state.regions || [];
   if (!selected.length) {
     els.regionButton.textContent = "全部地區";
+  } else if (sameSelection(selected, DEFAULT_MAP_REGIONS)) {
+    els.regionButton.textContent = "當前版本地區";
   } else if (selected.length <= 4) {
     els.regionButton.textContent = selected.join("、");
   } else {
     els.regionButton.textContent = `${selected.slice(0, 3).join("、")} +${selected.length - 3}`;
   }
+}
+
+function sameSelection(selected, expected) {
+  if ((selected || []).length !== expected.length) return false;
+  const values = new Set(selected || []);
+  return expected.every(value => values.has(value));
 }
 
 function setMapRegionMenu(open) {

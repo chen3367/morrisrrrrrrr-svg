@@ -276,13 +276,13 @@ const EQUIP_FIELD_GROUPS = [
       ["incLUK", "幸運", formatSigned],
       ["incMHP", "MaxHP", formatSigned],
       ["incMMP", "MaxMP", formatSigned],
-      ["incPAD", "物攻", formatSigned],
-      ["incMAD", "魔攻", formatSigned],
-      ["incPDD", "物防", formatSigned],
-      ["incMDD", "魔防", formatSigned],
+      ["incPAD", "攻擊力", formatSigned],
+      ["incMAD", "魔法攻擊力", formatSigned],
+      ["incPDD", "防禦力", formatSigned],
+      ["incMDD", "魔法防禦力", formatSigned],
       ["incACC", "命中", formatSigned],
       ["incEVA", "迴避", formatSigned],
-      ["incSpeed", "移速", formatSigned],
+      ["incSpeed", "移動速度", formatSigned],
       ["incJump", "跳躍", formatSigned],
       ["incCraft", "熟練", formatSigned],
       ["knockback", "擊退"],
@@ -375,6 +375,27 @@ function formatSigned(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return escapeHtml(value);
   return `${number > 0 ? "+" : ""}${number.toLocaleString()}`;
+}
+
+function formatRangeBound(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString() : "";
+}
+
+function formatEquipStatRange(range) {
+  const min = Number(range?.min);
+  const max = Number(range?.max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return "";
+  if (min === max) return formatRangeBound(min);
+  return `${formatRangeBound(min)} ~ ${formatRangeBound(max)}`;
+}
+
+function equipStatContent(item, key, value, formatter) {
+  if (key === "price") return mesoValueHtml(value);
+  const text = formatter ? formatter(value) : formatNumber(value);
+  const range = item.equipStatRanges?.[key];
+  if (!range) return escapeHtml(text);
+  return `${escapeHtml(text)} <span class="equipStatRange">(${escapeHtml(formatEquipStatRange(range))})</span>`;
 }
 
 function formatMeso(value) {
@@ -964,14 +985,19 @@ function renderSellPrice(item) {
 
 function renderEquipmentStats(item) {
   const stats = item.equipStats || {};
+  const ranges = item.equipStatRanges || {};
+  const rangeSources = item.equipStatRangeSources || [];
+  const rangeSourceText = rangeSources.join("、") || "怪物掉落或可使用催化劑合成";
+  const rangeNote = Object.keys(ranges).length
+    ? `<p class="equipRangeNote">${escapeHtml(rangeSourceText)}的裝備數值可能浮動。</p>`
+    : "";
   let totalRows = 0;
   const groups = EQUIP_FIELD_GROUPS.map(group => {
     const rows = group.fields.map(([key, label, formatter]) => {
       const value = stats[key];
       if (!hasEquipValue(key, value)) return "";
-      const text = formatter ? formatter(value) : formatNumber(value);
-      const content = key === "price" ? mesoValueHtml(value) : escapeHtml(text);
-      return `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${content}</strong></div>`;
+      const content = equipStatContent(item, key, value, formatter);
+      return `<div class="statCell equipStatCell"><span>${escapeHtml(label)}:</span><strong>${content}</strong></div>`;
     }).filter(Boolean);
     if (!rows.length) return "";
     totalRows += rows.length;
@@ -989,7 +1015,7 @@ function renderEquipmentStats(item) {
         <h3>裝備數值</h3>
         <span>${totalRows.toLocaleString()} 欄</span>
       </div>
-      <div class="equipStats">${groups.join("")}</div>
+      <div class="equipStats">${rangeNote}${groups.join("")}</div>
     </section>
   `;
 }
