@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MapleStory Classic 更新紀錄</title>
+  <link rel="icon" href="data:," />
+  <script>
+    (function () {
+      function readCookie(name) {
+        try {
+          var prefix = encodeURIComponent(name) + "=";
+          var rows = document.cookie ? document.cookie.split("; ") : [];
+          for (var i = 0; i < rows.length; i += 1) {
+            if (rows[i].indexOf(prefix) === 0) return decodeURIComponent(rows[i].slice(prefix.length));
+          }
+        } catch (_error) {}
+        return "";
+      }
+      try {
+        var cookieTheme = readCookie("ms_theme");
+        var storedTheme = cookieTheme || (localStorage.getItem("ms-theme") === "dark" ? "dark" : "light");
+        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
+      } catch (_error) {
+        document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="appHeader">
+    <div class="titleArea">
+      <h1>更新紀錄</h1>
+      <nav class="topNav" aria-label="頁面切換">
+        <a href="./index.html">怪物</a>
+        <a href="./items.html">道具</a>
+        <a href="./quests.html">任務</a>
+        <a href="./maps.html">地圖</a>
+        <a href="./worldmaps.html">世界地圖</a>
+        <a href="./skills.html">技能</a>
+        <a class="active" href="./patch-notes.html">更新</a>
+      </nav>
+      <div class="buildMeta" id="buildMeta">只列出玩家會在頁面上感受到的變動</div>
+    </div>
+    <div class="patchHeaderControls">
+      <button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button>
+      <span id="resultCount">1 版</span>
+    </div>
+  </header>
+
+  <main class="patchNotesLayout">
+    <aside class="monsterList patchVersionList" aria-label="版本列表">
+      <a class="patchVersionRow active" href="#v1-13-6">
+        <strong>1.13.6</strong>
+        <span>2026-08-06</span>
+      </a>
+    </aside>
+
+    <section class="detail patchNotesDetail">
+      <article id="v1-13-6" class="patchNoteArticle">
+        <header class="patchNoteHero">
+          <div>
+            <p class="patchEyebrow">資料版本更新</p>
+            <h2>遊戲資料 1.13.6</h2>
+            <p>本次更新以任務獎勵校正和圖示呈現整理為主。</p>
+          </div>
+          <div class="patchNoteDate">
+            <strong>2026-08-06</strong>
+            <span>GMT+8</span>
+          </div>
+        </header>
+
+        <section class="patchNoteSection">
+          <h3>任務獎勵校正</h3>
+          <ul class="patchChangeList">
+            <li><strong>找回神秘書</strong> 的完成經驗值由 <b>5000</b> 調整為 <b>10000</b>。</li>
+            <li><strong>特製烤鰻魚的秘密</strong> 的完成經驗值由 <b>5000</b> 調整為 <b>無經驗值獎勵</b>。</li>
+          </ul>
+        </section>
+
+        <section class="patchNoteSection">
+          <h3>圖示與顯示</h3>
+          <ul class="patchChangeList">
+            <li>補齊部分 NPC 與地圖代表圖示在道具來源卡片中的顯示。</li>
+            <li>重新整理 NPC、技能、道具、小地圖等頁面資產，讓索引頁與資訊卡顯示更一致。</li>
+          </ul>
+        </section>
+
+        <footer class="patchNoteFooter">
+          <a href="./update-report-1.13.1-to-1.13.6.md">查看完整資料 diff</a>
+        </footer>
+      </article>
+    </section>
+  </main>
+
+  <script src="./patch-notes.js"></script>
+</body>
+</html>

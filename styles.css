@@ -505,6 +505,119 @@ select {
 .accuracyLayout {
   grid-template-columns: 380px minmax(0, 1fr);
 }
+.patchHeaderControls {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 42px;
+}
+.patchNotesLayout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 920px);
+  justify-content: center;
+  gap: 14px;
+  padding: 12px;
+}
+.patchVersionList {
+  align-self: start;
+}
+.patchVersionRow {
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--row-border);
+  color: var(--ink);
+  text-decoration: none;
+}
+.patchVersionRow:hover {
+  background: var(--hover-bg);
+}
+.patchVersionRow.active {
+  background: var(--accent-soft);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+.patchVersionRow strong {
+  font-size: 18px;
+}
+.patchVersionRow span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+.patchNotesDetail {
+  overflow: visible;
+}
+.patchNoteArticle {
+  background: var(--shell);
+}
+.patchNoteHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--hero-border);
+  background: var(--hero-bg);
+}
+.patchNoteHero p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.patchEyebrow {
+  color: var(--text-strong) !important;
+  font-size: 13px;
+  font-weight: 900;
+}
+.patchNoteDate {
+  min-width: 132px;
+  border: 1px solid var(--item-glyph-border);
+  border-radius: 8px;
+  background: var(--item-glyph-bg);
+  padding: 10px 12px;
+  text-align: center;
+}
+.patchNoteDate strong,
+.patchNoteDate span {
+  display: block;
+}
+.patchNoteDate strong {
+  font-size: 18px;
+}
+.patchNoteDate span {
+  color: var(--item-glyph-text);
+  font-size: 12px;
+  font-weight: 850;
+}
+.patchNoteSection {
+  padding: 18px 22px;
+  border-bottom: 1px dashed var(--dash-line);
+}
+.patchChangeList {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding-left: 1.25rem;
+  color: var(--plain-text);
+  line-height: 1.55;
+}
+.patchChangeList strong {
+  color: var(--ink);
+}
+.patchChangeList b {
+  color: var(--text-strong);
+}
+.patchNoteFooter {
+  padding: 18px 22px 22px;
+}
+.patchNoteFooter a {
+  color: var(--blue);
+  font-weight: 850;
+  text-decoration: none;
+}
+.patchNoteFooter a:hover {
+  text-decoration: underline;
+}
 .monsterList {
   overflow: auto;
   border: 1px solid var(--line);
@@ -2171,6 +2284,11 @@ h3 {
     flex: 1 1 auto;
     min-height: 0;
   }
+  .patchNotesLayout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
 }
 @media (max-width: 860px) {
   .appHeader { display: block; }
@@ -2229,8 +2347,23 @@ h3 {
   .itemLayout, .skillLayout, .accuracyLayout, .mapLayout, .worldMapLayout {
     grid-template-columns: 1fr;
   }
+  .patchNotesLayout {
+    grid-template-columns: 1fr;
+  }
+  .patchVersionList {
+    max-height: none;
+  }
+  .patchNoteHero {
+    grid-template-columns: 1fr;
+  }
+  .patchNoteDate {
+    justify-self: start;
+  }
   .monsterList {
     max-height: 36vh;
+  }
+  .patchVersionList.monsterList {
+    max-height: none;
   }
   .monsterHero {
     grid-template-columns: auto minmax(0, 1fr);
