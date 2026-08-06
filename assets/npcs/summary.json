@@ -1,11 +1,11 @@
 {
   "targets": 282,
-  "exported": 250,
-  "missing": 32,
+  "exported": 251,
+  "missing": 31,
   "skipped": [
     {
-      "id": 2004,
-      "reason": "missing sprite"
+      "id": 9201000,
+      "reason": "missing rects"
     },
     {
       "id": 900040,
@@ -13,10 +13,6 @@
     },
     {
       "id": 1012110,
-      "reason": "missing sprite"
-    },
-    {
-      "id": 1052116,
       "reason": "missing sprite"
     },
     {

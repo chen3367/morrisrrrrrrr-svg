@@ -1,10 +1,16 @@
 {
   "targets": 333,
   "available": 333,
-  "bundle": "spritesheet_ef97f1e56f7745b1c348471a6da0dee0.bundle",
   "exported": 333,
-  "cropped": 333,
-  "wzssSizeMatches": 333,
-  "wzssSizes": 337,
-  "missing": 0
+  "bundles": [
+    {
+      "bundle": "spritesheet_ef97f1e56f7745b1dbc614d0bd45ffc0.bundle",
+      "targets": 333,
+      "exported": 333,
+      "cropped": 333,
+      "wzssSizeMatches": 333,
+      "wzssSizes": 337,
+      "missing": 0
+    }
+  ]
 }

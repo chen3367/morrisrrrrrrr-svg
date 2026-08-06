@@ -135,16 +135,76 @@
   "avatarWzjsRoots": 3332,
   "petWzjsRoots": 15,
   "bundles": {
-    "spritesheet_abb78745197801a5927bf6955788bb81.bundle": {
+    "spritesheet_631a1e3068991baa271ccec09d9f7dd3.bundle": {
+      "groups": 0,
+      "equipment": 4521,
+      "avatar": 3316,
+      "pet": 0
+    },
+    "spritesheet_abb78745197801a52a5dc39a4ed0212e.bundle": {
       "groups": 4674,
       "equipment": 0,
       "avatar": 0,
       "pet": 15
     },
-    "spritesheet_631a1e3068991baaee1cfa048357fd49.bundle": {
+    "spritesheet_0c0f9d9eaaf58b936bee4c8035443f95.bundle": {
       "groups": 0,
-      "equipment": 4521,
-      "avatar": 3316,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_1023f33d7803aa6e3454012c29102656.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_1b3bc95af88aeb7d29b8136f3cf1f4c4.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_6c894ec2548f346604c48e1d60c5394c.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_6f9adf8b1441a3608705bb9523e713a2.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_703f342592260e784af18bb3d49c5988.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_841d1e3c07f4a916fc221ebe9bc925aa.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_8e3424c08bd97a7f7ea31256428afbaa.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_a0ea9932dac062456010a74b41f8fd10.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
+      "pet": 0
+    },
+    "spritesheet_ef97f1e56f7745b1dbc614d0bd45ffc0.bundle": {
+      "groups": 0,
+      "equipment": 0,
+      "avatar": 0,
       "pet": 0
     }
   }
