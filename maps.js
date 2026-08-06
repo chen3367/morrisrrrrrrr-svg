@@ -199,6 +199,13 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
+function assetImage(src, alt, fallback, className) {
+  if (src) {
+    return `<img class="${className} assetImage" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
+  }
+  return `<div class="${className}">${escapeHtml(fallback || "?")}</div>`;
+}
+
 function formatNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
@@ -485,6 +492,91 @@ function mapById(mapId) {
   return (db.maps || []).find(map => String(map.id) === String(mapId));
 }
 
+let hiddenWorldMapGraphCache = null;
+
+function isWorldMapHidden(map) {
+  return Boolean(map) && map.worldMapListed === false;
+}
+
+function mapCrossTargetIds(map) {
+  return (map?.portals || [])
+    .filter(portal => portal?.targetMapId && !portal.sameMap)
+    .map(portal => String(portal.targetMapId));
+}
+
+function hiddenWorldMapGraph() {
+  if (hiddenWorldMapGraphCache) return hiddenWorldMapGraphCache;
+  const mapsById = new window.Map((db.maps || []).map(row => [String(row.id), row]));
+  const graph = new window.Map();
+  const ensure = id => {
+    if (!graph.has(String(id))) graph.set(String(id), new Set());
+  };
+  (db.maps || []).forEach(row => {
+    if (isWorldMapHidden(row)) ensure(row.id);
+  });
+  (db.maps || []).forEach(row => {
+    if (!isWorldMapHidden(row)) return;
+    const sourceId = String(row.id);
+    ensure(sourceId);
+    mapCrossTargetIds(row).forEach(targetId => {
+      const target = mapsById.get(targetId);
+      if (!isWorldMapHidden(target)) return;
+      ensure(targetId);
+      graph.get(sourceId).add(targetId);
+      graph.get(targetId).add(sourceId);
+    });
+  });
+  hiddenWorldMapGraphCache = { mapsById, graph };
+  return hiddenWorldMapGraphCache;
+}
+
+function hiddenWorldMapComponentIds(startId) {
+  const { graph } = hiddenWorldMapGraph();
+  const start = String(startId);
+  if (!graph.has(start)) return [];
+  const visited = new Set();
+  const queue = [start];
+  while (queue.length) {
+    const id = queue.shift();
+    if (visited.has(id)) continue;
+    visited.add(id);
+    [...(graph.get(id) || [])].sort((a, b) => Number(a) - Number(b)).forEach(nextId => {
+      if (!visited.has(nextId)) queue.push(nextId);
+    });
+  }
+  return [...visited].sort((a, b) => Number(a) - Number(b));
+}
+
+function hiddenWorldMapComponentsFor(map) {
+  const { mapsById } = hiddenWorldMapGraph();
+  const starts = new Set();
+  if (isWorldMapHidden(map)) starts.add(String(map.id));
+  mapCrossTargetIds(map).forEach(targetId => {
+    const target = mapsById.get(targetId);
+    if (isWorldMapHidden(target)) starts.add(targetId);
+  });
+  const seen = new Set();
+  return [...starts].map(startId => {
+    const ids = hiddenWorldMapComponentIds(startId);
+    const key = ids.join("|");
+    if (!ids.length || seen.has(key)) return null;
+    seen.add(key);
+    const rows = ids
+      .map(id => mapsById.get(id))
+      .filter(Boolean)
+      .filter(row => state.showUnnamedMaps || !isUnnamedMap(row) || String(row.id) === String(map.id))
+      .sort((a, b) => String(a.street || "").localeCompare(String(b.street || ""), "zh-Hant")
+        || String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant")
+        || Number(a.id) - Number(b.id));
+    if (!rows.length) return null;
+    const directEntries = mapCrossTargetIds(map)
+      .filter(targetId => ids.includes(targetId))
+      .map(targetId => mapsById.get(targetId))
+      .filter(Boolean);
+    return { key, ids, rows, directEntries };
+  }).filter(Boolean);
+}
+
 function selectedMap() {
   const rows = filteredMaps();
   return (state.preserveSelectedDetail && mapById(state.selectedId))
@@ -584,7 +676,9 @@ function renderDetail() {
     </section>
     ${renderMapCanvas(map)}
     ${renderSpawnList(map)}
-    ${renderPortalList(map)}
+    ${renderNpcList(map)}
+    ${renderCrossPortalList(map)}
+    ${renderSameMapPortalList(map)}
   `;
 }
 
@@ -816,7 +910,7 @@ function renderSpawnList(map) {
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
-        <h3>怪物重生</h3>
+        <h3>怪物</h3>
         <span>${rows.length.toLocaleString()} 種</span>
       </div>
       <div class="sourceList">
@@ -858,17 +952,64 @@ function spawnCoordinateText(map, monsterId) {
   return "座標未標註";
 }
 
-function renderPortalList(map) {
-  if (!state.showCrossPortals && !state.showSameMapPortals) return "";
-  const rows = displayPortals(map);
+function renderNpcList(map) {
+  const rows = displayNpcs(map);
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
-        <h3>傳送點</h3>
+        <h3>NPC</h3>
         <span>${rows.length.toLocaleString()} 個</span>
       </div>
       <div class="sourceList">
-        ${rows.map(portal => portalRow(portal)).join("") || `<div class="empty">沒有傳送點資料</div>`}
+        ${rows.map(npc => {
+          const title = `${npc.name || npc.npcId}${isFiniteNumber(npc.x) && isFiniteNumber(npc.y) ? ` (${formatNumber(npc.x)}, ${formatNumber(npc.y)})` : ""}${state.showIds ? ` · ID ${npc.npcId}` : ""}`;
+          const coordinate = isFiniteNumber(npc.x) && isFiniteNumber(npc.y)
+            ? `座標 (${formatNumber(npc.x)}, ${formatNumber(npc.y)})`
+            : "座標未標註";
+          return `
+            <article class="sourceRow monsterSourceRow">
+              ${assetImage(npc.image, npc.name || npc.npcId, "人", "sourceMonsterImage")}
+              <div>
+                <strong>${escapeHtml(npc.name || npc.npcId)}</strong>
+                <span>${escapeHtml(coordinate)}${idMeta(npc.npcId)}</span>
+                <p>${escapeHtml(title)}</p>
+              </div>
+              <small>NPC</small>
+            </article>
+          `;
+        }).join("") || `<div class="empty">${state.showNpcs ? "沒有 NPC 資料" : "NPC 已隱藏"}</div>`}
+      </div>
+    </section>
+  `;
+}
+
+function crossPortals(map) {
+  return visiblePortals(map).filter(portal => !portal.sameMap);
+}
+
+function sameMapPortals(map) {
+  return visiblePortals(map).filter(portal => portal.sameMap);
+}
+
+function renderCrossPortalList(map) {
+  if (!state.showCrossPortals) return "";
+  return renderPortalGroup("跨地圖傳送點", crossPortals(map), "沒有跨地圖傳送點資料");
+}
+
+function renderSameMapPortalList(map) {
+  if (!state.showSameMapPortals) return "";
+  return renderPortalGroup("同地圖傳送點", sameMapPortals(map), "沒有同地圖傳送點資料");
+}
+
+function renderPortalGroup(title, rows, emptyText) {
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <h3>${escapeHtml(title)}</h3>
+        <span>${rows.length.toLocaleString()} 個</span>
+      </div>
+      <div class="sourceList">
+        ${rows.map(portal => portalRow(portal)).join("") || `<div class="empty">${escapeHtml(emptyText)}</div>`}
       </div>
     </section>
   `;
@@ -898,6 +1039,58 @@ function portalRow(portal) {
     return `<a class="sourceRow sourceLinkRow monsterSourceRow" href="./maps.html?map=${encodeURIComponent(portal.targetMapId)}" data-target-id="${escapeHtml(portal.targetMapId)}">${body}</a>`;
   }
   return `<article class="sourceRow monsterSourceRow">${body}</article>`;
+}
+
+function hiddenMapRow(row) {
+  const meta = [row.regionName, row.street, row.worldMapHiddenReason || "隱藏地圖"].filter(Boolean).join(" · ");
+  return `
+    <a class="sourceRow sourceLinkRow monsterSourceRow hiddenMapSourceRow" href="./maps.html?map=${encodeURIComponent(row.id)}">
+      ${mapThumb(row, "sourceMonsterImage")}
+      <div>
+        <strong>${escapeHtml(row.name)}</strong>
+        <span>${escapeHtml(meta)}${idMeta(row.id)}</span>
+        <p>${escapeHtml(row.label || row.name)}</p>
+      </div>
+      <small>前往</small>
+    </a>
+  `;
+}
+
+function renderHiddenMapConnections(map) {
+  const groups = hiddenWorldMapComponentsFor(map);
+  if (!groups.length) return "";
+  const title = isWorldMapHidden(map) ? "所屬隱藏地圖連通塊" : "可通往的隱藏地圖";
+  const totalMaps = groups.reduce((sum, group) => sum + group.rows.length, 0);
+  return `
+    <section class="sectionBlock hiddenMapConnections">
+      <div class="sectionTitle">
+        <h3>${escapeHtml(title)}</h3>
+        <span>${formatNumber(groups.length)} 組 · ${formatNumber(totalMaps)} 張</span>
+      </div>
+      <div class="hiddenMapClusterList">
+        ${groups.map((group, index) => {
+          const entryNames = group.directEntries.map(row => row.name).filter(Boolean);
+          const entryText = entryNames.length
+            ? `入口：${entryNames.join("、")}`
+            : "目前地圖位於此連通塊";
+          return `
+            <article class="hiddenMapCluster">
+              <div class="hiddenMapClusterHeader">
+                <div>
+                  <strong>隱藏地圖連通塊 ${formatNumber(index + 1)}</strong>
+                  <span>${escapeHtml(entryText)}</span>
+                </div>
+                <small>${formatNumber(group.rows.length)} 張</small>
+              </div>
+              <div class="sourceList">
+                ${group.rows.map(hiddenMapRow).join("")}
+              </div>
+            </article>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
 }
 
 function render() {

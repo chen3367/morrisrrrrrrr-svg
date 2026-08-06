@@ -122,7 +122,7 @@ body {
 .appHeader {
   position: sticky;
   top: 0;
-  z-index: 4;
+  z-index: 100;
   display: flex;
   gap: 18px;
   align-items: center;
@@ -649,6 +649,8 @@ select {
   font-weight: 800;
 }
 .detail {
+  position: relative;
+  isolation: isolate;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -657,7 +659,7 @@ select {
 .monsterHero {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 20;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 14px;
@@ -708,6 +710,7 @@ h3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(92px, auto));
   gap: 8px;
+  justify-self: end;
 }
 .heroCounter {
   min-width: 92px;
@@ -731,6 +734,12 @@ h3 {
 }
 .mapHero:not(.worldMapHero) .heroCounters {
   grid-template-columns: repeat(3, minmax(72px, auto));
+}
+.worldMapHero .heroCounters {
+  grid-template-columns: minmax(92px, auto);
+}
+.skillHero .heroCounters {
+  grid-template-columns: minmax(92px, auto);
 }
 .mapHero:not(.worldMapHero) .heroCounter {
   min-width: 72px;
@@ -955,8 +964,9 @@ h3 {
 }
 .sourceStats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
   gap: 8px;
+  overflow-x: auto;
   padding: 12px 14px 14px;
 }
 .statCell {
@@ -989,6 +999,36 @@ h3 {
   font-style: normal;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+.npcStatCell {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+.npcStatBody {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.npcStatIcon {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--icon-bg);
+  color: var(--text-strong);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  object-fit: contain;
+  padding: 3px;
+}
+.npcStatText {
+  min-width: 0;
+}
+.npcStatText strong {
+  margin-top: 0;
 }
 .elementGrid {
   display: grid;
@@ -1172,6 +1212,42 @@ h3 {
   color: var(--item-glyph-text);
   padding: 4px 7px;
   font-weight: 800;
+}
+.hiddenMapClusterList {
+  display: grid;
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+.hiddenMapCluster {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px dashed var(--dash-line);
+  border-radius: 8px;
+  background: rgba(74, 119, 168, 0.05);
+}
+.hiddenMapCluster .sourceList {
+  padding: 0;
+}
+.hiddenMapClusterHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hiddenMapClusterHeader strong,
+.hiddenMapClusterHeader span {
+  display: block;
+}
+.hiddenMapClusterHeader span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.hiddenMapClusterHeader small {
+  color: var(--gold);
+  font-weight: 800;
+  white-space: nowrap;
 }
 .recipeChips {
   display: flex;
@@ -1616,6 +1692,9 @@ h3 {
 }
 .mapCanvas {
   position: relative;
+  z-index: 0;
+  isolation: isolate;
+  contain: paint;
   width: 100%;
   min-height: 280px;
   max-height: min(68vh, 760px);
@@ -1913,8 +1992,9 @@ h3 {
   grid-template-columns: 340px minmax(0, 1fr);
 }
 .worldRegionRow small {
-  min-width: 36px;
+  min-width: 64px;
   text-align: right;
+  white-space: nowrap;
 }
 .worldMapCanvasShell {
   display: grid;
@@ -1923,6 +2003,9 @@ h3 {
 }
 .worldMapCanvas {
   position: relative;
+  z-index: 0;
+  isolation: isolate;
+  contain: paint;
   width: 100%;
   min-height: min(68vh, 700px);
   overflow: hidden;
@@ -1968,49 +2051,60 @@ h3 {
 }
 .worldEdge {
   fill: none;
-  stroke: rgba(36, 91, 69, 0.82);
-  stroke-width: 1.25;
+  stroke: rgba(36, 91, 69, 0.46);
+  stroke-width: 1;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.75));
 }
-.crossWorldEdge {
-  stroke: #d69e2e;
-  stroke-dasharray: 4 3;
-  stroke-width: 1.45;
+.worldRoutedEdge {
+  stroke: rgba(36, 91, 69, 0.58);
+}
+.worldDenseEdge {
+  opacity: 0.24;
 }
 :root[data-theme="dark"] .worldEdge {
-  stroke: rgba(167, 243, 208, 0.78);
+  stroke: rgba(167, 243, 208, 0.42);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.68));
 }
-:root[data-theme="dark"] .crossWorldEdge {
-  stroke: #f4c46a;
+:root[data-theme="dark"] .worldRoutedEdge {
+  stroke: rgba(167, 243, 208, 0.56);
 }
 .worldMapNode {
   position: absolute;
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  max-width: 108px;
-  transform: translate(-10px, -50%);
+  gap: 5px;
+  width: auto;
+  height: 24px;
+  max-width: 150px;
+  transform: translate(-12px, -50%);
   color: var(--plain-text);
   text-decoration: none;
   filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.95));
 }
-.worldNodeDot {
-  display: block;
-  width: 12px;
-  height: 12px;
-  flex: 0 0 12px;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: #2f7d5b;
+.worldNodeIcon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #1f2937;
+  object-fit: contain;
+  padding: 2px;
+  font-size: 11px;
+  font-weight: 900;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.42);
 }
 .worldNodeLabel {
-  display: block;
-  max-width: 88px;
+  display: none;
+  flex: 0 1 auto;
+  width: max-content;
+  max-width: 112px;
   border: 1px solid rgba(255, 255, 255, 0.92);
   border-radius: 6px;
   padding: 1px 4px;
@@ -2022,33 +2116,21 @@ h3 {
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
-  pointer-events: none;
+  pointer-events: auto;
+}
+.worldMapNode:hover .worldNodeLabel,
+.worldMapNode:focus-visible .worldNodeLabel {
+  display: block;
 }
 .worldMapNode:hover {
-  z-index: 4;
+  z-index: 6;
 }
-.worldMapNode:hover .worldNodeDot {
+.worldMapNode:hover .worldNodeIcon {
   outline: 3px solid var(--accent-soft);
 }
 .worldMapNode:hover .worldNodeLabel {
   border-color: var(--accent);
   color: var(--active-text);
-}
-.worldMapProxyNode {
-  z-index: 3;
-  transform: translate(-50%, -50%);
-}
-.worldMapProxyNode .worldNodeDot {
-  width: 16px;
-  height: 16px;
-  flex-basis: 16px;
-  border-radius: 4px;
-  background: #d69e2e;
-  transform: rotate(45deg);
-}
-.worldMapProxyNode .worldNodeLabel {
-  background: rgba(255, 247, 223, 0.94);
-  color: #7a5417;
 }
 :root[data-theme="dark"] .worldMapNode {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.82));
@@ -2058,17 +2140,16 @@ h3 {
   background: rgba(15, 23, 42, 0.84);
   color: #e5edf5;
 }
-:root[data-theme="dark"] .worldMapProxyNode .worldNodeLabel {
-  background: rgba(92, 63, 22, 0.86);
-  color: #f7d58a;
+:root[data-theme="dark"] .worldNodeIcon {
+  border-color: rgba(15, 23, 42, 0.72);
+  background: rgba(15, 23, 42, 0.84);
+  color: #e5edf5;
 }
 .worldNodeLegend {
-  background: #2f7d5b;
-}
-.worldProxyLegend {
-  border-radius: 3px;
-  background: #d69e2e;
-  transform: rotate(45deg);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: inset 0 0 0 3px rgba(47, 125, 91, 0.36);
 }
 .worldLineLegend {
   display: inline-block;
@@ -2195,6 +2276,6 @@ h3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .sourceStats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
   }
 }

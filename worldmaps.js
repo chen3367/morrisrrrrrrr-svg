@@ -173,6 +173,25 @@ function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
 }
 
+function assetImage(src, alt, fallback, className) {
+  if (src) {
+    return `<img class="${className} assetImage" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
+  }
+  return `<div class="${className} itemGlyph">${escapeHtml(fallback || "?")}</div>`;
+}
+
+function regionThumb(region, className) {
+  if (region.markImage) return assetImage(region.markImage, region.name, "地", className);
+  return `<div class="${className} mapGlyph">${escapeHtml((region.name || "地").slice(0, 1))}</div>`;
+}
+
+function mapNodeThumb(node, className) {
+  if (node.markImage) return assetImage(node.markImage, node.name || node.label, "圖", className);
+  const region = selectedRegion();
+  if (region?.markImage) return assetImage(region.markImage, node.name || node.label || region.name, "圖", className);
+  return `<div class="${className} mapGlyph">${escapeHtml((node.name || node.street || "地").slice(0, 1))}</div>`;
+}
+
 function renderBuildMeta() {
   const meta = db.metadata || {};
   const parts = [];
@@ -239,14 +258,6 @@ function localNodeFullText(node) {
   ].join(" ");
 }
 
-function proxyNameText(node) {
-  return [node.name, node.label, node.targetRegionName].join(" ");
-}
-
-function proxyFullText(node) {
-  return [node.name, node.label, node.targetRegionName, node.targetRegionKey, node.title].join(" ");
-}
-
 function visibleGraph(region) {
   const q = norm(state.query);
   const localNodes = (region.nodes || []).filter(node => {
@@ -254,28 +265,24 @@ function visibleGraph(region) {
     if (!q) return true;
     return norm(state.nameOnlySearch ? localNodeNameText(node) : localNodeFullText(node)).includes(q);
   });
-  const proxyNodes = (region.proxyNodes || []).filter(node => {
-    if (!q) return true;
-    return norm(state.nameOnlySearch ? proxyNameText(node) : proxyFullText(node)).includes(q);
-  });
-  const ids = new Set([...localNodes, ...proxyNodes].map(node => node.id));
+  const ids = new Set(localNodes.map(node => node.id));
   const edges = (region.edges || []).filter(edge => ids.has(edge.from) && ids.has(edge.to));
   const hiddenSubMapCount = state.showWorldSubMaps ? 0 : (region.nodes || []).filter(node => node.worldSubMap).length;
-  return { localNodes, proxyNodes, edges, hiddenSubMapCount };
+  return { localNodes, edges, hiddenSubMapCount };
 }
 
 function renderRegionList() {
   const rows = regionRows();
   els.list.innerHTML = rows.map(region => `
     <button class="monsterRow worldRegionRow ${region.key === state.selectedRegionKey ? "active" : ""}" data-region-key="${escapeHtml(region.key)}">
-      <div class="rowMonsterImage mapGlyph">${escapeHtml((region.name || "地").slice(0, 1))}</div>
-      <span class="rowText">
-        <strong>${escapeHtml(region.name)}</strong>
-        <span class="rowMeta">${formatNumber(region.nodeCount)} 張地圖${region.crossRegionCount ? ` · 跨區 ${formatNumber(region.crossRegionCount)}` : ""}</span>
-        <em>${escapeHtml(region.key)}</em>
-      </span>
-      <small>${formatNumber(region.edgeCount)}</small>
-    </button>
+        ${regionThumb(region, "rowMonsterImage")}
+        <span class="rowText">
+          <strong>${escapeHtml(region.name)}</strong>
+          <span class="rowMeta">${formatNumber(region.nodeCount)} 張地圖</span>
+          ${state.showIds ? `<em>${escapeHtml(region.key)}</em>` : ""}
+        </span>
+        <small>${formatNumber(region.edgeCount)} 條連線</small>
+      </button>
   `).join("") || `<div class="empty">沒有世界地圖連通資料</div>`;
 }
 
@@ -286,41 +293,234 @@ function nodeTitle(node) {
   return parts.join(" · ");
 }
 
-function proxyTitle(node) {
-  const parts = [node.label, `${formatNumber(node.connectionCount)} 條跨地區連通`];
-  if (state.showIds) parts.push(node.targetRegionKey);
-  return parts.join(" · ");
-}
-
 function nodeAnchor(node) {
   const title = nodeTitle(node);
   return `
-    <a class="worldMapNode" href="${escapeHtml(node.url)}" style="left:${node.x}%;top:${node.y}%;" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">
-      <span class="worldNodeDot"></span>
+    <a class="worldMapNode ${node.worldSubMap ? "worldSubMapNode" : ""}" href="${escapeHtml(node.url)}" style="left:${node.x}%;top:${node.y}%;" data-node-id="${escapeHtml(node.id)}" data-node-x="${node.x}" data-node-y="${node.y}" data-world-sub-map="${node.worldSubMap ? "1" : "0"}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">
+      ${mapNodeThumb(node, "worldNodeIcon")}
       <span class="worldNodeLabel">${escapeHtml(shortLabel(node.name || node.label))}</span>
     </a>
   `;
 }
 
-function proxyAnchor(node) {
-  const title = proxyTitle(node);
-  return `
-    <a class="worldMapNode worldMapProxyNode" href="${escapeHtml(node.url)}" data-region-link="${escapeHtml(node.targetRegionKey)}" style="left:${node.x}%;top:${node.y}%;" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">
-      <span class="worldNodeDot"></span>
-      <span class="worldNodeLabel">${escapeHtml(shortLabel(node.targetRegionName, 7))}</span>
-    </a>
-  `;
+function rectOverlapArea(a, b) {
+  const width = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+  const height = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+  return width * height;
+}
+
+function rectOverflow(rect, bounds) {
+  return Math.max(0, bounds.left - rect.left)
+    + Math.max(0, rect.right - bounds.right)
+    + Math.max(0, bounds.top - rect.top)
+    + Math.max(0, rect.bottom - bounds.bottom);
+}
+
+function worldLabelCandidates(width, height) {
+  const gap = 8;
+  const half = 12;
+  const verticalShifts = [0, -18, 18, -36, 36, -54, 54, -72, 72];
+  const horizontalShifts = [0, -28, 28, -56, 56, -84, 84];
+  const rows = [];
+  verticalShifts.forEach((shift, index) => {
+    rows.push({ name: `e${index}`, dx: half + gap, dy: -height / 2 + shift, order: index * 3 });
+    rows.push({ name: `w${index}`, dx: -half - gap - width, dy: -height / 2 + shift, order: index * 3 + 1 });
+  });
+  horizontalShifts.forEach((shift, index) => {
+    rows.push({ name: `n${index}`, dx: -width / 2 + shift, dy: -half - gap - height, order: 30 + index * 3 });
+    rows.push({ name: `s${index}`, dx: -width / 2 + shift, dy: half + gap, order: 31 + index * 3 });
+  });
+  [
+    ["ne", half + gap, -half - gap - height],
+    ["se", half + gap, half + gap],
+    ["nw", -half - gap - width, -half - gap - height],
+    ["sw", -half - gap - width, half + gap],
+  ].forEach(([name, dx, dy], index) => {
+    rows.push({ name, dx, dy, order: 70 + index });
+  });
+  return rows;
+}
+
+function duplicateOffset(index, count) {
+  if (count <= 1) return { x: 0, y: 0 };
+  const capacities = [8, 14, 20, 26];
+  let previousSlots = 0;
+  let remaining = index;
+  let ring = 0;
+  while (ring < capacities.length - 1 && remaining >= capacities[ring]) {
+    previousSlots += capacities[ring];
+    remaining -= capacities[ring];
+    ring += 1;
+  }
+  const slots = Math.min(capacities[ring], Math.max(1, count - previousSlots));
+  const radius = Math.min(112, 28 + ring * 28 + Math.max(0, count - 8) * 0.55);
+  const angle = -Math.PI / 2 + (remaining / slots) * Math.PI * 2 + (ring % 2 ? Math.PI / slots : 0);
+  return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+}
+
+function edgeRouteKey(fromId, toId) {
+  return [String(fromId), String(toId)].sort().join(":");
+}
+
+const MANUAL_WORLD_EDGE_ROUTES = {};
+
+function manualEdgeRoute(edge) {
+  return MANUAL_WORLD_EDGE_ROUTES[edgeRouteKey(edge.from, edge.to)] || "";
+}
+
+function parseRoutePoints(routeText) {
+  return String(routeText || "").split(/\s+/).map(pair => {
+    const [x, y] = pair.split(",").map(Number);
+    return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+  }).filter(Boolean);
+}
+
+function edgePathData(source, target, routeText = "") {
+  const points = parseRoutePoints(routeText);
+  return [
+    `M ${source.x} ${source.y}`,
+    ...points.map(point => `L ${point.x} ${point.y}`),
+    `L ${target.x} ${target.y}`,
+  ].join(" ");
+}
+
+function spreadWorldMapNodes() {
+  const canvas = els.detail.querySelector(".worldMapCanvas");
+  if (!canvas) return new Map();
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return new Map();
+  const margin = 16;
+  const rows = [...canvas.querySelectorAll(".worldMapNode")].map((node, index) => {
+    const baseX = rect.width * Number.parseFloat(node.dataset.nodeX || "0") / 100;
+    const baseY = rect.height * Number.parseFloat(node.dataset.nodeY || "0") / 100;
+    return {
+      index,
+      node,
+      id: node.dataset.nodeId,
+      baseX,
+      baseY,
+      targetX: baseX,
+      targetY: baseY,
+      x: baseX,
+      y: baseY,
+      radius: node.dataset.worldSubMap === "1" ? 18 : 16,
+    };
+  });
+  const exactGroups = new Map();
+  rows.forEach(row => {
+    const key = `${Number(row.node.dataset.nodeX || 0).toFixed(2)},${Number(row.node.dataset.nodeY || 0).toFixed(2)}`;
+    if (!exactGroups.has(key)) exactGroups.set(key, []);
+    exactGroups.get(key).push(row);
+  });
+  exactGroups.forEach(group => {
+    group.forEach((row, groupIndex) => {
+      row.node.dataset.duplicateWorldNode = group.length > 1 ? "1" : "0";
+      row.node.dataset.duplicateIndex = String(groupIndex + 1);
+      row.node.dataset.duplicateCount = String(group.length);
+      row.node.classList.toggle("worldDuplicateNode", group.length > 1);
+    });
+    if (group.length < 2) return;
+    group.sort((a, b) => Number(b.node.dataset.worldSubMap || 0) - Number(a.node.dataset.worldSubMap || 0) || a.index - b.index);
+    group.forEach((row, groupIndex) => {
+      const offset = duplicateOffset(groupIndex, group.length);
+      row.targetX = row.baseX + offset.x;
+      row.targetY = row.baseY + offset.y;
+      row.x = row.targetX;
+      row.y = row.targetY;
+    });
+  });
+  rows.forEach(row => {
+    row.x = Math.min(rect.width - margin, Math.max(margin, row.x));
+    row.y = Math.min(rect.height - margin, Math.max(margin, row.y));
+  });
+  const visualById = new Map();
+  rows.forEach(row => {
+    const visualX = row.x / rect.width * 100;
+    const visualY = row.y / rect.height * 100;
+    row.node.style.left = `${visualX}%`;
+    row.node.style.top = `${visualY}%`;
+    row.node.dataset.visualX = String(visualX);
+    row.node.dataset.visualY = String(visualY);
+    visualById.set(String(row.id), { x: visualX, y: visualY });
+  });
+  canvas.querySelectorAll(".worldEdge").forEach(line => {
+    const source = visualById.get(String(line.dataset.from));
+    const target = visualById.get(String(line.dataset.to));
+    if (!source || !target) return;
+    const sourceNode = rows.find(row => String(row.id) === String(line.dataset.from))?.node;
+    const targetNode = rows.find(row => String(row.id) === String(line.dataset.to))?.node;
+    const denseEdge = sourceNode?.dataset.duplicateWorldNode === "1"
+      || targetNode?.dataset.duplicateWorldNode === "1"
+      || sourceNode?.dataset.worldSubMap === "1"
+      || targetNode?.dataset.worldSubMap === "1";
+    line.classList.toggle("worldDenseEdge", denseEdge);
+    line.setAttribute("d", edgePathData(source, target, line.dataset.route));
+  });
+  return visualById;
+}
+
+function placeWorldMapLabels() {
+  const canvas = els.detail.querySelector(".worldMapCanvas");
+  if (!canvas) return;
+  const canvasRect = canvas.getBoundingClientRect();
+  if (!canvasRect.width || !canvasRect.height) return;
+  const nodes = [...canvas.querySelectorAll(".worldMapNode")];
+  nodes.forEach(node => {
+    const label = node.querySelector(".worldNodeLabel");
+    label.classList.remove("isCollisionHidden");
+    label.style.left = "";
+    label.style.top = "";
+    if ((state.showWorldSubMaps && node.dataset.worldSubMap === "1") || node.dataset.duplicateWorldNode === "1") {
+      label.classList.add("isCollisionHidden");
+    }
+  });
+  resolveWorldNodeChipCollisions(canvas);
+}
+
+function resolveWorldNodeChipCollisions(canvas) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const placed = [];
+  const nodes = [...canvas.querySelectorAll(".worldMapNode")]
+    .filter(node => !node.querySelector(".worldNodeLabel")?.classList.contains("isCollisionHidden"))
+    .sort((a, b) => {
+      const ar = a.getBoundingClientRect();
+      const br = b.getBoundingClientRect();
+      return ar.top - br.top || ar.left - br.left;
+    });
+  nodes.forEach(node => {
+    const label = node.querySelector(".worldNodeLabel");
+    const rect = node.getBoundingClientRect();
+    const local = {
+      left: rect.left - canvasRect.left,
+      right: rect.right - canvasRect.left,
+      top: rect.top - canvasRect.top,
+      bottom: rect.bottom - canvasRect.top,
+    };
+    const overflow = rectOverflow(local, { left: 4, top: 4, right: canvasRect.width - 4, bottom: canvasRect.height - 4 });
+    const hasCollision = overflow > 0 || placed.some(other => rectOverlapArea(local, other) > 4);
+    if (hasCollision && label) {
+      label.classList.add("isCollisionHidden");
+    } else {
+      placed.push(local);
+    }
+  });
+}
+
+function layoutWorldMapGraph() {
+  spreadWorldMapNodes();
+  placeWorldMapLabels();
 }
 
 function edgeLine(edge, nodesById) {
   const source = nodesById.get(edge.from);
   const target = nodesById.get(edge.to);
   if (!source || !target) return "";
-  return `<line class="${edge.cross ? "worldEdge crossWorldEdge" : "worldEdge"}" x1="${source.x}" y1="${source.y}" x2="${target.x}" y2="${target.y}"></line>`;
+  const route = manualEdgeRoute(edge);
+  return `<path class="worldEdge ${route ? "worldRoutedEdge" : ""}" data-from="${escapeHtml(edge.from)}" data-to="${escapeHtml(edge.to)}" data-route="${escapeHtml(route)}" d="${edgePathData(source, target, route)}"></path>`;
 }
 
 function graphHtml(region, graph) {
-  const nodesById = new Map([...graph.localNodes, ...graph.proxyNodes].map(node => [node.id, node]));
+  const nodesById = new Map(graph.localNodes.map(node => [node.id, node]));
   const imageStyle = region.image ? `background-image:url('${escapeHtml(region.image)}');` : "";
   const ratioStyle = region.imageWidth && region.imageHeight ? `aspect-ratio:${Number(region.imageWidth)} / ${Number(region.imageHeight)};` : "";
   return `
@@ -335,11 +535,9 @@ function graphHtml(region, graph) {
             ${graph.edges.map(edge => edgeLine(edge, nodesById)).join("")}
           </svg>
           ${graph.localNodes.map(nodeAnchor).join("")}
-          ${graph.proxyNodes.map(proxyAnchor).join("")}
         </div>
         <div class="mapLegend">
           <span><i class="legendDot worldNodeLegend"></i>地圖</span>
-          <span><i class="legendDot worldProxyLegend"></i>跨地區</span>
           <span><i class="worldLineLegend"></i>雙向連通</span>
         </div>
       </div>
@@ -351,27 +549,13 @@ function mapRow(node) {
   const meta = [node.areaName, node.street].filter(Boolean).join(" · ");
   return `
     <a class="sourceRow sourceLinkRow monsterSourceRow" href="${escapeHtml(node.url)}">
-      <div class="sourceMonsterImage mapGlyph">圖</div>
+      ${mapNodeThumb(node, "sourceMonsterImage")}
       <div>
         <strong>${escapeHtml(node.name)}</strong>
         <span>${escapeHtml(meta || node.regionName)}${node.worldSubMap ? " · 子地圖" : ""}${idMeta(node.mapId)}</span>
         <p>${escapeHtml(node.label || node.name)}</p>
       </div>
       <small>查看</small>
-    </a>
-  `;
-}
-
-function proxyRow(node) {
-  return `
-    <a class="sourceRow sourceLinkRow monsterSourceRow" href="${escapeHtml(node.url)}" data-region-link="${escapeHtml(node.targetRegionKey)}">
-      <div class="sourceMonsterImage portalMiniIcon">區</div>
-      <div>
-        <strong>${escapeHtml(node.label)}</strong>
-        <span>${formatNumber(node.connectionCount)} 條跨地區連通${state.showIds ? ` · ${escapeHtml(node.targetRegionKey)}` : ""}</span>
-        <p>${escapeHtml(node.title || "")}</p>
-      </div>
-      <small>前往</small>
     </a>
   `;
 }
@@ -387,14 +571,13 @@ function renderDetail() {
   els.count.textContent = `${graph.localNodes.length.toLocaleString()} 張`;
   els.detail.innerHTML = `
     <section class="monsterHero mapHero worldMapHero">
-      <div class="monsterMark mapGlyph">${escapeHtml((region.name || "地").slice(0, 1))}</div>
+      ${regionThumb(region, "monsterMark")}
       <div class="heroText">
         <h2>${escapeHtml(region.name)}</h2>
         <p>${formatNumber(graph.localNodes.length)} 張目前顯示 · ${formatNumber(graph.edges.length)} 條連通線${graph.hiddenSubMapCount ? ` · 隱藏 ${formatNumber(graph.hiddenSubMapCount)} 張子地圖` : ""}${idMeta(region.key)}</p>
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${formatNumber(graph.localNodes.length)}</strong><span>地圖</span></div>
-        <div class="heroCounter"><strong>${formatNumber(region.crossRegionCount || 0)}</strong><span>跨區點</span></div>
       </div>
     </section>
     ${graphHtml(region, graph)}
@@ -407,17 +590,6 @@ function renderDetail() {
         ${graph.localNodes.map(mapRow).join("") || `<div class="empty">沒有符合搜尋的地圖</div>`}
       </div>
     </section>
-    ${graph.proxyNodes.length ? `
-      <section class="sectionBlock">
-        <div class="sectionTitle">
-          <h3>跨地區連結</h3>
-          <span>${formatNumber(graph.proxyNodes.length)} 個</span>
-        </div>
-        <div class="sourceList">
-          ${graph.proxyNodes.map(proxyRow).join("")}
-        </div>
-      </section>
-    ` : ""}
   `;
 }
 
@@ -443,6 +615,7 @@ function render() {
   updateSettingsPanel();
   renderRegionList();
   renderDetail();
+  window.requestAnimationFrame(layoutWorldMapGraph);
 }
 
 els.search.addEventListener("input", event => {
@@ -485,18 +658,13 @@ els.list.addEventListener("click", event => {
   selectRegion(button.dataset.regionKey);
 });
 
-els.detail.addEventListener("click", event => {
-  const link = event.target.closest("[data-region-link]");
-  if (!link) return;
-  const regionKey = link.getAttribute("data-region-link");
-  if (!regionKey) return;
-  event.preventDefault();
-  selectRegion(regionKey);
-});
-
 window.addEventListener("popstate", () => {
   state.selectedRegionKey = initialRegionKey();
   render();
+});
+
+window.addEventListener("resize", () => {
+  window.requestAnimationFrame(layoutWorldMapGraph);
 });
 
 applyTheme();

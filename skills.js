@@ -386,7 +386,6 @@ function renderDetail() {
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${escapeHtml(levelText(skill).replace("最高 ", ""))}</strong><span>最高等級</span></div>
-        <div class="heroCounter"><strong>${formatNumber((skill.levels || []).length)}</strong><span>等級資料</span></div>
       </div>
     </section>
     ${renderSkillMeta(skill)}

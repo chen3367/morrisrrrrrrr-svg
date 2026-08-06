@@ -269,10 +269,15 @@ function npcStatCell(label, npc) {
     return `<div class="statCell"><span>${escapeHtml(label)}</span><strong>自動/未知</strong></div>`;
   }
   return `
-    <div class="statCell">
+    <div class="statCell npcStatCell">
       <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(npc.name)}${idMeta(npc.id)}</strong>
-      <em>${escapeHtml(npcMeta(npc, "所在地未知"))}</em>
+      <div class="npcStatBody">
+        ${assetImage(npc.image, npc.name, "人", "npcStatIcon")}
+        <div class="npcStatText">
+          <strong>${escapeHtml(npc.name)}${idMeta(npc.id)}</strong>
+          <em>${escapeHtml(npcMeta(npc, "所在地未知"))}</em>
+        </div>
+      </div>
     </div>
   `;
 }
