@@ -145,6 +145,7 @@ const els = {
   itemLevelMin: document.getElementById("itemLevelMin"),
   itemLevelMax: document.getElementById("itemLevelMax"),
   itemLevelFields: Array.from(document.querySelectorAll(".itemLevelField")),
+  clearFilters: document.getElementById("clearFilters"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
@@ -777,6 +778,30 @@ function clearEquipmentFilters(save = false) {
   }
 }
 
+function clearSearchFilters() {
+  state.preserveSelectedDetail = false;
+  state.query = "";
+  state.category = "";
+  state.subcategory = "";
+  state.nameOnlySearch = false;
+  state.showUnnamedMapMonsters = false;
+  state.showItemMakeCrafts = false;
+  state.showUnnamedItems = false;
+  state.showDuplicateNoSourceItems = false;
+  clearEquipmentFilters(true);
+  writeCookie("ms_item_category", "");
+  writeCookie("ms_item_subcategory", "");
+  writeCookie("ms_item_name_only_search", "");
+  saveBool("ms_show_unnamed_map_monsters", false);
+  saveBool("ms_show_item_make_crafts", false);
+  saveBool("ms_show_unnamed_items", false);
+  saveBool("ms_show_duplicate_no_source_items", false);
+  if (els.search) els.search.value = "";
+  syncControls();
+  setItemUrl(state.selectedId);
+  render();
+}
+
 function equipmentControlsAvailable() {
   return !state.category || state.category === EQUIPMENT_CATEGORY;
 }
@@ -1362,6 +1387,8 @@ function handleItemLevelInput(key, event) {
 
 els.itemLevelMin.addEventListener("input", event => handleItemLevelInput("itemLevelMin", event));
 els.itemLevelMax.addEventListener("input", event => handleItemLevelInput("itemLevelMax", event));
+
+els.clearFilters.addEventListener("click", clearSearchFilters);
 
 els.unnamedMapToggle.addEventListener("click", () => {
   state.preserveSelectedDetail = false;

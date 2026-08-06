@@ -179,6 +179,7 @@ const els = {
   regionButton: document.getElementById("mapRegionMenuButton"),
   regionOptions: document.getElementById("mapRegionOptions"),
   regionClear: document.getElementById("mapRegionClear"),
+  clearFilters: document.getElementById("clearFilters"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   specialMapToggle: document.getElementById("specialMapToggle"),
   idToggle: document.getElementById("idToggle"),
@@ -282,6 +283,25 @@ function syncControls() {
   els.search.value = state.query;
   if (els.nameOnlySearch) els.nameOnlySearch.checked = state.nameOnlySearch;
   syncMapRegionInputs();
+}
+
+function clearSearchFilters() {
+  const availableRegions = new Set((db.filters?.mapRegions || []).filter(Boolean));
+  state.preserveSelectedDetail = false;
+  state.query = "";
+  state.nameOnlySearch = false;
+  state.regions = DEFAULT_MAP_REGIONS.filter(region => availableRegions.has(region));
+  state.showUnnamedMaps = false;
+  state.showSpecialMaps = false;
+  writeCookie("ms_map_name_only_search", "");
+  saveSelectedMapRegions();
+  saveBool("ms_show_unnamed_maps", false);
+  saveBool("ms_show_special_maps", false);
+  if (els.search) els.search.value = "";
+  setMapRegionMenu(false);
+  syncControls();
+  setMapUrl(state.selectedId);
+  render();
 }
 
 function selectedMapRegionValues() {
@@ -1135,6 +1155,8 @@ els.regionOptions.addEventListener("click", event => {
   syncMapRegionInputs();
   render();
 });
+
+els.clearFilters.addEventListener("click", clearSearchFilters);
 
 document.addEventListener("click", event => {
   if (!els.region.contains(event.target)) setMapRegionMenu(false);

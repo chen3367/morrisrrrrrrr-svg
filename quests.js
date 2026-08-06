@@ -126,6 +126,7 @@ const els = {
   category: document.getElementById("questCategoryFilter"),
   levelMin: document.getElementById("questLevelMin"),
   levelMax: document.getElementById("questLevelMax"),
+  clearFilters: document.getElementById("clearFilters"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   idToggle: document.getElementById("idToggle"),
@@ -379,6 +380,22 @@ function syncControls() {
   state.category = els.category.value;
   if (els.levelMin) els.levelMin.value = state.levelMin || "";
   if (els.levelMax) els.levelMax.value = state.levelMax || "";
+}
+
+function clearSearchFilters() {
+  state.preserveSelectedDetail = false;
+  state.query = "";
+  state.category = "";
+  state.levelMin = "";
+  state.levelMax = "";
+  state.nameOnlySearch = false;
+  writeCookie("ms_quest_category", "");
+  writeCookie("ms_quest_level_min", "");
+  writeCookie("ms_quest_level_max", "");
+  writeCookie("ms_quest_name_only_search", "");
+  if (els.search) els.search.value = "";
+  syncControls();
+  render();
 }
 
 function updateToggles() {
@@ -746,6 +763,8 @@ function handleQuestLevelInput(key, event) {
 
 els.levelMin.addEventListener("input", event => handleQuestLevelInput("levelMin", event));
 els.levelMax.addEventListener("input", event => handleQuestLevelInput("levelMax", event));
+
+els.clearFilters.addEventListener("click", clearSearchFilters);
 
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;

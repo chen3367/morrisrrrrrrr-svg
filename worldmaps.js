@@ -138,6 +138,7 @@ const state = {
 
 const els = {
   search: document.getElementById("worldMapSearch"),
+  clearFilters: document.getElementById("clearFilters"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   worldSubMapToggle: document.getElementById("worldSubMapToggle"),
@@ -610,6 +611,16 @@ function updateSettingsPanel() {
   els.settingsToggle.setAttribute("aria-label", state.settingsOpen ? "隱藏設定" : "顯示設定");
 }
 
+function clearSearchFilters() {
+  state.query = "";
+  state.nameOnlySearch = false;
+  state.showWorldSubMaps = false;
+  writeCookie("ms_world_map_name_only_search", "");
+  saveBool("ms_world_map_show_sub_maps", false);
+  if (els.search) els.search.value = "";
+  render();
+}
+
 function render() {
   updateToggles();
   updateSettingsPanel();
@@ -635,6 +646,8 @@ els.worldSubMapToggle.addEventListener("click", () => {
   saveBool("ms_world_map_show_sub_maps", state.showWorldSubMaps);
   render();
 });
+
+els.clearFilters.addEventListener("click", clearSearchFilters);
 
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;

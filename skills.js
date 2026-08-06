@@ -126,6 +126,7 @@ const els = {
   group: document.getElementById("skillGroupFilter"),
   advancement: document.getElementById("advancementFilter"),
   job: document.getElementById("skillJobFilter"),
+  clearFilters: document.getElementById("clearFilters"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   idToggle: document.getElementById("idToggle"),
@@ -319,6 +320,22 @@ function syncControls() {
   populateJobFilter();
   els.job.value = state.jobId;
   state.jobId = els.job.value;
+}
+
+function clearSearchFilters() {
+  state.preserveSelectedDetail = false;
+  state.query = "";
+  state.jobGroup = "";
+  state.advancement = "";
+  state.jobId = "";
+  state.nameOnlySearch = false;
+  writeCookie("ms_skill_job_group", "");
+  writeCookie("ms_skill_advancement", "");
+  writeCookie("ms_skill_job_id", "");
+  writeCookie("ms_skill_name_only_search", "");
+  if (els.search) els.search.value = "";
+  syncControls();
+  render();
 }
 
 function updateToggles() {
@@ -531,6 +548,8 @@ els.job.addEventListener("change", event => {
   writeCookie("ms_skill_job_id", state.jobId);
   render();
 });
+
+els.clearFilters.addEventListener("click", clearSearchFilters);
 
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;

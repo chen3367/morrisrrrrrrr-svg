@@ -449,8 +449,8 @@ select {
   font-size: 13px;
   font-weight: 900;
 }
-.advancedClearButton {
-  min-width: 136px;
+.clearFiltersButton {
+  min-width: 112px;
 }
 .toggleButton {
   min-width: 146px;
@@ -2314,7 +2314,7 @@ h3 {
   .weaknessFilter {
     flex: 1 1 100%;
   }
-  .advancedClearButton {
+  .clearFiltersButton {
     flex: 1 1 100%;
   }
   select {

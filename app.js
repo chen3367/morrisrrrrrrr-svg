@@ -167,6 +167,7 @@ const els = {
   continentButton: document.getElementById("continentMenuButton"),
   continentOptions: document.getElementById("continentOptions"),
   continentClear: document.getElementById("continentClear"),
+  clearFilters: document.getElementById("clearFilters"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   advancedSummaryTitle: document.getElementById("advancedSummaryTitle"),
@@ -174,7 +175,6 @@ const els = {
   levelMax: document.getElementById("levelMax"),
   bossOnly: document.getElementById("bossOnly"),
   weaknessFilter: document.getElementById("weaknessFilter"),
-  advancedClear: document.getElementById("advancedClear"),
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
   idToggle: document.getElementById("idToggle"),
@@ -358,6 +358,29 @@ function activeAdvancedFilterCount() {
   if (state.bossOnly) count += 1;
   count += (state.weaknessFilters || []).length;
   return count;
+}
+
+function clearSearchFilters() {
+  state.preserveSelectedDetail = false;
+  state.query = "";
+  state.nameOnlySearch = false;
+  state.continents = CURRENT_VERSION_CONTINENTS.filter(continent => availableContinents.includes(continent));
+  state.levelMin = "";
+  state.levelMax = "";
+  state.bossOnly = false;
+  state.weaknessFilters = [];
+  state.showUnnamedMapMonsters = false;
+  state.showUnnamedItems = false;
+  writeCookie("ms_monster_name_only_search", "");
+  saveSelectedContinents();
+  saveAdvancedFilters();
+  saveBool("ms_show_unnamed_map_monsters", false);
+  saveBool("ms_show_unnamed_items", false);
+  if (els.search) els.search.value = "";
+  setContinentMenu(false);
+  syncControls();
+  setMonsterUrl(state.selectedId);
+  render();
 }
 
 function matchesLevelFilters(monster) {
@@ -1389,15 +1412,7 @@ els.weaknessFilter.addEventListener("change", event => {
   render();
 });
 
-els.advancedClear.addEventListener("click", () => {
-  state.preserveSelectedDetail = false;
-  state.levelMin = "";
-  state.levelMax = "";
-  state.bossOnly = false;
-  state.weaknessFilters = [];
-  saveAdvancedFilters();
-  render();
-});
+els.clearFilters.addEventListener("click", clearSearchFilters);
 
 els.continentButton.addEventListener("click", () => {
   setContinentMenu(els.continentButton.getAttribute("aria-expanded") !== "true");

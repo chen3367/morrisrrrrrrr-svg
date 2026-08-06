@@ -54,6 +54,7 @@
       <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
       <span id="resultCount"></span>
       <div id="settingsPanel" class="settingsPanel" hidden>
+        <button id="clearFilters" class="toggleButton clearFiltersButton" type="button">清除條件</button>
         <div id="continentFilter" class="multiSelect">
           <button id="continentMenuButton" class="multiSelectButton" type="button" aria-expanded="false" aria-controls="continentOptions">當前版本地區</button>
           <div id="continentOptions" class="multiSelectOptions" role="group" aria-label="以大陸複選篩選" hidden>
@@ -86,7 +87,6 @@
             <label class="weaknessOption"><input type="checkbox" value="holy" autocomplete="off" /><span>聖</span></label>
             <label class="weaknessOption"><input type="checkbox" value="undead" autocomplete="off" /><span>治癒</span></label>
           </fieldset>
-          <button id="advancedClear" class="toggleButton advancedClearButton" type="button">清除進階條件</button>
         </div>
       </div>
     </div>
