@@ -459,12 +459,12 @@ function renderDetail() {
     </section>
     ${renderQuestTexts(quest)}
     ${renderQuestMeta(quest)}
-    ${renderContinuationQuests(quest)}
     ${renderRequirements("接取條件", quest.startRequirements)}
     ${renderRequirements("完成條件", quest.completeRequirements)}
     ${renderRewards("接取時給予", quest.startRewards)}
     ${renderRewards("完成獎勵", quest.completeRewards, quest.nextQuest)}
     ${renderRefs(quest)}
+    ${renderContinuationQuests(quest)}
   `;
 }
 
