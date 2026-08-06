@@ -1,7 +1,7 @@
 # MapleStory Classic 資料更新報告
 
-- 舊版本：None（2026-08-06 18:22:33 GMT+8）
-- 新版本：None（2026-08-06 21:53:46 GMT+8）
+- 舊版本：1.13.1（2026-08-06 18:22:33 GMT+8）
+- 新版本：1.13.6（2026-08-06 21:53:46 GMT+8）
 - 新版來源：/Users/chienany/Downloads/maplestory_classic(1).zip
 
 ## 總量差異
@@ -74,6 +74,7 @@
 - 怪物圖示: exported=338；targets=343；missing=5
 - 道具圖示: exported=12526；missing=1051
 - NPC 圖示: exported=251；targets=282；missing=31
+- 技能圖示: 657
 - 小地圖: exported=333；available=333；targets=333
 
 ## 建置流程更新
