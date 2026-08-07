@@ -1,0 +1,90 @@
+{
+  "api": "https://g.nexonstatic.com/maplestory/cms/v1/classes-jobs",
+  "items": [
+    {
+      "id": "hero",
+      "officialName": "Hero",
+      "nexonId": 1346,
+      "source": "https://g.nexonstatic.com/media/4pafumjw/250723-ms-classesjobs-update-hero-395x400-v3.png",
+      "path": "work/manual_assets/nexon_job_portraits/hero.png"
+    },
+    {
+      "id": "paladin",
+      "officialName": "Paladin",
+      "nexonId": 1342,
+      "source": "https://g.nexonstatic.com/media/aqafsfti/250723-ms-classesjobs-update-paladin-395x400-1.png",
+      "path": "work/manual_assets/nexon_job_portraits/paladin.png"
+    },
+    {
+      "id": "dark_knight",
+      "officialName": "Dark Knight",
+      "nexonId": 1344,
+      "source": "https://g.nexonstatic.com/media/nj0p23o4/250723-darkknight-classesjobs-update-hero-395x400-v3.png",
+      "path": "work/manual_assets/nexon_job_portraits/dark_knight.png"
+    },
+    {
+      "id": "archmage_fp",
+      "officialName": "Arch Mage (Fire/Poison)",
+      "nexonId": 1343,
+      "source": "https://g.nexonstatic.com/media/0jpdpc15/250723-archmage-fp-classesjobs-update-hero-395x400-v3.png",
+      "path": "work/manual_assets/nexon_job_portraits/archmage_fp.png"
+    },
+    {
+      "id": "archmage_il",
+      "officialName": "Arch Mage (Ice/Lightning)",
+      "nexonId": 1341,
+      "source": "https://g.nexonstatic.com/media/qmjnda4i/250723-ms-classesjobs-update-arch-mage-il-395x400.png",
+      "path": "work/manual_assets/nexon_job_portraits/archmage_il.png"
+    },
+    {
+      "id": "bishop",
+      "officialName": "Bishop",
+      "nexonId": 1345,
+      "source": "https://g.nexonstatic.com/media/45cloohi/250723-bishop-classesjobs-update-hero-395x400-v3.png",
+      "path": "work/manual_assets/nexon_job_portraits/bishop.png"
+    },
+    {
+      "id": "bowmaster",
+      "officialName": "Bow Master",
+      "nexonId": 1297,
+      "source": "https://g.nexonstatic.com/media/s4ajvnic/250723-bowmaster-classesjobs-update-hero-395x400-v3.png",
+      "path": "work/manual_assets/nexon_job_portraits/bowmaster.png"
+    },
+    {
+      "id": "marksman",
+      "officialName": "Marksman",
+      "nexonId": 1329,
+      "source": "https://g.nexonstatic.com/media/yezdotno/250723-ms-classesjobs-update-marksman-395x400.png",
+      "path": "work/manual_assets/nexon_job_portraits/marksman.png"
+    },
+    {
+      "id": "night_lord",
+      "officialName": "Night Lord",
+      "nexonId": 1339,
+      "source": "https://g.nexonstatic.com/media/zzdcsdjw/250723-ms-classesjobs-update-nightlord-395x400.png",
+      "path": "work/manual_assets/nexon_job_portraits/night_lord.png"
+    },
+    {
+      "id": "shadower",
+      "officialName": "Shadower",
+      "nexonId": 1336,
+      "source": "https://g.nexonstatic.com/media/btnbb150/250723-ms-classesjobs-update-shadower-395x400.png",
+      "path": "work/manual_assets/nexon_job_portraits/shadower.png"
+    },
+    {
+      "id": "buccaneer",
+      "officialName": "Buccaneer",
+      "nexonId": 1331,
+      "source": "https://g.nexonstatic.com/media/kdtlti0v/250723-buccaneer-classesjobs-update-hero-395x400-v3.png",
+      "path": "work/manual_assets/nexon_job_portraits/buccaneer.png"
+    },
+    {
+      "id": "corsair",
+      "officialName": "Corsair",
+      "nexonId": 1313,
+      "source": "https://g.nexonstatic.com/media/0gina3yz/250723-ms-classesjobs-update-corsair-395x400.png",
+      "path": "work/manual_assets/nexon_job_portraits/corsair.png"
+    }
+  ],
+  "missing": []
+}

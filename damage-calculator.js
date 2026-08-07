@@ -7,6 +7,7 @@ const MIN_CHARACTER_LEVEL = 1;
 const MAX_CHARACTER_LEVEL = 200;
 const DEFAULT_CHARACTER_LEVEL = 120;
 const MIN_BASE_STAT = 4;
+const LEVEL_ONE_BASE_STAT_POINTS = 25;
 const ZERO_ADVANCEMENT_SP = 6;
 const ADVANCEMENT_ORDER = ["零轉", "一轉", "二轉", "三轉", "四轉"];
 const ADVANCEMENT_TAB_LABELS = { "零轉": "0", "一轉": "Ⅰ", "二轉": "Ⅱ", "三轉": "Ⅲ", "四轉": "Ⅳ" };
@@ -55,6 +56,7 @@ const state = {
   jobId: "",
   weaponType: "",
   characterLevel: DEFAULT_CHARACTER_LEVEL,
+  spiritBlessingLevel: 0,
   showIds: readToggle("ms_show_ids", false),
   skillTab: readCookie("ms_damage_skill_tab") || "零轉",
   skillLevels: {},
@@ -82,6 +84,8 @@ const el = {
   equipAttack: document.querySelector("#equipAttack"),
   weaponMagic: document.querySelector("#weaponMagic"),
   equipMagic: document.querySelector("#equipMagic"),
+  spiritBlessingLevel: document.querySelector("#spiritBlessingLevel"),
+  spiritBlessingHint: document.querySelector("#spiritBlessingHint"),
   manualAttackBuff: document.querySelector("#manualAttackBuff"),
   manualMagicBuff: document.querySelector("#manualMagicBuff"),
   skillTabs: document.querySelector("#skillTabs"),
@@ -147,6 +151,38 @@ function numberInputValue(id, fallback = 0) {
 
 function skillById(skillId) {
   return (db.skills || []).find(skill => Number(skill.id) === Number(skillId));
+}
+
+function spiritBlessingSkill() {
+  return db.spiritBlessing || null;
+}
+
+function spiritBlessingMaxLevel() {
+  return Number(spiritBlessingSkill()?.maxLevel || 20);
+}
+
+function spiritBlessingLevel() {
+  return clampNumber(state.spiritBlessingLevel, 0, spiritBlessingMaxLevel(), 0);
+}
+
+function setSpiritBlessingLevel(value, persist = false) {
+  state.spiritBlessingLevel = clampNumber(value, 0, spiritBlessingMaxLevel(), 0);
+  if (el.spiritBlessingLevel) {
+    el.spiritBlessingLevel.max = String(spiritBlessingMaxLevel());
+    el.spiritBlessingLevel.value = String(state.spiritBlessingLevel);
+  }
+  if (persist) writeCookie("ms_damage_spirit_blessing_level", String(state.spiritBlessingLevel));
+}
+
+function spiritBlessingValues() {
+  const skill = spiritBlessingSkill();
+  const level = spiritBlessingLevel();
+  const row = (skill?.levels || []).find(item => Number(item.level) === Number(level)) || null;
+  const values = row?.values || {};
+  return {
+    pad: Number(values.x || values.pad || 0),
+    mad: Number(values.y || values.mad || 0),
+  };
 }
 
 function currentJob() {
@@ -283,7 +319,7 @@ function skillAssignableMax(skill) {
 }
 
 function baseStatLimit() {
-  return MIN_BASE_STAT * STAT_KEYS.length + Math.max(0, characterLevel() - 1) * 5;
+  return LEVEL_ONE_BASE_STAT_POINTS + Math.max(0, characterLevel() - 1) * 5;
 }
 
 function baseStatInput(stat) {
@@ -375,7 +411,20 @@ function updateBaseStatBudget() {
   const used = baseStatSum();
   const limit = baseStatLimit();
   const remaining = Math.max(0, limit - used);
-  el.baseStatBudget.textContent = `基本屬性 ${formatNumber(used)} / ${formatNumber(limit)}，剩餘 ${formatNumber(remaining)} 點`;
+  el.baseStatBudget.textContent = `基本數值 ${formatNumber(used)} / ${formatNumber(limit)}，剩餘 ${formatNumber(remaining)} 點`;
+}
+
+function updateSpiritBlessingHint() {
+  if (!el.spiritBlessingHint) return;
+  const skill = spiritBlessingSkill();
+  if (!skill) {
+    el.spiritBlessingHint.textContent = "未收錄精靈的祝福資料";
+    return;
+  }
+  const level = spiritBlessingLevel();
+  const values = spiritBlessingValues();
+  const idText = state.showIds ? ` · ID ${skill.id}` : "";
+  el.spiritBlessingHint.textContent = `每 10 級 +1，最高 ${spiritBlessingMaxLevel()} 級；目前攻擊力 +${formatNumber(values.pad)}、魔法攻擊力 +${formatNumber(values.mad)}${idText}`;
 }
 
 function clampSkillLevelsToBudgets(changedSkillId = null) {
@@ -476,7 +525,7 @@ function partyBuffValues(buff) {
 }
 
 function improveBuffTotals(totals, effects, source) {
-  for (const key of ["pad", "mad", "statPercent"]) {
+  for (const key of ["pad", "mad", "padPercent", "madPercent", "statPercent"]) {
     const value = Number(effects?.[key] || 0);
     if (value > Number(totals[key] || 0)) {
       totals[key] = value;
@@ -504,36 +553,33 @@ function isWeaponMatch(skill, weaponType) {
 }
 
 function getStatTotals() {
+  const baseTotals = { str: 0, dex: 0, int: 0, luk: 0 };
+  const addedTotals = { str: 0, dex: 0, int: 0, luk: 0 };
   const totals = { str: 0, dex: 0, int: 0, luk: 0 };
   for (const stat of STAT_KEYS) {
-    totals[stat] = numberInputValue(`base${stat.toUpperCase()}`) + numberInputValue(`equip${stat.toUpperCase()}`);
+    baseTotals[stat] = numberInputValue(`base${stat.toUpperCase()}`);
+    addedTotals[stat] = numberInputValue(`equip${stat.toUpperCase()}`);
+    totals[stat] = baseTotals[stat] + addedTotals[stat];
   }
   const buff = getBuffTotals();
   const mapleWarrior = buff.statPercent || 0;
   if (mapleWarrior > 0) {
-    for (const stat of STAT_KEYS) totals[stat] += Math.floor(numberInputValue(`base${stat.toUpperCase()}`) * mapleWarrior / 100);
+    for (const stat of STAT_KEYS) totals[stat] += Math.floor(baseTotals[stat] * mapleWarrior / 100);
   }
-  return { totals, buff };
+  return { totals, baseTotals, addedTotals, buff };
 }
 
 function getBuffTotals() {
   const totals = {
     pad: 0,
     mad: 0,
+    padPercent: 0,
+    madPercent: 0,
     statPercent: 0,
     sources: {},
   };
   improveBuffTotals(totals, { pad: numberInputValue(el.manualAttackBuff) }, "手動攻擊力");
   improveBuffTotals(totals, { mad: numberInputValue(el.manualMagicBuff) }, "手動魔法攻擊力");
-  for (const skill of ownSkillBuffCandidates()) {
-    if (!state.activeSkillBuffs[String(skill.id)]) continue;
-    const values = selectedSkillValues(skill);
-    improveBuffTotals(
-      totals,
-      { pad: values.pad, mad: values.mad, statPercent: (skill.name || "").includes("楓葉祝福") ? values.x : 0 },
-      skill.name,
-    );
-  }
   for (const buff of db.partySkillBuffs || []) {
     if (!state.activePartySkillBuffs[String(buff.id)]) continue;
     improveBuffTotals(totals, partyBuffValues(buff), buff.name);
@@ -544,6 +590,11 @@ function getBuffTotals() {
     improveBuffTotals(totals, buff.effects, buff.name);
   }
   return totals;
+}
+
+function percentBuffAmount(baseValue, buff, percentKey) {
+  const percent = Number(buff?.[percentKey] || 0);
+  return Math.floor(Math.max(0, Number(baseValue) || 0) * percent / 100);
 }
 
 function getPassiveSkillAttackBonus(weaponType) {
@@ -598,10 +649,15 @@ function getAttackRange() {
   const job = currentJob();
   const weaponType = state.weaponType || job?.weapons?.[0] || "";
   const formula = WEAPON_FORMULAS[weaponType] || WEAPON_FORMULAS["單手劍"];
-  const { totals, buff } = getStatTotals();
+  const { totals, baseTotals, addedTotals, buff } = getStatTotals();
   const passive = getPassiveSkillAttackBonus(weaponType);
-  const attack = numberInputValue(el.weaponAttack) + numberInputValue(el.equipAttack) + buff.pad + passive.pad;
-  const magicAttack = Math.floor(totals.int + numberInputValue(el.weaponMagic) + numberInputValue(el.equipMagic) + buff.mad + passive.mad);
+  const spirit = spiritBlessingValues();
+  const attackBase = numberInputValue(el.weaponAttack) + numberInputValue(el.equipAttack) + passive.pad + spirit.pad;
+  const magicAttackBase = numberInputValue(el.weaponMagic) + numberInputValue(el.equipMagic) + passive.mad + spirit.mad;
+  const echoAttackBase = attackBase;
+  const echoMagicBase = baseTotals.int + addedTotals.int + magicAttackBase;
+  const attack = attackBase + Number(buff.pad || 0) + percentBuffAmount(echoAttackBase, buff, "padPercent");
+  const magicAttack = Math.floor(totals.int + magicAttackBase + Number(buff.mad || 0) + percentBuffAmount(echoMagicBase, buff, "madPercent"));
   const secondary = (formula.secondary || []).reduce((sum, key) => sum + totals[key], 0);
   const { mastery, source } = getMastery(weaponType);
   const max = Math.floor((totals[formula.main] * formula.max + secondary) * attack / 100);
@@ -618,15 +674,24 @@ function getAttackRange() {
     min: Math.max(0, min),
     max: Math.max(0, max),
     passive,
+    spirit,
     buff,
   };
 }
 
 function isDamageSkill(skill) {
+  if (isCriticalPassiveSkill(skill)) return false;
   return (skill.levels || []).some(row => {
     const values = { ...(row.values || {}), ...parseLevelText(row.description || "") };
     return values.damage || values.mad || values.z;
   });
+}
+
+function isCriticalPassiveSkill(skill) {
+  const name = skill?.name || "";
+  if (/強力投擲|霸王箭|致命箭|致命暗襲/.test(name)) return true;
+  const text = `${name} ${skill?.description || ""} ${skill?.formula || ""}`;
+  return /(爆擊|暴擊|臨界|致命一擊|出現比率)/.test(text) && !/消耗\s*(?:HP|MP|HP、MP|MP、HP)/.test(text);
 }
 
 function hitCount(skill, values) {
@@ -647,7 +712,7 @@ function physicalSkillDamage(skill, values, range) {
     const luk = range.stats.luk;
     const max = Math.floor((luk * 5.0) * range.attack / 100 * percent / 100);
     const min = Math.floor((luk * 2.5) * range.attack / 100 * percent / 100);
-    return { min, max, hits, percent, note: "投擲技能公式" };
+    return { min, max, hits, percent, note: "投擲公式：每段 floor(幸運 × 2.5~5.0 × 攻擊力 ÷ 100 × 技能% ÷ 100)" };
   }
   return {
     min: Math.floor(range.min * percent / 100),
@@ -708,6 +773,7 @@ function initJobs() {
   state.jobId = (db.jobs || [])[0]?.id || "";
   const remembered = readCookie("ms_damage_job");
   if ((db.jobs || []).some(job => job.id === remembered)) state.jobId = remembered;
+  state.weaponType = readCookie("ms_damage_weapon") || state.weaponType;
   el.jobSelect.value = state.jobId;
   setCharacterLevel(readCookie("ms_damage_level") || DEFAULT_CHARACTER_LEVEL, false);
 }
@@ -730,6 +796,7 @@ function renderWeaponOptions() {
   state.weaponType = options.includes(previous) ? previous : options[0];
   el.weaponSelect.innerHTML = options.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join("");
   el.weaponSelect.value = state.weaponType;
+  writeCookie("ms_damage_weapon", state.weaponType);
 }
 
 function renderSkills() {
@@ -762,28 +829,23 @@ function renderSkills() {
 }
 
 function renderSkillBuffs() {
-  const ownRows = ownSkillBuffCandidates().map(skill => {
-    const checked = state.activeSkillBuffs[String(skill.id)] ? "checked" : "";
-    const values = selectedSkillValues(skill);
-    return `<label class="buffRow">
-      <input data-skill-buff="${escapeHtml(skill.id)}" type="checkbox" ${checked} />
-      <img src="${escapeHtml(skill.image || "")}" alt="" loading="lazy" />
-      <span><strong>${escapeHtml(skill.name)}</strong><small>${escapeHtml(formatBuffEffects({ pad: values.pad, mad: values.mad, statPercent: (skill.name || "").includes("楓葉祝福") ? values.x : 0 }))}</small></span>
-    </label>`;
-  });
   const partyRows = (db.partySkillBuffs || []).map(buff => {
-    const checked = state.activePartySkillBuffs[String(buff.id)] ? "checked" : "";
+    const isChecked = Boolean(state.activePartySkillBuffs[String(buff.id)]);
+    const checked = isChecked ? "checked" : "";
     const level = partyBuffLevel(buff);
     const effects = partyBuffValues(buff);
     const idText = state.showIds ? ` · ID ${buff.skillIds?.join("/") || buff.id}` : "";
-    return `<div class="buffRow partyBuffRow">
+    return `<div class="buffRow partyBuffRow${isChecked ? " isActive" : ""}" data-party-skill-buff-row="${escapeHtml(buff.id)}">
       <input id="partyBuff${escapeHtml(buff.id)}" data-party-skill-buff="${escapeHtml(buff.id)}" type="checkbox" ${checked} />
       <img src="${escapeHtml(buff.image || "")}" alt="" loading="lazy" />
-      <label for="partyBuff${escapeHtml(buff.id)}"><strong>${escapeHtml(buff.name)}</strong><small>${escapeHtml(buff.source || "隊伍技能 BUFF")} · ${escapeHtml(formatBuffEffects(effects))}${idText}</small></label>
-      <input class="partyBuffLevel" data-party-skill-buff-level="${escapeHtml(buff.id)}" type="number" min="0" max="${escapeHtml(buff.maxLevel || 0)}" step="1" value="${escapeHtml(level)}" inputmode="numeric" autocomplete="off" aria-label="${escapeHtml(buff.name)} 等級" />
+      <label class="partyBuffInfo" for="partyBuff${escapeHtml(buff.id)}"><strong>${escapeHtml(buff.name)}</strong><small>${escapeHtml(buff.source || "隊伍技能 BUFF")} · ${escapeHtml(formatBuffEffects(effects))}${idText}</small></label>
+      <label class="partyBuffLevelControl">
+        <span>等級</span>
+        <input class="partyBuffLevel" data-party-skill-buff-level="${escapeHtml(buff.id)}" type="number" min="0" max="${escapeHtml(buff.maxLevel || 0)}" step="1" value="${escapeHtml(level)}" inputmode="numeric" autocomplete="off" aria-label="${escapeHtml(buff.name)} 等級" />
+      </label>
     </div>`;
   });
-  el.skillBuffList.innerHTML = [...partyRows, ...ownRows].join("") || `<p class="emptyState">目前沒有可啟用的技能 BUFF</p>`;
+  el.skillBuffList.innerHTML = partyRows.join("") || `<p class="emptyState">目前沒有可啟用的技能 BUFF</p>`;
 }
 
 function renderItemBuffSearch() {
@@ -807,6 +869,8 @@ function formatBuffEffects(effects) {
   const parts = [];
   if (effects?.pad) parts.push(`攻擊力 +${effects.pad}`);
   if (effects?.mad) parts.push(`魔法攻擊力 +${effects.mad}`);
+  if (effects?.padPercent) parts.push(`攻擊力 +${effects.padPercent}%`);
+  if (effects?.madPercent) parts.push(`魔法攻擊力 +${effects.madPercent}%`);
   if (effects?.statPercent) parts.push(`全屬性 +${effects.statPercent}%`);
   return parts.join(" · ") || "BUFF";
 }
@@ -880,6 +944,7 @@ function renderSkillDamageCard(skill, result) {
 
 function renderAll() {
   updateBaseStatBudget();
+  updateSpiritBlessingHint();
   renderSkills();
   renderSkillBuffs();
   renderItemBuffSearch();
@@ -895,6 +960,7 @@ function clearAll() {
   state.activePartySkillBuffs = {};
   state.partySkillBuffLevels = {};
   state.selectedItemBuffs.clear();
+  setSpiritBlessingLevel(0, true);
   el.itemBuffSearch.value = "";
   el.weaponAttack.value = job?.kind === "magic" ? 30 : 80;
   el.weaponMagic.value = job?.kind === "magic" ? 90 : 0;
@@ -966,6 +1032,7 @@ function setupEvents() {
   });
   el.weaponSelect.addEventListener("change", () => {
     state.weaponType = el.weaponSelect.value;
+    writeCookie("ms_damage_weapon", state.weaponType);
     renderAll();
   });
   document.addEventListener("input", event => {
@@ -975,6 +1042,11 @@ function setupEvents() {
       setCharacterLevel(target.value, true);
       clampBaseStats();
       clampSkillLevelsToBudgets();
+      renderAll();
+      return;
+    }
+    if (target.id === "spiritBlessingLevel") {
+      setSpiritBlessingLevel(target.value, true);
       renderAll();
       return;
     }
@@ -1042,6 +1114,13 @@ function setupEvents() {
     if (removeButton) {
       state.selectedItemBuffs.delete(String(removeButton.dataset.removeItemBuff));
       renderAll();
+      return;
+    }
+    const partyBuffRow = event.target.closest("[data-party-skill-buff-row]");
+    if (partyBuffRow && !event.target.closest("input, button, a, label")) {
+      const partySkillBuff = partyBuffRow.dataset.partySkillBuffRow;
+      state.activePartySkillBuffs[String(partySkillBuff)] = !state.activePartySkillBuffs[String(partySkillBuff)];
+      renderAll();
     }
   });
   el.itemBuffSearch.addEventListener("input", renderItemBuffSearch);
@@ -1052,6 +1131,7 @@ function init() {
   el.idToggle?.setAttribute("aria-pressed", String(state.showIds));
   initFields();
   initJobs();
+  setSpiritBlessingLevel(readCookie("ms_damage_spirit_blessing_level") || 0, false);
   applyJobDefaults();
   setupTheme();
   setupEvents();

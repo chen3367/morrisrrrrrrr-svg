@@ -54,6 +54,9 @@
     .damageGrid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    .characterGrid .jobField {
+      grid-column: 1 / -1;
+    }
     .damageStatGrid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -114,14 +117,59 @@
       grid-template-columns: 22px 38px minmax(0, 1fr);
     }
     .partyBuffRow {
-      grid-template-columns: 22px 38px minmax(0, 1fr) 68px;
+      grid-template-columns: 22px 38px minmax(0, 1fr);
+      grid-template-areas:
+        "toggle icon label"
+        ". . level";
+      cursor: pointer;
+    }
+    .buffRow.isActive {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .buffRow > input[type="checkbox"] {
+      box-sizing: border-box;
+      flex: 0 0 16px;
+      width: 16px;
+      min-width: 16px;
+      max-width: 16px;
+      height: 16px;
+      min-height: 16px;
+      max-height: 16px;
+      margin: 0;
+      padding: 0;
+      justify-self: center;
+      align-self: start;
+    }
+    .partyBuffRow > input[type="checkbox"] {
+      grid-area: toggle;
+    }
+    .partyBuffRow > img {
+      grid-area: icon;
+    }
+    .partyBuffRow > .partyBuffInfo {
+      grid-area: label;
+      min-width: 0;
+      cursor: pointer;
+    }
+    .partyBuffLevelControl {
+      grid-area: level;
+      display: grid;
+      grid-template-columns: auto minmax(76px, 104px);
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
     }
     .partyBuffLevel {
-      width: 68px;
+      box-sizing: border-box;
+      width: 100%;
       min-width: 0;
       border: 1px solid var(--control-border);
       border-radius: 7px;
-      padding: 8px;
+      padding: 8px 10px;
       background: var(--control-bg);
       color: var(--plain-text);
       font: inherit;
@@ -143,6 +191,12 @@
       border-radius: 7px;
       background: var(--control-bg);
       padding: 3px;
+    }
+    .damageHeroIcon {
+      width: 86px;
+      height: 86px;
+      object-position: center bottom;
+      background: linear-gradient(180deg, var(--control-bg), var(--surface));
     }
     .skillLevelRow strong,
     .buffRow strong,
@@ -439,8 +493,11 @@
       .partyBuffRow {
         grid-template-columns: 22px 38px minmax(0, 1fr);
       }
+      .partyBuffLevelControl {
+        grid-column: 1 / -1;
+        grid-template-columns: auto minmax(72px, 1fr);
+      }
       .partyBuffLevel {
-        grid-column: 3 / -1;
         width: 100%;
       }
       .damageStatGrid {
@@ -503,30 +560,30 @@
     <aside class="monsterList damageControls">
       <section class="damageControlSection">
         <h2>角色</h2>
-        <div class="damageGrid">
+        <div class="damageGrid characterGrid">
+          <label class="damageField jobField">
+            <span>職業</span>
+            <select id="jobSelect"></select>
+          </label>
           <label class="damageField">
             <span>等級</span>
             <input id="characterLevel" type="number" min="1" max="200" step="1" inputmode="numeric" value="120" autocomplete="off" />
           </label>
           <label class="damageField">
-            <span>職業</span>
-            <select id="jobSelect"></select>
-          </label>
-          <label class="damageField">
-            <span>使用武器</span>
+            <span>武器</span>
             <select id="weaponSelect"></select>
           </label>
         </div>
       </section>
 
       <section class="damageControlSection">
-        <h2>基本屬性</h2>
+        <h2>基本數值</h2>
         <div class="damageStatGrid" id="baseStats"></div>
         <div id="baseStatBudget" class="damageBudgetHint"></div>
       </section>
 
       <section class="damageControlSection">
-        <h2>裝備屬性</h2>
+        <h2>追加數值</h2>
         <div class="damageStatGrid" id="equipStats"></div>
         <div class="damageAttackGrid" style="margin-top: 10px;">
           <label class="damageField">
@@ -545,6 +602,13 @@
             <span>其他裝備魔法攻擊力</span>
             <input id="equipMagic" type="number" min="0" step="1" inputmode="numeric" value="0" autocomplete="off" />
           </label>
+        </div>
+        <div class="damageAttackGrid" style="margin-top: 10px;">
+          <label class="damageField">
+            <span>精靈的祝福等級</span>
+            <input id="spiritBlessingLevel" type="number" min="0" max="20" step="1" inputmode="numeric" value="0" autocomplete="off" />
+          </label>
+          <div id="spiritBlessingHint" class="damageBudgetHint"></div>
         </div>
       </section>
 
