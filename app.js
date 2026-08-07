@@ -270,7 +270,7 @@ function mapUrl(map) {
 }
 
 function questNpcImage(row, className = "sourceMonsterImage") {
-  const npc = row.startNpc || row.endNpc || null;
+  const npc = row.sourceNpc || row.rewardNpc || row.startNpc || row.endNpc || null;
   return assetImage(npc?.image, npc?.name || row.questName || "任務", "任", className);
 }
 
@@ -296,7 +296,6 @@ const STAT_FIELDS = [
   ["bodyAttack", "碰撞", yesNo],
   ["firstAttack", "主動", yesNo],
   ["boss", "BOSS", yesNo],
-  ["rareItemDropLevel", "稀有掉落"],
 ];
 
 const ELEMENT_FIELDS = [
@@ -869,7 +868,6 @@ function renderList() {
         <span class="rowMeta">${monster.level ? `Lv.${monster.level}` : "Lv.?"}${idMeta(monster.id)}</span>
         <em>${escapeHtml(continentText(monster))}</em>
       </span>
-      <small>${visibleDrops(monster).length.toLocaleString()} 項</small>
     </button>
   `).join("");
 }

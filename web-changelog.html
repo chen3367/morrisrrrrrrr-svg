@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MapleStory Classic 網頁更新日誌</title>
+  <link rel="icon" href="data:," />
+  <script>
+    (function () {
+      function readCookie(name) {
+        try {
+          var prefix = encodeURIComponent(name) + "=";
+          var rows = document.cookie ? document.cookie.split("; ") : [];
+          for (var i = 0; i < rows.length; i += 1) {
+            if (rows[i].indexOf(prefix) === 0) return decodeURIComponent(rows[i].slice(prefix.length));
+          }
+        } catch (_error) {}
+        return "";
+      }
+      try {
+        var cookieTheme = readCookie("ms_theme");
+        var storedTheme = cookieTheme || (localStorage.getItem("ms-theme") === "dark" ? "dark" : "light");
+        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
+      } catch (_error) {
+        document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="appHeader">
+    <div class="titleArea">
+      <h1>網頁更新日誌</h1>
+      <nav class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup" open>
+          <summary>楓葉圖鑑</summary>
+          <div class="navMenuLinks">
+          <a href="./index.html">怪物</a>
+          <a href="./items.html">道具</a>
+          <a href="./quests.html">任務</a>
+          <a href="./maps.html">地圖</a>
+          <a href="./skills.html">技能</a>
+          </div>
+        </details>
+        <details class="navMenuGroup" open>
+          <summary>實用工具</summary>
+          <div class="navMenuLinks">
+          <a href="./scroll-simulator.html">卷軸模擬器</a>
+          <a href="./damage-calculator.html">戰鬥力計算機</a>
+          </div>
+        </details>
+        <details class="navMenuGroup active" open>
+          <summary>其他</summary>
+          <div class="navMenuLinks">
+          <a href="./patch-notes.html">遊戲更新日誌</a>
+          <a class="active" href="./web-changelog.html">網頁更新日誌</a>
+          </div>
+        </details>
+      </nav>
+      <div class="buildMeta" id="buildMeta">只列已提交到 GitHub Pages 的網站功能更新</div>
+    </div>
+    <div class="patchHeaderControls">
+      <button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button>
+      <span id="resultCount">10 筆</span>
+    </div>
+  </header>
+
+  <main class="patchNotesLayout">
+    <aside class="monsterList patchVersionList" aria-label="Commit 列表">
+      <a class="patchVersionRow active" href="#c6446b27"><strong>6446b27</strong><span>2026-08-07</span></a>
+      <a class="patchVersionRow" href="#c12ed675"><strong>12ed675</strong><span>2026-08-07</span></a>
+      <a class="patchVersionRow" href="#cb82e420"><strong>b82e420</strong><span>2026-08-07</span></a>
+      <a class="patchVersionRow" href="#c02bde9c"><strong>02bde9c</strong><span>2026-08-06</span></a>
+      <a class="patchVersionRow" href="#c639a8cf"><strong>639a8cf</strong><span>2026-08-06</span></a>
+      <a class="patchVersionRow" href="#cd95932c"><strong>d95932c</strong><span>2026-08-06</span></a>
+      <a class="patchVersionRow" href="#c404b433"><strong>404b433</strong><span>2026-08-04</span></a>
+      <a class="patchVersionRow" href="#c0546e20"><strong>0546e20</strong><span>2026-08-04</span></a>
+      <a class="patchVersionRow" href="#c0a432e8"><strong>0a432e8</strong><span>2026-08-04</span></a>
+      <a class="patchVersionRow" href="#c3b13e49"><strong>3b13e49</strong><span>2026-08-04</span></a>
+    </aside>
+
+    <section class="detail patchNotesDetail">
+      <article class="patchNoteArticle webChangeLogArticle">
+        <header class="patchNoteHero">
+          <div>
+            <p class="patchEyebrow">網站功能更新</p>
+            <h2>GitHub Pages 變更紀錄</h2>
+            <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
+          </div>
+          <div class="patchNoteDate">
+            <strong>10</strong>
+            <span>筆更新</span>
+          </div>
+        </header>
+
+        <section id="c6446b27" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/6446b2708dd1b78c713293db6b93e2a1b660fbc4">6446b27</a> 清除條件控制</h3>
+          <ul class="patchChangeList">
+            <li>各主要頁面新增「清除條件」按鈕，讓搜尋、篩選和進階條件可以一次回到預設狀態。</li>
+            <li>怪物頁的「清除進階條件」併入共用清除流程。</li>
+          </ul>
+        </section>
+
+        <section id="c12ed675" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/12ed675b2e0286a59ec0c20af1fd0d792d13488b">12ed675</a> GitHub Pages 部署流程</h3>
+          <ul class="patchChangeList">
+            <li>調整 Pages 部署流程，降低發布後頁面未即時可用的機率。</li>
+            <li>新增部署韌性檢查，讓更新網站時比較容易定位發布問題。</li>
+          </ul>
+        </section>
+
+        <section id="cb82e420" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/b82e420f55622765b461856d01fc9f8f2a661860">b82e420</a> 遊戲更新日誌</h3>
+          <ul class="patchChangeList">
+            <li>新增玩家可讀的遊戲更新日誌頁面。</li>
+            <li>將資料 diff 轉成網頁內可展開/收合的內容，避免直接開 Markdown 造成亂碼。</li>
+          </ul>
+        </section>
+
+        <section id="c02bde9c" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/02bde9cd11f0faf9c10c3ecf791cfd28cdb6c429">02bde9c</a> 遊戲資料 1.13.6</h3>
+          <ul class="patchChangeList">
+            <li>網站資料更新至 MapleStory Classic 1.13.6。</li>
+            <li>同步任務、道具、地圖、技能和圖示資產。</li>
+          </ul>
+        </section>
+
+        <section id="c639a8cf" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/639a8cf192169f84ac7f589c2ba6d643360c106f">639a8cf</a> 任務資訊卡調整</h3>
+          <ul class="patchChangeList">
+            <li>任務資訊卡的「接續任務」移到資訊卡底部，閱讀順序更接近任務流程。</li>
+          </ul>
+        </section>
+
+        <section id="cd95932c" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/d95932cf3d45af69892b825cc3817d8980000385">d95932c</a> 地圖頁與世界地圖</h3>
+          <ul class="patchChangeList">
+            <li>調整地圖資訊卡欄位順序，分開顯示跨地圖與同地圖傳送點。</li>
+            <li>世界地圖支援子地圖顯示選項，並改善節點與地區代表圖示。</li>
+          </ul>
+        </section>
+
+        <section id="c404b433" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/404b4336fc37a0e255958a5a3b755664b0fc7939">404b433</a> 楓幣圖示</h3>
+          <ul class="patchChangeList">
+            <li>怪物掉落楓幣、商店價格、製作費用加入對應楓幣圖示。</li>
+          </ul>
+        </section>
+
+        <section id="c0546e20" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/0546e20719da5f7caf6404d20b422e845eb450d6">0546e20</a> 活動怪物預設隱藏</h3>
+          <ul class="patchChangeList">
+            <li>預設隱藏楓葉世界等活動專屬怪物，降低目前版本查詢時的干擾。</li>
+          </ul>
+        </section>
+
+        <section id="c0a432e8" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/0a432e8eed22914797ad2763be278b7b714479b4">0a432e8</a> 無來源重複道具整理</h3>
+          <ul class="patchChangeList">
+            <li>預設隱藏重複且無取得來源的道具，讓道具列表更乾淨。</li>
+          </ul>
+        </section>
+
+        <section id="c3b13e49" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/3b13e49d450b176a814e4b0cc023eb9eea28392b">3b13e49</a> 圖示補強流程</h3>
+          <ul class="patchChangeList">
+            <li>新增以精準路徑補圖示的流程，降低怪物、道具、技能和 NPC 圖示誤配問題。</li>
+          </ul>
+        </section>
+      </article>
+    </section>
+  </main>
+
+  <script src="./patch-notes.js"></script>
+</body>
+</html>

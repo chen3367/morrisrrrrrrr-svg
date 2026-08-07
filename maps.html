@@ -24,6 +24,15 @@
       } catch (_error) {
         document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
       }
+      try {
+        var mapParams = new URLSearchParams(window.location.search);
+        var mapView = mapParams.get("view") === "world" || mapParams.has("region") ? "world" : "maps";
+        document.documentElement.dataset.mapView = mapView;
+        window.MS_ACTIVE_MAP_VIEW = mapView;
+      } catch (_error) {
+        document.documentElement.dataset.mapView = "maps";
+        window.MS_ACTIVE_MAP_VIEW = "maps";
+      }
     })();
   </script>
   <link rel="stylesheet" href="./styles.css" />
@@ -32,19 +41,41 @@
   <header class="appHeader">
     <div class="titleArea">
       <h1>地圖</h1>
-      <nav class="topNav" aria-label="頁面切換">
-        <a href="./index.html">怪物</a>
-        <a href="./items.html">道具</a>
-        <a href="./quests.html">任務</a>
-        <a class="active" href="./maps.html">地圖</a>
-        <a href="./worldmaps.html">世界地圖</a>
-        <a href="./skills.html">技能</a>
-        <a href="./patch-notes.html">更新</a>
+      <nav class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup active" open>
+          <summary>楓葉圖鑑</summary>
+          <div class="navMenuLinks">
+          <a href="./index.html">怪物</a>
+          <a href="./items.html">道具</a>
+          <a href="./quests.html">任務</a>
+          <a class="active" href="./maps.html">地圖</a>
+          <a href="./skills.html">技能</a>
+          </div>
+        </details>
+        <details class="navMenuGroup" open>
+          <summary>實用工具</summary>
+          <div class="navMenuLinks">
+          <a href="./scroll-simulator.html">卷軸模擬器</a>
+          <a href="./damage-calculator.html">戰鬥力計算機</a>
+          </div>
+        </details>
+        <details class="navMenuGroup" open>
+          <summary>其他</summary>
+          <div class="navMenuLinks">
+          <a href="./patch-notes.html">遊戲更新日誌</a>
+          <a href="./web-changelog.html">網頁更新日誌</a>
+          </div>
+        </details>
       </nav>
+      <div class="mapViewTabs" aria-label="地圖視圖">
+        <a id="smallMapViewTab" href="./maps.html">小地圖</a>
+        <a id="worldMapViewTab" href="./maps.html?view=world">世界地圖</a>
+      </div>
       <div class="buildMeta" id="buildMeta"></div>
     </div>
     <div class="searchWrap">
-      <input id="mapSearch" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入地圖、怪物、傳送目標或 ID" />
+      <input id="mapSearch" class="mapModeOnly" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入地圖、怪物、傳送目標或 ID" />
+      <input id="worldMapSearch" class="worldModeOnly" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入地圖、地區或 ID" />
       <datalist id="searchHistoryOptions"></datalist>
       <label id="nameOnlySearchControl" class="nameOnlySearchControl">
         <input id="nameOnlySearch" type="checkbox" autocomplete="off" />
@@ -55,25 +86,42 @@
       <span id="resultCount"></span>
       <div id="settingsPanel" class="settingsPanel" hidden>
         <button id="clearFilters" class="toggleButton clearFiltersButton" type="button">清除條件</button>
-        <div id="mapRegionFilter" class="multiSelect">
+        <div id="mapRegionFilter" class="multiSelect mapModeOnly">
           <button id="mapRegionMenuButton" class="multiSelectButton" type="button" aria-expanded="false" aria-controls="mapRegionOptions">當前版本地區</button>
           <div id="mapRegionOptions" class="multiSelectOptions" role="group" aria-label="以世界地圖地區複選篩選" hidden>
             <button id="mapRegionClear" class="multiSelectClear" type="button">清除選取</button>
           </div>
         </div>
-        <button id="unnamedMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示未命名地圖</button>
-        <button id="specialMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示特殊地圖</button>
+        <button id="unnamedMapToggle" class="toggleButton mapModeOnly" type="button" aria-pressed="false">顯示未命名地圖</button>
+        <button id="specialMapToggle" class="toggleButton mapModeOnly" type="button" aria-pressed="false">顯示特殊地圖</button>
+        <button id="worldSubMapToggle" class="toggleButton worldModeOnly" type="button" aria-pressed="false">顯示子地圖</button>
         <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
       </div>
     </div>
   </header>
 
-  <main class="layout mapLayout">
+  <main class="layout mapLayout mapModeOnly">
     <aside class="monsterList mapIndexList" id="mapList"></aside>
     <section class="detail mapDetailPane" id="mapDetail"></section>
   </main>
+  <main class="layout worldMapLayout worldModeOnly">
+    <aside class="monsterList worldRegionList" id="worldRegionList"></aside>
+    <section class="detail worldMapDetail" id="worldMapDetail"></section>
+  </main>
 
-  <script src="./maps-data.js"></script>
-  <script src="./maps.js"></script>
+  <script>
+    (function () {
+      var isWorldMapView = window.MS_ACTIVE_MAP_VIEW === "world";
+      function loadScript(src, onload) {
+        var script = document.createElement("script");
+        script.src = src;
+        if (onload) script.onload = onload;
+        document.body.appendChild(script);
+      }
+      loadScript(isWorldMapView ? "./worldmaps-data.js" : "./maps-data.js", function () {
+        loadScript(isWorldMapView ? "./worldmaps.js" : "./maps.js");
+      });
+    })();
+  </script>
 </body>
 </html>

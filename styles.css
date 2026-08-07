@@ -143,8 +143,48 @@ h1 {
 }
 .topNav {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  align-items: center;
+  align-items: flex-start;
+}
+.navMenuGroup {
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--nav-bg);
+  overflow: hidden;
+}
+.navMenuGroup summary {
+  min-height: 28px;
+  padding: 5px 10px;
+  color: var(--control-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  list-style: none;
+  user-select: none;
+}
+.navMenuGroup summary::-webkit-details-marker {
+  display: none;
+}
+.navMenuGroup summary::after {
+  content: "▾";
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.navMenuGroup:not([open]) summary::after {
+  content: "▸";
+}
+.navMenuGroup.active > summary {
+  color: var(--active-text);
+  background: var(--accent-soft);
+}
+.navMenuLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid var(--control-border);
+  padding: 6px;
 }
 .topNav a {
   display: inline-flex;
@@ -164,6 +204,39 @@ h1 {
   background: var(--nav-hover);
 }
 .topNav a.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+html[data-map-view="maps"] .worldModeOnly,
+html[data-map-view="world"] .mapModeOnly {
+  display: none !important;
+}
+.mapViewTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.mapViewTabs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--nav-bg);
+  padding: 0 12px;
+  color: var(--control-text);
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+.mapViewTabs a:hover {
+  background: var(--nav-hover);
+}
+html[data-map-view="maps"] #smallMapViewTab,
+html[data-map-view="world"] #worldMapViewTab {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--active-text);
@@ -373,6 +446,14 @@ select {
   min-height: 38px;
   padding: 0 10px;
 }
+.priceHint {
+  min-height: 15px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
 .weaknessFilter {
   display: flex;
   flex: 1 1 340px;
@@ -480,6 +561,7 @@ select {
 :root[data-theme="dark"] .toggleThemeButton[aria-pressed="true"],
 :root[data-theme="dark"] .nameOnlySearchControl.active,
 :root[data-theme="dark"] .settingsToggle.active,
+:root[data-theme="dark"] .navMenuGroup.active > summary,
 :root[data-theme="dark"] .topNav a.active {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -607,16 +689,102 @@ select {
 .patchChangeList b {
   color: var(--text-strong);
 }
-.patchNoteFooter {
-  padding: 18px 22px 22px;
-}
-.patchNoteFooter a {
+.commitHashLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid var(--item-glyph-border);
+  border-radius: 7px;
+  background: var(--item-glyph-bg);
+  padding: 0 8px;
   color: var(--blue);
-  font-weight: 850;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  font-weight: 900;
   text-decoration: none;
 }
-.patchNoteFooter a:hover {
+.commitHashLink:hover {
   text-decoration: underline;
+}
+.patchDiffPanel {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+  overflow: hidden;
+}
+.patchDiffPanel summary {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.patchDiffPanel summary::-webkit-details-marker {
+  display: none;
+}
+.patchDiffPanel summary::before {
+  content: "›";
+  color: var(--muted);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 0.16s ease;
+}
+.patchDiffPanel[open] summary::before {
+  transform: rotate(90deg);
+}
+.patchDiffPanel summary span {
+  display: grid;
+  gap: 3px;
+}
+.patchDiffPanel summary strong {
+  color: var(--ink);
+  font-size: 16px;
+}
+.patchDiffPanel summary em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 750;
+}
+.patchDiffBody {
+  display: grid;
+  gap: 14px;
+  padding: 0 16px 16px 44px;
+}
+.patchDiffBlock {
+  border-top: 1px dashed var(--dash-line);
+  padding-top: 14px;
+}
+.patchDiffBlock h4 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 15px;
+}
+.patchDiffBlock p {
+  margin: 0 0 10px;
+  color: var(--plain-text);
+  line-height: 1.55;
+}
+.patchDiffItemGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+.patchDiffItemGrid span {
+  min-width: 0;
+  border: 1px solid var(--row-border);
+  border-radius: 8px;
+  background: var(--shell);
+  padding: 8px 10px;
+  color: var(--plain-text);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
 }
 .monsterList {
   overflow: auto;
@@ -638,6 +806,9 @@ select {
   text-align: left;
   font: inherit;
   cursor: pointer;
+}
+.monsterList .monsterRow:not(.skillIndexRow):not(.worldRegionRow) {
+  grid-template-columns: 52px minmax(0, 1fr);
 }
 .monsterRow:hover { background: var(--hover-bg); }
 .monsterRow.active {
@@ -1325,6 +1496,560 @@ h3 {
   color: var(--item-glyph-text);
   padding: 4px 7px;
   font-weight: 800;
+}
+.simulatorLayout {
+  grid-template-columns: 430px minmax(0, 1fr);
+}
+.simulatorHeaderControls {
+  justify-content: flex-end;
+}
+.simulatorControls {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 12px;
+}
+.simControlSection {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 12px;
+}
+.simControlSection h2 {
+  font-size: 18px;
+}
+.simControlSection select:not(.simNativeSelect) {
+  width: 100%;
+  min-height: 38px;
+  flex: 0 0 auto;
+}
+.simNativeSelect {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.simPickerList {
+  display: grid;
+  gap: 6px;
+  max-height: 282px;
+  overflow: auto;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  padding: 6px;
+}
+.compactPickerList {
+  max-height: 238px;
+}
+.simPickerRow {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--plain-text);
+  padding: 6px 8px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.simPickerRow:hover {
+  border-color: var(--link-hover-border);
+  background: var(--hover-bg);
+}
+.simPickerRow.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.simPickerIcon {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--icon-bg);
+  color: var(--text-strong);
+  object-fit: contain;
+  padding: 3px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+.simPickerText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.simPickerText strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.25;
+}
+.simPickerText span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+.simPickerBadge {
+  align-self: center;
+  border: 1px solid var(--item-glyph-border);
+  border-radius: 999px;
+  background: var(--item-glyph-bg);
+  color: var(--item-glyph-text);
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.simPickerEmpty {
+  border: 1px dashed var(--dash-line);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: center;
+}
+.initialStatsPanel {
+  display: grid;
+  gap: 8px;
+}
+.initialStatsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.initialStatsHeader strong,
+.initialStatsHeader span {
+  display: block;
+}
+.initialStatsHeader strong {
+  font-size: 14px;
+}
+.initialStatsHeader span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.initialStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.initialStatField {
+  display: grid;
+  grid-template-columns: minmax(58px, 0.7fr) minmax(62px, 1fr);
+  gap: 4px 6px;
+  align-items: center;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--control-soft);
+  padding: 7px 8px;
+}
+.initialStatField span {
+  color: var(--control-text);
+  font-size: 12px;
+  font-weight: 850;
+}
+.initialStatField input {
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 7px;
+  text-align: right;
+}
+.initialStatField input:disabled {
+  opacity: 0.72;
+}
+.initialStatField small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+.fullWidthField {
+  width: 100%;
+}
+.simInlineControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.simInlineControls .advancedField {
+  width: auto;
+  min-width: 0;
+}
+.simInlineControls .priceField {
+  grid-column: 1 / -1;
+}
+.simInlineControls input {
+  width: 100%;
+}
+.simFilterGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.simFilterGrid.twoColumn {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.simFilterGrid select {
+  min-height: 38px;
+}
+.simFilterGrid .fullGridControl {
+  grid-column: 1 / -1;
+}
+.simFilterGrid .advancedField {
+  min-width: 0;
+}
+.simLevelRangeField {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 5px;
+  color: var(--control-text);
+  font-size: 12px;
+  font-weight: 850;
+}
+.simLevelRangeInputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.simLevelRangeInputs input {
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 10px;
+}
+.simLevelRangeInputs span {
+  color: var(--muted);
+  font-weight: 900;
+}
+.simFilterGrid .simCheckControl {
+  grid-column: 1 / -1;
+}
+.simCheckControl {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  min-height: 38px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 850;
+}
+.simCheckControl input {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.primaryActionButton {
+  width: 100%;
+  min-height: 38px;
+  justify-content: center;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.primaryActionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.strategyList {
+  display: grid;
+  gap: 8px;
+}
+.simSlotNote {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+.strategyRow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 8px;
+}
+.strategyRow strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.strategyRow span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.strategyInputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+.strategyInputs label {
+  display: grid;
+  gap: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.strategyInputs input {
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 8px;
+}
+.strategyInputs .priceField {
+  grid-column: 1 / -1;
+}
+.strategyActions {
+  display: grid;
+  gap: 4px;
+}
+.iconMiniButton {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--control-border);
+  border-radius: 7px;
+  background: var(--control-soft);
+  color: var(--control-text);
+  font-weight: 900;
+  cursor: pointer;
+}
+.iconMiniButton:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.smallEmpty {
+  min-height: auto;
+  padding: 10px;
+  font-size: 13px;
+}
+.simHero {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid var(--hero-border);
+  background: var(--hero-bg);
+}
+.simHero p {
+  margin: 0;
+  color: var(--muted);
+}
+.simHero .heroCounters {
+  grid-template-columns: repeat(4, minmax(84px, auto));
+}
+.simHero .heroCounter {
+  min-width: 84px;
+  white-space: nowrap;
+}
+.simHero .heroCounter strong {
+  font-size: 17px;
+}
+.simChipLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.simChipLine span {
+  border: 1px solid var(--mini-border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--plain-text);
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.simIntro {
+  padding: 12px 14px 16px;
+  color: var(--plain-text);
+  line-height: 1.6;
+}
+.simIntro p {
+  margin: 0;
+}
+.simStatsGrid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.simTableWrap {
+  overflow-x: auto;
+  padding: 12px 14px 14px;
+}
+.simTableWrap h3 {
+  margin-bottom: 8px;
+}
+.simTable {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  color: var(--plain-text);
+  font-size: 13px;
+}
+.simTable th,
+.simTable td {
+  border-bottom: 1px solid var(--row-border);
+  padding: 8px 9px;
+  text-align: left;
+  white-space: nowrap;
+}
+.simTable th {
+  color: var(--text-strong);
+  font-weight: 900;
+}
+.simTableGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 0 8px;
+}
+.simWarning {
+  margin: 12px 14px 14px;
+  border: 1px solid var(--weak-border);
+  border-radius: 8px;
+  background: var(--weak-bg);
+  color: var(--weak-text);
+  padding: 12px;
+  font-weight: 850;
+}
+.compactWarning {
+  margin: 0;
+}
+.simPolicyBox {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.simPolicyBox p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.simPathLine {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px dashed var(--dash-line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.simPathLine strong {
+  color: var(--active-text);
+}
+.simPathLine span {
+  min-width: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.successPreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.successPreviewCell {
+  border: 1px solid var(--stat-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 9px 10px;
+}
+.successPreviewCell span,
+.successPreviewCell em {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.35;
+}
+.successPreviewCell strong {
+  display: block;
+  margin: 3px 0;
+  color: var(--text-strong);
+  font-size: 19px;
+  line-height: 1.2;
+}
+.simSamples {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+.simSample {
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 9px 11px;
+}
+.simSample summary {
+  cursor: pointer;
+  font-weight: 900;
+}
+.simSampleBody {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.simSampleBody article {
+  border-top: 1px dashed var(--dash-line);
+  padding-top: 8px;
+}
+.simSampleBody ol {
+  margin: 6px 0 0;
+  padding-left: 1.4rem;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.simSampleNotice {
+  border: 1px dashed var(--dash-line);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 850;
 }
 .hiddenMapClusterList {
   display: grid;
@@ -2344,7 +3069,7 @@ h3 {
     grid-template-columns: 1fr;
     height: auto;
   }
-  .itemLayout, .skillLayout, .accuracyLayout, .mapLayout, .worldMapLayout {
+  .itemLayout, .skillLayout, .accuracyLayout, .mapLayout, .worldMapLayout, .simulatorLayout {
     grid-template-columns: 1fr;
   }
   .patchNotesLayout {
@@ -2359,8 +3084,18 @@ h3 {
   .patchNoteDate {
     justify-self: start;
   }
+  .patchDiffBody {
+    padding: 0 12px 12px 12px;
+  }
+  .patchDiffItemGrid {
+    grid-template-columns: 1fr;
+  }
   .monsterList {
     max-height: 36vh;
+  }
+  .simulatorControls.monsterList {
+    max-height: none;
+    overflow: visible;
   }
   .patchVersionList.monsterList {
     max-height: none;
@@ -2368,12 +3103,37 @@ h3 {
   .monsterHero {
     grid-template-columns: auto minmax(0, 1fr);
   }
+  .simHero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
   .heroCounters {
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .simHero .heroCounters {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-self: stretch;
+  }
   .heroCounter {
     text-align: left;
+  }
+  .simTableGrid {
+    grid-template-columns: 1fr;
+  }
+  .simInlineControls,
+  .simFilterGrid,
+  .initialStatsGrid,
+  .strategyInputs {
+    grid-template-columns: 1fr;
+  }
+  .strategyRow {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+  .strategyActions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
   }
   .mapHero:not(.worldMapHero) .heroCounters {
     grid-template-columns: repeat(3, minmax(72px, 1fr));

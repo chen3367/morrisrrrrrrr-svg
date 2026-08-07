@@ -114,6 +114,8 @@ const state = {
   levelMin: cookieValue("ms_quest_level_min"),
   levelMax: cookieValue("ms_quest_level_max"),
   nameOnlySearch: cookieBool("ms_quest_name_only_search"),
+  showUnnamedIndex: cookieBool("ms_quest_show_unnamed_index"),
+  showQuestRewardItemDetails: cookieBool("ms_monster_drop_item_details", true),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
@@ -129,6 +131,7 @@ const els = {
   clearFilters: document.getElementById("clearFilters"),
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
+  unnamedIndexToggle: document.getElementById("unnamedIndexToggle"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
   settingsToggle: document.getElementById("settingsToggle"),
@@ -196,7 +199,7 @@ function questUrl(questId) {
 }
 
 function itemUrl(itemId) {
-  return `./items.html?item=${encodeURIComponent(itemId)}&showNoSource=1`;
+  return `./items.html?item=${encodeURIComponent(itemId)}`;
 }
 
 function monsterUrl(monsterId) {
@@ -232,6 +235,136 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
 }
 
+function formatSigned(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return escapeHtml(value);
+  return `${number > 0 ? "+" : ""}${number.toLocaleString()}`;
+}
+
+const EQUIP_RANGE_LABELS = {
+  incSTR: "力量",
+  incDEX: "敏捷",
+  incINT: "智力",
+  incLUK: "幸運",
+  incMHP: "MaxHP",
+  incMMP: "MaxMP",
+  incPAD: "攻擊力",
+  incMAD: "魔法攻擊力",
+  incPDD: "防禦力",
+  incMDD: "魔法防禦力",
+  incACC: "命中",
+  incEVA: "迴避",
+  incSpeed: "移動速度",
+  incJump: "跳躍",
+  incCraft: "熟練",
+};
+const EQUIP_RANGE_PRIORITY = ["incPAD", "incMAD", "incSTR", "incDEX", "incINT", "incLUK", "incACC", "incEVA", "incPDD", "incMDD", "incMHP", "incMMP", "incSpeed", "incJump", "incCraft"];
+
+function itemTypeText(item) {
+  const parts = [item.category || item.kind || "其他"];
+  if (item.subcategory && item.subcategory !== item.category) parts.push(item.subcategory);
+  return parts.join(" · ");
+}
+
+function formatReqJob(value) {
+  const mask = Number(value);
+  if (!Number.isFinite(mask) || mask <= 0) return "全職";
+  const jobs = [
+    [1, "劍士"],
+    [2, "法師"],
+    [4, "弓箭手"],
+    [8, "盜賊"],
+    [16, "海盜"],
+  ];
+  const labels = jobs.filter(([bit]) => (mask & bit) === bit).map(([, label]) => label);
+  return labels.length ? labels.join(" / ") : formatNumber(mask);
+}
+
+function formatEquipRequirementLevel(stats) {
+  if (!Object.hasOwn(stats, "reqLevel")) return "未知";
+  const level = Number(stats.reqLevel);
+  if (!Number.isFinite(level)) return String(stats.reqLevel);
+  return level > 0 ? `Lv.${level.toLocaleString()}` : "無限制";
+}
+
+function formatEquipRequirementAttributes(stats) {
+  const fields = [
+    ["reqSTR", "力量"],
+    ["reqDEX", "敏捷"],
+    ["reqINT", "智力"],
+    ["reqLUK", "幸運"],
+    ["reqPOP", "人氣"],
+  ];
+  const parts = fields.map(([key, label]) => {
+    const value = stats[key];
+    const number = Number(value);
+    if (Number.isFinite(number)) return number > 0 ? `${label} ${number.toLocaleString()}` : "";
+    return value ? `${label} ${value}` : "";
+  }).filter(Boolean);
+  return parts.length ? parts.join(" / ") : "";
+}
+
+function formatEquipUpgradeSlots(stats) {
+  if (!Object.hasOwn(stats, "tuc")) return "未知";
+  const tuc = Number(stats.tuc);
+  return Number.isFinite(tuc) ? tuc.toLocaleString() : String(stats.tuc);
+}
+
+function equipRequirementRowsHtml(item) {
+  const stats = item?.equipStats;
+  if (!stats || typeof stats !== "object") return "";
+  const requirements = formatEquipRequirementAttributes(stats);
+  const rows = [
+    ["裝備需求", requirements],
+  ].filter(([, value]) => value);
+  return `<div class="equipRequirementLines">
+    <p class="equipRequirementPrimary"><strong>${escapeHtml(formatEquipRequirementLevel(stats))} · ${escapeHtml(formatReqJob(stats.reqJob))}</strong></p>
+    ${rows.map(([label, value]) => `
+    <p><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></p>
+  `).join("")}</div>`;
+}
+
+function equipUpgradeRowsHtml(item) {
+  const stats = item?.equipStats;
+  if (!stats || typeof stats !== "object") return "";
+  return `<div class="equipRangeLines equipUpgradeLines"><p>可強化次數: ${escapeHtml(formatEquipUpgradeSlots(stats))}</p></div>`;
+}
+
+function formatRangeBound(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString() : "";
+}
+
+function formatEquipRangeValue(range) {
+  const min = Number(range?.min);
+  const max = Number(range?.max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return "";
+  if (min === max) return formatRangeBound(min);
+  return `${formatRangeBound(min)} ~ ${formatRangeBound(max)}`;
+}
+
+function equipRangeLine(key, range) {
+  const base = Number(range?.base);
+  const baseText = Number.isFinite(base) ? formatSigned(base) : "";
+  const rangeText = formatEquipRangeValue(range);
+  if (!baseText && !rangeText) return "";
+  return `${EQUIP_RANGE_LABELS[key] || key}: ${baseText}${rangeText ? ` (${rangeText})` : ""}`;
+}
+
+function equipRangeRows(item) {
+  const ranges = item?.equipStatRanges || {};
+  return EQUIP_RANGE_PRIORITY
+    .filter(key => ranges[key])
+    .map(key => equipRangeLine(key, ranges[key]))
+    .filter(Boolean);
+}
+
+function equipRangeRowsHtml(item) {
+  const rows = equipRangeRows(item);
+  if (!rows.length) return "";
+  return `<div class="equipRangeLines">${rows.map(row => `<p>${escapeHtml(row)}</p>`).join("")}</div>`;
+}
+
 function shorten(value, size) {
   const text = String(value || "").replace(/\s+/g, " ");
   return text.length > size ? text.slice(0, size - 1) + "…" : text;
@@ -242,7 +375,7 @@ function idMeta(id) {
 }
 
 function npcForQuest(quest) {
-  return quest.startNpc || quest.endNpc || null;
+  return [quest.startNpc, quest.endNpc].find(npc => showIndexRecord(npc, "npc")) || null;
 }
 
 function questNpcThumb(quest, className) {
@@ -252,8 +385,8 @@ function questNpcThumb(quest, className) {
 
 function npcLocationText(npc) {
   if (!npc) return "";
-  if (npc.locationText) return npc.locationText;
-  const maps = npc.maps || [];
+  if (state.showUnnamedIndex && npc.locationText) return npc.locationText;
+  const maps = state.showUnnamedIndex ? (npc.maps || []) : visibleIndexRows(npc.maps || [], "map");
   return maps.map(map => map.label || map.name || map.id).filter(Boolean).join("、");
 }
 
@@ -283,6 +416,56 @@ function npcStatCell(label, npc) {
   `;
 }
 
+function isUnnamedIndexRecord(record, type = "") {
+  if (!record) return false;
+  if (record.unnamed) return true;
+  const id = record.id ?? "";
+  const name = String(record.name || record.label || "");
+  if (type === "item") return !name || name === `未命名道具 ${id}` || /^未命名道具\s+\d+$/.test(name);
+  if (type === "monster") return !name || name === `怪物 ${id}` || /^怪物\s+\d+$/.test(name) || /^未命名怪物\s+\d+$/.test(name);
+  if (type === "npc") return !name || name === `NPC ${id}` || /^未命名NPC\s+\d+$/.test(name);
+  if (type === "map") return !name || name === `未命名地圖 ${id}` || /^未命名地圖\s+\d+$/.test(name);
+  if (type === "quest") return !name || name === `任務 ${id}` || /^任務\s+\d+$/.test(name) || /^未命名任務\s+\d+$/.test(name);
+  return /^未命名/.test(name) || /^怪物\s+\d+$/.test(name) || /^NPC\s+\d+$/.test(name);
+}
+
+function npcOnlyUnnamedMaps(npc) {
+  const maps = npc?.maps || [];
+  return maps.length > 0 && maps.every(map => isUnnamedIndexRecord(map, "map"));
+}
+
+function mainQuestNpcBlocked(npc) {
+  return Boolean(npc) && (isUnnamedIndexRecord(npc, "npc") || npcOnlyUnnamedMaps(npc));
+}
+
+function showIndexRecord(record, type = "") {
+  return state.showUnnamedIndex || !isUnnamedIndexRecord(record, type);
+}
+
+function visibleIndexRows(rows = [], type = "") {
+  return rows.filter(row => showIndexRecord(row, type));
+}
+
+function hasUnnamedTextRefs(quest) {
+  const refs = quest.textRefs || quest.refs || {};
+  return (refs.items || []).some(item => isUnnamedIndexRecord(item, "item"))
+    || (refs.monsters || []).some(monster => isUnnamedIndexRecord(monster, "monster"))
+    || (refs.npcs || []).some(npc => isUnnamedIndexRecord(npc, "npc"))
+    || (refs.maps || []).some(map => isUnnamedIndexRecord(map, "map"));
+}
+
+function questHiddenByUnnamedIndex(quest) {
+  if (state.showUnnamedIndex) return false;
+  if (mainQuestNpcBlocked(quest.startNpc) || mainQuestNpcBlocked(quest.endNpc)) return true;
+  const requirements = [quest.startRequirements, quest.completeRequirements].filter(Boolean);
+  if (requirements.some(group => mainQuestNpcBlocked(group.npc))) return true;
+  if (requirements.some(group => (group.quests || []).some(row => isUnnamedIndexRecord(row, "quest")))) return true;
+  if (requirements.some(group => (group.items || []).some(row => isUnnamedIndexRecord(row, "item")))) return true;
+  if (requirements.some(group => (group.monsters || []).some(row => isUnnamedIndexRecord(row, "monster")))) return true;
+  if (hasUnnamedTextRefs(quest)) return true;
+  return false;
+}
+
 function levelText(quest) {
   if (quest.minLevel && quest.maxLevel) return `Lv.${quest.minLevel}-${quest.maxLevel}`;
   if (quest.minLevel) return `Lv.${quest.minLevel}+`;
@@ -302,17 +485,18 @@ function levelMatches(quest) {
 function searchableText(quest) {
   const reqs = [quest.startRequirements, quest.completeRequirements].filter(Boolean);
   const acts = [quest.startRewards, quest.completeRewards].filter(Boolean);
-  const reqItems = reqs.flatMap(row => row.items || []);
-  const reqMobs = reqs.flatMap(row => row.monsters || []);
-  const reqQuests = reqs.flatMap(row => row.quests || []);
-  const reqNpcs = reqs.map(row => row.npc).filter(Boolean);
-  const rewardItems = acts.flatMap(row => row.items || []);
-  const dependentQuests = quest.dependentQuests || [];
+  const reqItems = visibleIndexRows(reqs.flatMap(row => row.items || []), "item");
+  const reqMobs = visibleIndexRows(reqs.flatMap(row => row.monsters || []), "monster");
+  const reqQuests = visibleIndexRows(reqs.flatMap(row => row.quests || []), "quest");
+  const reqNpcs = visibleIndexRows(reqs.map(row => row.npc).filter(Boolean), "npc");
+  const rewardItems = visibleIndexRows(acts.flatMap(row => row.items || []), "item");
+  const dependentQuests = visibleIndexRows(quest.dependentQuests || [], "quest");
   const refs = quest.refs || {};
-  const allNpcs = [quest.startNpc, quest.endNpc, ...reqNpcs, ...(refs.npcs || [])].filter(Boolean);
+  const allNpcs = visibleIndexRows([quest.startNpc, quest.endNpc, ...reqNpcs, ...(refs.npcs || [])].filter(Boolean), "npc");
   const linkedQuestNpcs = [quest.nextQuest, ...dependentQuests, ...reqQuests]
     .flatMap(row => [row?.startNpc, row?.endNpc])
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(row => showIndexRecord(row, "npc"));
   return [
     quest.id,
     quest.name,
@@ -324,23 +508,24 @@ function searchableText(quest) {
       npc.locationText,
       ...(npc.maps || []).flatMap(map => [map.id, map.name, map.street, map.label]),
     ]),
-    quest.nextQuest?.name,
-    quest.nextQuest?.id,
+    showIndexRecord(quest.nextQuest, "quest") ? quest.nextQuest?.name : "",
+    showIndexRecord(quest.nextQuest, "quest") ? quest.nextQuest?.id : "",
     ...dependentQuests.flatMap(row => [row.id, row.name, row.category, row.parent]),
     ...(quest.texts || []).map(row => row.text),
     ...reqItems.flatMap(item => [item.id, item.name, item.category]),
     ...rewardItems.flatMap(item => [item.id, item.name, item.category]),
     ...reqMobs.flatMap(monster => [monster.id, monster.name]),
     ...reqQuests.flatMap(row => [row.id, row.name]),
-    ...(refs.items || []).flatMap(item => [item.id, item.name]),
-    ...(refs.monsters || []).flatMap(monster => [monster.id, monster.name]),
-    ...(refs.maps || []).flatMap(map => [map.id, map.name, map.street]),
+    ...visibleIndexRows(refs.items || [], "item").flatMap(item => [item.id, item.name]),
+    ...visibleIndexRows(refs.monsters || [], "monster").flatMap(monster => [monster.id, monster.name]),
+    ...visibleIndexRows(refs.maps || [], "map").flatMap(map => [map.id, map.name, map.street]),
   ].map(norm).join(" ");
 }
 
 function filteredQuests() {
   const q = norm(state.query);
   return (db.quests || []).filter(quest => {
+    if (questHiddenByUnnamedIndex(quest)) return false;
     if (state.category && quest.category !== state.category) return false;
     if (!levelMatches(quest)) return false;
     const searchText = state.nameOnlySearch ? norm(quest.name) : searchableText(quest);
@@ -353,15 +538,31 @@ function questById(questId) {
   return (db.quests || []).find(quest => String(quest.id) === String(questId));
 }
 
+function questMinLevel(quest) {
+  const level = Number(quest.minLevel);
+  return Number.isFinite(level) && level > 0 ? level : null;
+}
+
 function compareQuests(a, b) {
-  const categoryDiff = Number(a.categoryOrder || 9999) - Number(b.categoryOrder || 9999);
+  const categoryOrderDiff = Number(a.categoryOrder || 9999) - Number(b.categoryOrder || 9999);
+  if (categoryOrderDiff) return categoryOrderDiff;
+  const categoryDiff = String(a.category || "").localeCompare(String(b.category || ""), "zh-Hant");
   if (categoryDiff) return categoryDiff;
+  const aLevel = questMinLevel(a);
+  const bLevel = questMinLevel(b);
+  const nameDiff = String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
+  if (aLevel === null && bLevel === null) {
+    if (nameDiff) return nameDiff;
+  } else if (aLevel === null) {
+    return -1;
+  } else if (bLevel === null) {
+    return 1;
+  } else if (aLevel !== bLevel) {
+    return aLevel - bLevel;
+  }
+  if (nameDiff) return nameDiff;
   const orderDiff = Number(a.order || 999999) - Number(b.order || 999999);
   if (orderDiff) return orderDiff;
-  const levelDiff = Number(a.minLevel || 9999) - Number(b.minLevel || 9999);
-  if (levelDiff) return levelDiff;
-  const nameDiff = String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
-  if (nameDiff) return nameDiff;
   return Number(a.id) - Number(b.id);
 }
 
@@ -389,10 +590,12 @@ function clearSearchFilters() {
   state.levelMin = "";
   state.levelMax = "";
   state.nameOnlySearch = false;
+  state.showUnnamedIndex = false;
   writeCookie("ms_quest_category", "");
   writeCookie("ms_quest_level_min", "");
   writeCookie("ms_quest_level_max", "");
   writeCookie("ms_quest_name_only_search", "");
+  saveBool("ms_quest_show_unnamed_index", false);
   if (els.search) els.search.value = "";
   syncControls();
   render();
@@ -405,6 +608,10 @@ function updateToggles() {
   }
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
+  if (els.unnamedIndexToggle) {
+    els.unnamedIndexToggle.setAttribute("aria-pressed", String(state.showUnnamedIndex));
+    els.unnamedIndexToggle.textContent = state.showUnnamedIndex ? "隱藏未命名索引" : "顯示未命名索引";
+  }
 }
 
 function updateSettingsPanel() {
@@ -438,7 +645,6 @@ function renderList() {
           <span class="rowMeta">${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}</span>
           <em>${escapeHtml(npcLine)}</em>
         </span>
-        <small>${questRewardCount(quest)}</small>
       </button>
     `;
   }).join("") + limitNote;
@@ -446,12 +652,13 @@ function renderList() {
 
 function questRewardCount(quest) {
   const complete = quest.completeRewards || {};
-  return (complete.items || []).filter(item => item.action === "give").length;
+  return visibleIndexRows(complete.items || [], "item").filter(item => item.action === "give").length;
 }
 
 function selectedQuest() {
   const rows = filteredQuests();
-  return (state.preserveSelectedDetail && questById(state.selectedId))
+  const preserved = state.preserveSelectedDetail ? questById(state.selectedId) : null;
+  return (preserved && !questHiddenByUnnamedIndex(preserved) && preserved)
     || rows.find(quest => String(quest.id) === String(state.selectedId))
     || rows[0];
 }
@@ -490,13 +697,15 @@ function totalRequirementCount(quest) {
 }
 
 function countRequirementGroup(group = {}) {
-  return (group.items || []).length + (group.monsters || []).length + (group.quests || []).length;
+  return visibleIndexRows(group.items || [], "item").length
+    + visibleIndexRows(group.monsters || [], "monster").length
+    + visibleIndexRows(group.quests || [], "quest").length;
 }
 
 function totalRewardCount(quest) {
   const acts = [quest.startRewards, quest.completeRewards].filter(Boolean);
   return acts.reduce((sum, act) => {
-    return sum + (act.exp ? 1 : 0) + (act.money ? 1 : 0) + (act.pop ? 1 : 0) + (act.nextQuest ? 1 : 0) + (act.items || []).filter(item => item.action === "give").length;
+    return sum + (act.exp ? 1 : 0) + (act.money ? 1 : 0) + (act.pop ? 1 : 0) + (act.nextQuest ? 1 : 0) + visibleIndexRows(act.items || [], "item").filter(item => item.action === "give").length;
   }, 0);
 }
 
@@ -522,6 +731,8 @@ function renderQuestTexts(quest) {
 }
 
 function renderQuestMeta(quest) {
+  const startNpc = showIndexRecord(quest.startNpc, "npc") ? quest.startNpc : null;
+  const endNpc = showIndexRecord(quest.endNpc, "npc") ? quest.endNpc : null;
   const rows = [
     ["分類", quest.category],
     ["任務線", quest.parent || "無"],
@@ -535,8 +746,8 @@ function renderQuestMeta(quest) {
       </div>
       <div class="statsGrid">
         ${rows.map(([label, value]) => `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}
-        ${npcStatCell("接取 NPC", quest.startNpc)}
-        ${npcStatCell("完成 NPC", quest.endNpc)}
+        ${npcStatCell("接取 NPC", startNpc)}
+        ${npcStatCell("完成 NPC", endNpc)}
       </div>
     </section>
   `;
@@ -544,26 +755,30 @@ function renderQuestMeta(quest) {
 
 function renderRequirements(title, group = {}) {
   const parts = [];
-  if (group.minLevel || group.maxLevel || group.npc || group.jobs?.length) {
+  const npc = showIndexRecord(group.npc, "npc") ? group.npc : null;
+  const items = visibleIndexRows(group.items || [], "item");
+  const monsters = visibleIndexRows(group.monsters || [], "monster");
+  if (group.minLevel || group.maxLevel || npc || group.jobs?.length) {
     parts.push(`
       <div class="requirementGroup">
         <strong>基本條件</strong>
         <div class="statsGrid compactStats">
-          ${group.npc ? npcStatCell("NPC", group.npc) : ""}
+          ${npc ? npcStatCell("NPC", npc) : ""}
           ${(group.minLevel || group.maxLevel) ? `<div class="statCell"><span>等級</span><strong>${escapeHtml(levelText({ minLevel: group.minLevel, maxLevel: group.maxLevel }))}</strong></div>` : ""}
           ${group.jobs?.length ? `<div class="statCell"><span>職業</span><strong>${escapeHtml(formatJobs(group.jobs))}</strong></div>` : ""}
         </div>
       </div>
     `);
   }
-  if (group.quests?.length) {
-    parts.push(`<div class="requirementGroup"><strong>前置任務</strong><div class="linkGrid">${group.quests.map(questLink).join("")}</div></div>`);
+  const quests = visibleIndexRows(group.quests || [], "quest");
+  if (quests.length) {
+    parts.push(`<div class="requirementGroup"><strong>前置任務</strong><div class="linkGrid">${quests.map(questLink).join("")}</div></div>`);
   }
-  if (group.items?.length) {
-    parts.push(`<div class="requirementGroup"><strong>需求道具</strong><div class="linkGrid">${group.items.map(itemLink).join("")}</div></div>`);
+  if (items.length) {
+    parts.push(`<div class="requirementGroup"><strong>需求道具</strong><div class="linkGrid">${items.map(itemLink).join("")}</div></div>`);
   }
-  if (group.monsters?.length) {
-    parts.push(`<div class="requirementGroup"><strong>需求怪物</strong><div class="linkGrid">${group.monsters.map(monsterLink).join("")}</div></div>`);
+  if (monsters.length) {
+    parts.push(`<div class="requirementGroup"><strong>需求怪物</strong><div class="linkGrid">${monsters.map(monsterLink).join("")}</div></div>`);
   }
   if (!parts.length) return "";
   return `
@@ -596,8 +811,10 @@ function formatJobs(jobs) {
 }
 
 function renderRewards(title, act = {}, nextQuest = null) {
-  const rewards = (act.items || []).filter(item => item.action === "give");
-  const removes = (act.items || []).filter(item => item.action === "remove");
+  const visibleItems = visibleIndexRows(act.items || [], "item");
+  const rewards = visibleItems.filter(item => item.action === "give");
+  const removes = visibleItems.filter(item => item.action === "remove");
+  const visibleNextQuest = nextQuest && showIndexRecord(nextQuest, "quest") ? nextQuest : null;
   const stats = [];
   if (act.exp) stats.push(["經驗值", formatNumber(act.exp)]);
   if (act.money) stats.push(["楓幣", formatNumber(act.money)]);
@@ -607,28 +824,61 @@ function renderRewards(title, act = {}, nextQuest = null) {
     parts.push(`<div class="requirementGroup"><strong>數值獎勵</strong><div class="statsGrid compactStats">${stats.map(([label, value]) => `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}</div></div>`);
   }
   if (rewards.length) {
-    parts.push(`<div class="requirementGroup"><strong>獲得道具</strong><div class="linkGrid">${rewards.map(itemLink).join("")}</div></div>`);
+    parts.push(`<div class="requirementGroup"><strong>獲得道具</strong><div class="dropsGrid questRewardGrid">${rewards.map(item => questRewardItemCard(item, "獲得")).join("")}</div></div>`);
   }
   if (removes.length) {
-    parts.push(`<div class="requirementGroup"><strong>扣除道具</strong><div class="linkGrid">${removes.map(itemLink).join("")}</div></div>`);
+    parts.push(`<div class="requirementGroup"><strong>扣除道具</strong><div class="dropsGrid questRewardGrid">${removes.map(item => questRewardItemCard(item, "扣除")).join("")}</div></div>`);
   }
-  if (nextQuest) {
-    parts.push(`<div class="requirementGroup"><strong>後續任務</strong><div class="linkGrid">${questLink(nextQuest)}</div></div>`);
+  if (visibleNextQuest) {
+    parts.push(`<div class="requirementGroup"><strong>後續任務</strong><div class="linkGrid">${questLink(visibleNextQuest)}</div></div>`);
   }
   if (!parts.length) return "";
+  const showToggle = rewards.length || removes.length;
+  const toggle = showToggle
+    ? `<button class="inlineToggleButton questRewardDetailsToggle" type="button" aria-pressed="${state.showQuestRewardItemDetails ? "true" : "false"}">${state.showQuestRewardItemDetails ? "隱藏道具詳細資訊" : "顯示道具詳細資訊"}</button>`
+    : "";
   return `
     <section class="sectionBlock">
-      <div class="sectionTitle">
+      <div class="sectionTitle dropSectionTitle">
         <h3>${escapeHtml(title)}</h3>
-        <span>${(stats.length + rewards.length + removes.length + (nextQuest ? 1 : 0)).toLocaleString()} 項</span>
+        <div class="sectionTitleActions">
+          ${toggle}
+          <span>${(stats.length + rewards.length + removes.length + (visibleNextQuest ? 1 : 0)).toLocaleString()} 項</span>
+        </div>
       </div>
       <div class="questGroups">${parts.join("")}</div>
     </section>
   `;
 }
 
+function questRewardItemCard(item, actionLabel = "獎勵") {
+  const metaParts = [];
+  metaParts.push(`${actionLabel} ${formatNumber(item.count || 1)} 個`);
+  if (item.random) metaParts.push("隨機");
+  metaParts.push(itemTypeText(item));
+  if (state.showIds) metaParts.push(`ID ${item.id}`);
+  const meta = metaParts.map(escapeHtml).join(" · ");
+  const requirementRows = equipRequirementRowsHtml(item);
+  const rangeRows = equipRangeRowsHtml(item);
+  const upgradeRows = equipUpgradeRowsHtml(item);
+  const equipmentDetails = `${requirementRows}${rangeRows}${upgradeRows}`;
+  const fallbackDescription = item.desc ? `<p>${escapeHtml(shorten(item.desc, 92))}</p>` : "";
+  const detailHtml = state.showQuestRewardItemDetails
+    ? `<span>${meta}</span>${equipmentDetails || fallbackDescription}`
+    : "";
+  return `
+    <a class="itemCard itemLinkCard ${state.showQuestRewardItemDetails ? "" : "compactDropItemCard"}" href="${itemUrl(item.id)}">
+      ${assetImage(item.image, item.name, String(item.name || "?").slice(0, 1), "itemIcon")}
+      <div class="itemText">
+        <strong>${escapeHtml(item.name)}</strong>
+        ${detailHtml}
+      </div>
+    </a>
+  `;
+}
+
 function renderContinuationQuests(quest) {
-  const rows = quest.dependentQuests || [];
+  const rows = visibleIndexRows(quest.dependentQuests || [], "quest");
   if (!rows.length) return "";
   return `
     <section class="sectionBlock">
@@ -648,11 +898,15 @@ function renderContinuationQuests(quest) {
 
 function renderRefs(quest) {
   const refs = quest.refs || {};
+  const npcs = visibleIndexRows(refs.npcs || [], "npc");
+  const items = visibleIndexRows(refs.items || [], "item");
+  const monsters = visibleIndexRows(refs.monsters || [], "monster");
+  const maps = visibleIndexRows(refs.maps || [], "map");
   const parts = [];
-  if (refs.npcs?.length) parts.push(`<div class="requirementGroup"><strong>相關 NPC</strong><div class="linkGrid">${refs.npcs.map(npcChip).join("")}</div></div>`);
-  if (refs.items?.length) parts.push(`<div class="requirementGroup"><strong>文字提及道具</strong><div class="linkGrid">${refs.items.map(itemLink).join("")}</div></div>`);
-  if (refs.monsters?.length) parts.push(`<div class="requirementGroup"><strong>文字提及怪物</strong><div class="linkGrid">${refs.monsters.map(monsterLink).join("")}</div></div>`);
-  if (refs.maps?.length) parts.push(`<div class="requirementGroup"><strong>文字提及地圖</strong><div class="linkGrid">${refs.maps.map(mapChip).join("")}</div></div>`);
+  if (npcs.length) parts.push(`<div class="requirementGroup"><strong>相關 NPC</strong><div class="linkGrid">${npcs.map(npcChip).join("")}</div></div>`);
+  if (items.length) parts.push(`<div class="requirementGroup"><strong>文字提及道具</strong><div class="linkGrid">${items.map(itemLink).join("")}</div></div>`);
+  if (monsters.length) parts.push(`<div class="requirementGroup"><strong>文字提及怪物</strong><div class="linkGrid">${monsters.map(monsterLink).join("")}</div></div>`);
+  if (maps.length) parts.push(`<div class="requirementGroup"><strong>文字提及地圖</strong><div class="linkGrid">${maps.map(mapChip).join("")}</div></div>`);
   if (!parts.length) return "";
   return `
     <section class="sectionBlock">
@@ -766,6 +1020,12 @@ els.levelMax.addEventListener("input", event => handleQuestLevelInput("levelMax"
 
 els.clearFilters.addEventListener("click", clearSearchFilters);
 
+els.unnamedIndexToggle.addEventListener("click", () => {
+  state.showUnnamedIndex = !state.showUnnamedIndex;
+  saveBool("ms_quest_show_unnamed_index", state.showUnnamedIndex);
+  render();
+});
+
 els.idToggle.addEventListener("click", () => {
   state.showIds = !state.showIds;
   saveBool("ms_show_ids", state.showIds);
@@ -780,6 +1040,14 @@ els.settingsToggle.addEventListener("click", () => {
   state.settingsOpen = !state.settingsOpen;
   saveBool("ms_settings_open", state.settingsOpen);
   updateSettingsPanel();
+});
+
+els.detail.addEventListener("click", event => {
+  const button = event.target.closest(".questRewardDetailsToggle");
+  if (!button) return;
+  state.showQuestRewardItemDetails = !state.showQuestRewardItemDetails;
+  saveBool("ms_monster_drop_item_details", state.showQuestRewardItemDetails);
+  renderDetail();
 });
 
 els.list.addEventListener("click", event => {

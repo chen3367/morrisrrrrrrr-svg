@@ -3,70 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleStory Classic 世界地圖</title>
+  <title>MapleStory Classic 地圖</title>
   <link rel="icon" href="data:," />
+  <meta http-equiv="refresh" content="0; url=./maps.html?view=world" />
   <script>
     (function () {
-      function readCookie(name) {
-        try {
-          var prefix = encodeURIComponent(name) + "=";
-          var rows = document.cookie ? document.cookie.split("; ") : [];
-          for (var i = 0; i < rows.length; i += 1) {
-            if (rows[i].indexOf(prefix) === 0) return decodeURIComponent(rows[i].slice(prefix.length));
-          }
-        } catch (_error) {}
-        return "";
-      }
-      try {
-        var cookieTheme = readCookie("ms_theme");
-        var storedTheme = cookieTheme || (localStorage.getItem("ms-theme") === "dark" ? "dark" : "light");
-        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
-      } catch (_error) {
-        document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
-      }
+      var target = new URL("./maps.html", window.location.href);
+      target.searchParams.set("view", "world");
+      var params = new URLSearchParams(window.location.search);
+      params.forEach(function (value, key) {
+        if (key !== "view") target.searchParams.set(key, value);
+      });
+      if (window.location.hash) target.hash = window.location.hash;
+      window.location.replace(target.href);
     })();
   </script>
-  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="appHeader">
-    <div class="titleArea">
-      <h1>世界地圖</h1>
-      <nav class="topNav" aria-label="頁面切換">
-        <a href="./index.html">怪物</a>
-        <a href="./items.html">道具</a>
-        <a href="./quests.html">任務</a>
-        <a href="./maps.html">地圖</a>
-        <a class="active" href="./worldmaps.html">世界地圖</a>
-        <a href="./skills.html">技能</a>
-        <a href="./patch-notes.html">更新</a>
-      </nav>
-      <div class="buildMeta" id="buildMeta"></div>
-    </div>
-    <div class="searchWrap">
-      <input id="worldMapSearch" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入地圖、地區或 ID" />
-      <datalist id="searchHistoryOptions"></datalist>
-      <label id="nameOnlySearchControl" class="nameOnlySearchControl">
-        <input id="nameOnlySearch" type="checkbox" autocomplete="off" />
-        <span>只搜尋名稱</span>
-      </label>
-      <button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button>
-      <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
-      <span id="resultCount"></span>
-      <div id="settingsPanel" class="settingsPanel" hidden>
-        <button id="clearFilters" class="toggleButton clearFiltersButton" type="button">清除條件</button>
-        <button id="worldSubMapToggle" class="toggleButton" type="button" aria-pressed="false">顯示子地圖</button>
-        <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="layout worldMapLayout">
-    <aside class="monsterList worldRegionList" id="worldRegionList"></aside>
-    <section class="detail worldMapDetail" id="worldMapDetail"></section>
-  </main>
-
-  <script src="./worldmaps-data.js"></script>
-  <script src="./worldmaps.js"></script>
+  <p>正在前往 <a href="./maps.html?view=world">地圖：世界地圖</a></p>
 </body>
 </html>

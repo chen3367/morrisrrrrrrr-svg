@@ -128,7 +128,7 @@ const state = {
   showUnnamedMapMonsters: initialShowUnnamedMapMonsters(),
   showItemMakeCrafts: cookieBool("ms_show_item_make_crafts"),
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
-  showDuplicateNoSourceItems: initialShowDuplicateNoSourceItems(),
+  hideNoSourceItems: cookieBool("ms_hide_no_source_items", true),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
@@ -151,7 +151,7 @@ const els = {
   unnamedMapToggle: document.getElementById("unnamedMapToggle"),
   itemMakeCraftToggle: document.getElementById("itemMakeCraftToggle"),
   unnamedToggle: document.getElementById("unnamedToggle"),
-  duplicateNoSourceToggle: document.getElementById("duplicateNoSourceToggle"),
+  hideNoSourceToggle: document.getElementById("hideNoSourceToggle"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
   settingsToggle: document.getElementById("settingsToggle"),
@@ -214,12 +214,6 @@ function initialShowUnnamedMapMonsters() {
   return cookieBool("ms_show_unnamed_map_monsters");
 }
 
-function initialShowDuplicateNoSourceItems() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("showNoSource") === "1") return true;
-  return cookieBool("ms_show_duplicate_no_source_items");
-}
-
 function setItemUrl(itemId) {
   if (!itemId) return;
   const url = new URL(window.location.href);
@@ -251,7 +245,7 @@ function itemUrl(itemId) {
 }
 
 function questNpcImage(row, className = "sourceMonsterImage") {
-  const npc = row.startNpc || row.endNpc || null;
+  const npc = row.sourceNpc || row.rewardNpc || row.startNpc || row.endNpc || null;
   return assetImage(npc?.image, npc?.name || row.questName || "任務", "任", className);
 }
 
@@ -304,7 +298,7 @@ const EQUIP_FIELD_GROUPS = [
 const EQUIPMENT_CATEGORY = "裝備";
 const EQUIPMENT_GROUP_SUBCATEGORIES = {
   armor: ["上衣", "手套", "盾牌", "套服", "帽子", "披風", "鞋子", "褲裙"],
-  weapon: ["弓", "火槍", "矛", "弩", "長杖", "指虎", "拳套", "單手斧", "單手鈍器", "單手劍", "短刀", "短杖", "槍", "雙手斧", "雙手鈍器", "雙手劍"],
+  weapon: ["弓", "火槍", "矛", "弩", "長杖", "指虎", "拳套", "單手斧", "單手棍", "單手劍", "短刀", "短杖", "槍", "雙手斧", "雙手棍", "雙手劍"],
   accessory: ["耳環", "戒指", "眼飾", "腰帶", "墜飾", "勳章", "臉飾"],
   other: ["裝備", "騎寵", "騎寵鞍座"],
 };
@@ -533,8 +527,21 @@ function isUnnamedItem(item) {
   return item.unnamed || /^未命名道具\s+\d+$/.test(String(item.name || ""));
 }
 
-function idMeta(id) {
-  return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
+function itemMatchesId(item, itemId) {
+  if (itemId === null || itemId === undefined || itemId === "") return false;
+  const target = String(itemId);
+  if (String(item.id) === target) return true;
+  return (item.mergedIds || []).some(id => String(id) === target);
+}
+
+function idMeta(itemOrId) {
+  if (!state.showIds) return "";
+  if (itemOrId && typeof itemOrId === "object") {
+    const ids = (itemOrId.mergedIds || [itemOrId.id]).filter(id => id !== null && id !== undefined);
+    if (!ids.length) return "";
+    return ` · ID ${escapeHtml(ids[0])}${ids.length > 1 ? ` +${ids.length - 1}` : ""}`;
+  }
+  return ` · ID ${escapeHtml(itemOrId)}`;
 }
 
 function sourceRows(item) {
@@ -625,6 +632,7 @@ function searchableText(item) {
   ]);
   return [
     item.id,
+    ...(item.mergedIds || []),
     item.name,
     item.desc,
     item.kind,
@@ -731,7 +739,7 @@ function filteredItems() {
   const q = norm(state.query);
   return (db.items || []).filter(item => {
     if (!state.showUnnamedItems && isUnnamedItem(item)) return false;
-    if (!state.showDuplicateNoSourceItems && item.hiddenDuplicateNoSource) return false;
+    if (state.hideNoSourceItems && totalSources(item) <= 0) return false;
     if (state.category && item.category !== state.category) return false;
     if (state.subcategory && item.subcategory !== state.subcategory) return false;
     if (!itemMatchesEquipmentAdvancedFilters(item)) return false;
@@ -742,17 +750,33 @@ function filteredItems() {
 }
 
 function itemById(itemId) {
-  return (db.items || []).find(item => String(item.id) === String(itemId));
+  return (db.items || []).find(item => itemMatchesId(item, itemId));
+}
+
+function itemRequiredLevel(item) {
+  const level = Number(item.equipStats?.reqLevel);
+  return Number.isFinite(level) && level > 0 ? level : null;
 }
 
 function compareItems(a, b) {
+  const aLevel = itemRequiredLevel(a);
+  const bLevel = itemRequiredLevel(b);
+  const nameDiff = String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
+  if (aLevel === null && bLevel === null) {
+    if (nameDiff) return nameDiff;
+  } else if (aLevel === null) {
+    return -1;
+  } else if (bLevel === null) {
+    return 1;
+  } else if (aLevel !== bLevel) {
+    return aLevel - bLevel;
+  }
   const orderDiff = Number(a.categoryOrder || 999) - Number(b.categoryOrder || 999);
   if (orderDiff) return orderDiff;
   const categoryDiff = String(a.category || "").localeCompare(String(b.category || ""), "zh-Hant");
   if (categoryDiff) return categoryDiff;
   const subcategoryDiff = String(a.subcategory || "").localeCompare(String(b.subcategory || ""), "zh-Hant");
   if (subcategoryDiff) return subcategoryDiff;
-  const nameDiff = String(a.name || "").localeCompare(String(b.name || ""), "zh-Hant");
   if (nameDiff) return nameDiff;
   return Number(a.id) - Number(b.id);
 }
@@ -787,7 +811,7 @@ function clearSearchFilters() {
   state.showUnnamedMapMonsters = false;
   state.showItemMakeCrafts = false;
   state.showUnnamedItems = false;
-  state.showDuplicateNoSourceItems = false;
+  state.hideNoSourceItems = true;
   clearEquipmentFilters(true);
   writeCookie("ms_item_category", "");
   writeCookie("ms_item_subcategory", "");
@@ -795,7 +819,7 @@ function clearSearchFilters() {
   saveBool("ms_show_unnamed_map_monsters", false);
   saveBool("ms_show_item_make_crafts", false);
   saveBool("ms_show_unnamed_items", false);
-  saveBool("ms_show_duplicate_no_source_items", false);
+  saveBool("ms_hide_no_source_items", true);
   if (els.search) els.search.value = "";
   syncControls();
   setItemUrl(state.selectedId);
@@ -899,8 +923,8 @@ function updateToggles() {
   els.itemMakeCraftToggle.textContent = state.showItemMakeCrafts ? "隱藏強化合成配方" : "顯示強化合成配方";
   els.unnamedToggle.setAttribute("aria-pressed", String(state.showUnnamedItems));
   els.unnamedToggle.textContent = state.showUnnamedItems ? "隱藏未命名道具" : "顯示未命名道具";
-  els.duplicateNoSourceToggle.setAttribute("aria-pressed", String(state.showDuplicateNoSourceItems));
-  els.duplicateNoSourceToggle.textContent = state.showDuplicateNoSourceItems ? "隱藏重複無來源道具" : "顯示重複無來源道具";
+  els.hideNoSourceToggle.setAttribute("aria-pressed", String(state.hideNoSourceItems));
+  els.hideNoSourceToggle.textContent = state.hideNoSourceItems ? "顯示無來源道具" : "隱藏無來源道具";
 }
 
 function updateSettingsPanel() {
@@ -914,7 +938,7 @@ function updateSettingsPanel() {
 
 function renderList() {
   const rows = filteredItems();
-  if (!rows.some(item => String(item.id) === String(state.selectedId))) {
+  if (!rows.some(item => itemMatchesId(item, state.selectedId))) {
     const preserved = state.preserveSelectedDetail && itemById(state.selectedId);
     if (!preserved) state.selectedId = rows[0]?.id || null;
   }
@@ -924,14 +948,13 @@ function renderList() {
     ? `<div class="listLimit">已顯示前 ${visibleRows.length.toLocaleString()} 項</div>`
     : "";
   els.list.innerHTML = visibleRows.map(item => `
-    <button class="monsterRow itemIndexRow ${String(item.id) === String(state.selectedId) ? "active" : ""}" data-id="${item.id}">
+    <button class="monsterRow itemIndexRow ${itemMatchesId(item, state.selectedId) ? "active" : ""}" data-id="${item.id}">
       ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemGlyph")}
       <span class="rowText">
         <strong>${escapeHtml(item.name)}</strong>
-        <span class="rowMeta">${escapeHtml(itemTypeText(item))}${idMeta(item.id)}</span>
+        <span class="rowMeta">${escapeHtml(itemTypeText(item))}${idMeta(item)}</span>
         <em>${escapeHtml(sourceSummary(item))}</em>
       </span>
-      <small>${formatNumber(totalSources(item))}</small>
     </button>
   `).join("") + limitNote;
 }
@@ -944,7 +967,7 @@ function totalSources(item) {
 function selectedItem() {
   const rows = filteredItems();
   return (state.preserveSelectedDetail && itemById(state.selectedId))
-    || rows.find(item => String(item.id) === String(state.selectedId))
+    || rows.find(item => itemMatchesId(item, state.selectedId))
     || rows[0];
 }
 
@@ -960,7 +983,7 @@ function renderDetail() {
       ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemMark")}
       <div class="heroText">
         <h2>${escapeHtml(item.name)}</h2>
-        <p>${escapeHtml(itemTypeText(item))}${idMeta(item.id)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
+        <p>${escapeHtml(itemTypeText(item))}${idMeta(item)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${formatNumber(totalSources(item))}</strong><span>來源</span></div>
@@ -1073,17 +1096,24 @@ function renderMonsterSources(item) {
 
 function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
-  return sourceBlock("任務獲取", rows, row => `
+  return sourceBlock("任務獲取", rows, row => {
+    const meta = [`${formatNumber(row.count)} 個`];
+    if (row.random) meta.push("隨機獎勵");
+    if (row.sourceLabel && row.sourceLabel !== "任務獎勵") meta.push(row.sourceLabel);
+    const sourceNpc = row.sourceNpc || row.rewardNpc || null;
+    if (sourceNpc?.name) meta.push(sourceNpc.name);
+    return `
     <a class="sourceRow sourceLinkRow sourceQuestRow" href="${questUrl(row.questId)}">
       ${questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
         <span>${questStateLabel(row.state)}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
-        <p>${formatNumber(row.count)} 個${row.random ? " · 隨機獎勵" : ""}</p>
+        <p>${escapeHtml(meta.join(" · "))}</p>
       </div>
       <small>任務</small>
     </a>
-  `);
+  `;
+  });
 }
 
 function shopPriceHtml(row) {
@@ -1412,10 +1442,10 @@ els.unnamedToggle.addEventListener("click", () => {
   render();
 });
 
-els.duplicateNoSourceToggle.addEventListener("click", () => {
+els.hideNoSourceToggle.addEventListener("click", () => {
   state.preserveSelectedDetail = false;
-  state.showDuplicateNoSourceItems = !state.showDuplicateNoSourceItems;
-  saveBool("ms_show_duplicate_no_source_items", state.showDuplicateNoSourceItems);
+  state.hideNoSourceItems = !state.hideNoSourceItems;
+  saveBool("ms_hide_no_source_items", state.hideNoSourceItems);
   render();
 });
 

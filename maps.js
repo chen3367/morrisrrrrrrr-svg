@@ -505,7 +505,17 @@ function filteredMaps() {
     const specialOk = state.showSpecialMaps || !isSpecialMap(map);
     const queryOk = !q || norm(state.nameOnlySearch ? mapNameSearchText(map) : mapSearchText(map)).includes(q);
     return regionOk && unnamedOk && specialOk && queryOk;
-  });
+  }).sort(compareMaps);
+}
+
+function compareMaps(a, b) {
+  const regionDiff = String(a.regionName || "未知地區").localeCompare(String(b.regionName || "未知地區"), "zh-Hant");
+  if (regionDiff) return regionDiff;
+  const nameDiff = String(a.name || a.label || "").localeCompare(String(b.name || b.label || ""), "zh-Hant");
+  if (nameDiff) return nameDiff;
+  const streetDiff = String(a.street || "").localeCompare(String(b.street || ""), "zh-Hant");
+  if (streetDiff) return streetDiff;
+  return Number(a.id) - Number(b.id);
 }
 
 function mapById(mapId) {
@@ -669,7 +679,6 @@ function renderList() {
           <span class="rowMeta">${escapeHtml(meta || "未知地區")}${idMeta(map.id)}</span>
           <em>${escapeHtml(spawnCount)} 個重生點 · ${escapeHtml(npcCount)} 個 NPC · ${escapeHtml(portalCount)} 個傳送點</em>
         </span>
-        <small>${formatNumber(spawnCount)}</small>
       </button>
     `;
   }).join("") + limitNote;
@@ -1250,6 +1259,8 @@ window.addEventListener("popstate", () => {
   state.preserveSelectedDetail = Boolean(state.selectedId);
   render();
 });
+
+window.filteredMaps = filteredMaps;
 
 applyTheme();
 renderBuildMeta();

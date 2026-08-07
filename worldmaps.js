@@ -224,13 +224,23 @@ function regionRows() {
   return db.worldMaps?.regions || [];
 }
 
+function regionSearchText(region) {
+  return [region.name, region.key].join(" ");
+}
+
 function selectedRegion() {
   const rows = regionRows();
+  const q = norm(state.query);
+  if (q) {
+    const matchedRegion = rows.find(region => norm(regionSearchText(region)).includes(q));
+    if (matchedRegion) return matchedRegion;
+  }
   return rows.find(region => region.key === state.selectedRegionKey) || rows[0] || null;
 }
 
 function setRegionUrl(regionKey) {
   const url = new URL(window.location.href);
+  url.searchParams.set("view", "world");
   url.searchParams.set("region", regionKey);
   window.history.replaceState(null, "", url);
 }
@@ -274,15 +284,15 @@ function visibleGraph(region) {
 
 function renderRegionList() {
   const rows = regionRows();
+  const activeRegionKey = selectedRegion()?.key || "";
   els.list.innerHTML = rows.map(region => `
-    <button class="monsterRow worldRegionRow ${region.key === state.selectedRegionKey ? "active" : ""}" data-region-key="${escapeHtml(region.key)}">
+    <button class="monsterRow worldRegionRow ${region.key === activeRegionKey ? "active" : ""}" data-region-key="${escapeHtml(region.key)}">
         ${regionThumb(region, "rowMonsterImage")}
         <span class="rowText">
           <strong>${escapeHtml(region.name)}</strong>
           <span class="rowMeta">${formatNumber(region.nodeCount)} 張地圖</span>
           ${state.showIds ? `<em>${escapeHtml(region.key)}</em>` : ""}
         </span>
-        <small>${formatNumber(region.edgeCount)} 條連線</small>
       </button>
   `).join("") || `<div class="empty">沒有世界地圖連通資料</div>`;
 }
@@ -528,7 +538,7 @@ function graphHtml(region, graph) {
     <section class="sectionBlock worldMapGraphBlock">
       <div class="sectionTitle">
         <h3>連通圖</h3>
-        <span>${formatNumber(graph.localNodes.length)} 張地圖 · ${formatNumber(graph.edges.length)} 條連線</span>
+        <span>${formatNumber(graph.localNodes.length)} 張地圖</span>
       </div>
       <div class="worldMapCanvasShell">
         <div class="worldMapCanvas ${region.image ? "withWorldMapImage" : ""}" style="${ratioStyle}${imageStyle}" aria-label="${escapeHtml(region.name)}">
@@ -575,7 +585,7 @@ function renderDetail() {
       ${regionThumb(region, "monsterMark")}
       <div class="heroText">
         <h2>${escapeHtml(region.name)}</h2>
-        <p>${formatNumber(graph.localNodes.length)} 張目前顯示 · ${formatNumber(graph.edges.length)} 條連通線${graph.hiddenSubMapCount ? ` · 隱藏 ${formatNumber(graph.hiddenSubMapCount)} 張子地圖` : ""}${idMeta(region.key)}</p>
+        <p>${formatNumber(graph.localNodes.length)} 張目前顯示${graph.hiddenSubMapCount ? ` · 隱藏 ${formatNumber(graph.hiddenSubMapCount)} 張子地圖` : ""}${idMeta(region.key)}</p>
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${formatNumber(graph.localNodes.length)}</strong><span>地圖</span></div>
