@@ -2995,6 +2995,9 @@ h3 {
   height: 0;
   border-top: 2px solid #2f7d5b;
 }
+.mobileDock {
+  display: none;
+}
 @media (min-width: 861px) {
   body {
     height: 100dvh;
@@ -3016,21 +3019,110 @@ h3 {
   }
 }
 @media (max-width: 860px) {
-  .appHeader { display: block; }
+  html {
+    height: 100%;
+  }
+  body {
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .appHeader {
+    display: grid;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 8px 10px;
+  }
+  .titleArea {
+    min-width: 0;
+    gap: 4px;
+  }
+  h1 {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+  .buildMeta {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 11px;
+  }
+  .topNav {
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .topNav::-webkit-scrollbar {
+    display: none;
+  }
+  .navMenuGroup {
+    display: contents;
+  }
+  .navMenuGroup summary {
+    display: none;
+  }
+  .navMenuLinks {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    border: 0;
+    padding: 0;
+  }
+  .topNav a {
+    min-height: 30px;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
   .searchWrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px 42px auto;
+    gap: 7px;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 0;
+  }
+  .searchWrap > input[type="search"] {
+    grid-column: 1 / -1;
+    min-width: 0;
+    min-height: 40px;
+  }
+  #resultCount {
+    align-self: center;
+    min-width: 42px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 850;
   }
   .settingsToggle,
   .themeIconButton {
     flex-basis: 42px;
   }
   .nameOnlySearchControl {
-    flex-basis: calc(100% - 104px);
+    grid-column: 1 / 2;
+    min-height: 40px;
+    min-width: 0;
+    padding: 0 10px;
     justify-content: center;
   }
+  .themeIconButton,
+  .settingsToggle {
+    min-height: 40px;
+    width: 42px;
+  }
   .settingsPanel {
-    padding: 9px;
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 58px;
+    z-index: 180;
+    max-height: min(62dvh, 520px);
+    overflow: auto;
+    padding: 10px;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.24);
+    overscroll-behavior: contain;
   }
   .advancedField {
     flex: 1 1 calc(50% - 10px);
@@ -3066,11 +3158,89 @@ h3 {
     flex-basis: 42px;
   }
   .layout {
-    grid-template-columns: 1fr;
-    height: auto;
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px 8px 64px;
   }
   .itemLayout, .skillLayout, .accuracyLayout, .mapLayout, .worldMapLayout, .simulatorLayout {
     grid-template-columns: 1fr;
+  }
+  .monsterList,
+  .detail {
+    height: 100%;
+    max-height: none;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  html[data-mobile-pane="list"] .detail,
+  html[data-mobile-pane="filters"] .detail,
+  html:not([data-mobile-pane]) .detail {
+    display: none;
+  }
+  html[data-mobile-pane="detail"] .monsterList,
+  html[data-mobile-pane="filters"] .monsterList {
+    display: none;
+  }
+  html[data-mobile-pane="list"] .simulatorControls.monsterList,
+  html[data-mobile-pane="list"] .damageControls.monsterList {
+    display: block;
+  }
+  html[data-mobile-pane="detail"] .simulatorControls.monsterList,
+  html[data-mobile-pane="detail"] .damageControls.monsterList {
+    display: none;
+  }
+  .patchNotesLayout {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px 8px 64px;
+  }
+  html[data-mobile-pane="list"] .patchNotesDetail,
+  html[data-mobile-pane="filters"] .patchNotesDetail,
+  html:not([data-mobile-pane]) .patchNotesDetail {
+    display: none;
+  }
+  html[data-mobile-pane="detail"] .patchVersionList,
+  html[data-mobile-pane="filters"] .patchVersionList {
+    display: none;
+  }
+  .mobileDock {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 190;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    padding: 7px;
+    border: 1px solid var(--control-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--panel) 94%, transparent);
+    box-shadow: 0 10px 34px rgba(15, 23, 42, 0.22);
+    backdrop-filter: blur(10px);
+  }
+  .mobileDock button {
+    min-width: 0;
+    min-height: 40px;
+    border: 1px solid var(--control-border);
+    border-radius: 9px;
+    background: var(--control-bg);
+    color: var(--control-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+  }
+  .mobileDock button.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--active-text);
+  }
+  .mobileDock button:disabled {
+    opacity: 0.48;
   }
   .patchNotesLayout {
     grid-template-columns: 1fr;
@@ -3090,25 +3260,60 @@ h3 {
   .patchDiffItemGrid {
     grid-template-columns: 1fr;
   }
-  .monsterList {
-    max-height: 36vh;
-  }
   .simulatorControls.monsterList {
     max-height: none;
-    overflow: visible;
+    overflow: auto;
   }
   .patchVersionList.monsterList {
     max-height: none;
   }
   .monsterHero {
     grid-template-columns: auto minmax(0, 1fr);
+    position: static;
+    padding: 11px;
   }
   .simHero {
     grid-template-columns: auto minmax(0, 1fr);
+    position: static;
+    padding: 11px;
+  }
+  .monsterMark,
+  .itemMark,
+  .questMark,
+  .skillMark {
+    width: 54px;
+    height: 54px;
+  }
+  h2 {
+    font-size: 22px;
+  }
+  .sectionTitle {
+    padding: 10px 11px 0;
+  }
+  .statsGrid,
+  .elementGrid,
+  .mapGrid,
+  .dropGroups,
+  .sourceList,
+  .textLines,
+  .questGroups,
+  .skillTableWrap,
+  .mapCanvasShell,
+  .worldMapCanvasShell,
+  .simIntro,
+  .simTableWrap,
+  .simSamples,
+  .simPolicyBox,
+  .successPreviewGrid,
+  .equipStats {
+    padding-left: 11px;
+    padding-right: 11px;
   }
   .heroCounters {
     grid-column: 1 / -1;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    justify-self: stretch;
   }
   .simHero .heroCounters {
     grid-column: 1 / -1;
@@ -3116,7 +3321,15 @@ h3 {
     justify-self: stretch;
   }
   .heroCounter {
-    text-align: left;
+    min-width: 0;
+    padding: 7px 6px;
+    text-align: center;
+  }
+  .heroCounter strong {
+    font-size: 20px;
+  }
+  .heroCounter span {
+    font-size: 12px;
   }
   .simTableGrid {
     grid-template-columns: 1fr;
@@ -3143,10 +3356,27 @@ h3 {
   }
   .worldMapCanvas {
     min-height: 360px;
+    overflow: auto;
+    touch-action: pan-x pan-y;
   }
   .worldNodeLabel {
-    max-width: 68px;
-    font-size: 10px;
+    max-width: 118px;
+    font-size: 11px;
+  }
+  .worldMapNode:hover .worldNodeLabel,
+  .worldMapNode:focus-visible .worldNodeLabel {
+    display: none;
+  }
+  .worldMapNode.labelOpen .worldNodeLabel,
+  .worldMapNode:focus-within .worldNodeLabel {
+    display: block;
+  }
+  .itemLinkCard:hover,
+  .sourceLinkRow:hover,
+  .mapLinkCard:hover,
+  .simPickerRow:hover,
+  .monsterRow:hover {
+    transform: none;
   }
   .accuracyPanel summary {
     grid-template-columns: 18px minmax(0, 1fr);
@@ -3170,5 +3400,21 @@ h3 {
   }
   .sourceStats {
     grid-template-columns: repeat(4, minmax(120px, 1fr));
+  }
+  .skillTable,
+  .simTable {
+    min-width: 0;
+  }
+  .skillTable th,
+  .skillTable td {
+    padding: 7px 8px;
+  }
+  .mapCanvas {
+    max-height: none;
+    overflow: auto;
+    touch-action: pan-x pan-y;
+  }
+  .mapMarker:hover {
+    outline: none;
   }
 }

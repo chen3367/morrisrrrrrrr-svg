@@ -119,7 +119,9 @@
         document.body.appendChild(script);
       }
       loadScript(isWorldMapView ? "./worldmaps-data.js" : "./maps-data.js", function () {
-        loadScript(isWorldMapView ? "./worldmaps.js" : "./maps.js");
+        loadScript(isWorldMapView ? "./worldmaps.js" : "./maps.js", function () {
+          loadScript("./mobile.js");
+        });
       });
     })();
   </script>

@@ -63,7 +63,19 @@ const state = {
   activeSkillBuffs: {},
   activePartySkillBuffs: {},
   partySkillBuffLevels: {},
+  selectedNormalBuffs: { pad: "", mad: "" },
   selectedItemBuffs: new Set(),
+};
+
+const DAMAGE_COOKIE_NAMES = {
+  baseStats: "ms_damage_base_stats",
+  equipStats: "ms_damage_equip_stats",
+  attackFields: "ms_damage_attack_fields",
+  skillLevels: "ms_damage_skill_levels",
+  partyBuffs: "ms_damage_party_buffs",
+  partyBuffLevels: "ms_damage_party_buff_levels",
+  normalBuffs: "ms_damage_normal_buffs",
+  itemBuffs: "ms_damage_item_buffs",
 };
 
 const el = {
@@ -92,10 +104,10 @@ const el = {
   skillReset: document.querySelector("#skillReset"),
   skillBudgetSummary: document.querySelector("#skillBudgetSummary"),
   skillLevelList: document.querySelector("#skillLevelList"),
-  skillBuffList: document.querySelector("#skillBuffList"),
-  itemBuffSearch: document.querySelector("#itemBuffSearch"),
-  itemBuffResults: document.querySelector("#itemBuffResults"),
-  selectedItemBuffs: document.querySelector("#selectedItemBuffs"),
+  specialBuffList: document.querySelector("#specialBuffList"),
+  normalBuffHint: document.querySelector("#normalBuffHint"),
+  normalBuffPicker: document.querySelector("#normalBuffPicker"),
+  normalBuffConfig: document.querySelector("#normalBuffConfig"),
   damageDetail: document.querySelector("#damageDetail"),
 };
 
@@ -115,11 +127,58 @@ function writeCookie(name, value) {
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
 }
 
+function deleteCookie(name) {
+  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+}
+
 function readToggle(name, fallback) {
   const value = readCookie(name);
   if (value === "true") return true;
   if (value === "false") return false;
   return fallback;
+}
+
+function readJsonCookie(name, fallback) {
+  const value = readCookie(name);
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed ?? fallback;
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function writeJsonCookie(name, value) {
+  writeCookie(name, JSON.stringify(value));
+}
+
+function compactNumberObject(source, allowedKeys = null, keepZero = false) {
+  const allowed = allowedKeys ? new Set(allowedKeys.map(String)) : null;
+  const result = {};
+  for (const [key, rawValue] of Object.entries(source || {})) {
+    if (allowed && !allowed.has(String(key))) continue;
+    const value = Math.floor(Number(rawValue));
+    if (Number.isFinite(value) && (value > 0 || (keepZero && value === 0))) result[String(key)] = value;
+  }
+  return result;
+}
+
+function readNumberObjectCookie(name, allowedKeys = null, keepZero = false) {
+  return compactNumberObject(readJsonCookie(name, {}), allowedKeys, keepZero);
+}
+
+function writeNumberObjectCookie(name, source, allowedKeys = null, keepZero = false) {
+  writeJsonCookie(name, compactNumberObject(source, allowedKeys, keepZero));
+}
+
+function readStringArrayCookie(name) {
+  const value = readJsonCookie(name, []);
+  return Array.isArray(value) ? value.map(String).filter(Boolean) : [];
+}
+
+function writeStringArrayCookie(name, values) {
+  writeJsonCookie(name, [...new Set(values || [])].map(String).filter(Boolean));
 }
 
 function escapeHtml(value) {
@@ -147,6 +206,214 @@ function numberInputValue(id, fallback = 0) {
   const input = typeof id === "string" ? document.querySelector(`#${id}`) : id;
   const value = Number(input?.value || 0);
   return Number.isFinite(value) ? value : fallback;
+}
+
+function readBooleanMapCookie(name, allowedKeys = null) {
+  const allowed = allowedKeys ? new Set(allowedKeys.map(String)) : null;
+  const raw = readJsonCookie(name, {});
+  const result = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return result;
+  for (const [key, value] of Object.entries(raw)) {
+    if ((!allowed || allowed.has(String(key))) && value === true) result[String(key)] = true;
+  }
+  return result;
+}
+
+function writeBooleanMapCookie(name, source, allowedKeys = null) {
+  const allowed = allowedKeys ? new Set(allowedKeys.map(String)) : null;
+  const result = {};
+  for (const [key, value] of Object.entries(source || {})) {
+    if ((!allowed || allowed.has(String(key))) && value === true) result[String(key)] = true;
+  }
+  writeJsonCookie(name, result);
+}
+
+function allowedPartyBuffIds() {
+  return (db.partySkillBuffs || []).map(buff => String(buff.id));
+}
+
+function allowedItemBuffIds() {
+  return new Set((db.itemBuffs || []).map(buff => String(buff.id)));
+}
+
+function isSpecialPartyBuff(buff) {
+  const values = partyBuffValues(buff);
+  return Boolean(values.statPercent || values.padPercent || values.madPercent || ["maple_warrior", "hero_echo"].includes(String(buff?.id)));
+}
+
+function normalBuffKind() {
+  return currentJob()?.kind === "magic" ? "mad" : "pad";
+}
+
+function normalBuffLabel(kind = normalBuffKind()) {
+  return kind === "mad" ? "魔法攻擊力" : "攻擊力";
+}
+
+function selectedNormalBuffId(kind = normalBuffKind()) {
+  return String(state.selectedNormalBuffs?.[kind] || "");
+}
+
+function setSelectedNormalBuff(kind, buffId) {
+  state.selectedNormalBuffs = {
+    pad: String(state.selectedNormalBuffs?.pad || ""),
+    mad: String(state.selectedNormalBuffs?.mad || ""),
+  };
+  state.selectedNormalBuffs[kind] = String(buffId || "");
+}
+
+function normalBuffCandidates(kind = normalBuffKind()) {
+  const rows = [{ id: "", type: "none", name: "無", image: "", effects: {}, source: "不套用" }];
+  for (const buff of db.partySkillBuffs || []) {
+    const values = partyBuffValues(buff);
+    const maxValues = (buff.levels || []).at(-1)?.effects || {};
+    if (isSpecialPartyBuff(buff)) continue;
+    if (!Number(values?.[kind] || maxValues?.[kind] || 0)) continue;
+    rows.push({
+      id: `skill:${buff.id}`,
+      type: "skill",
+      rawId: String(buff.id),
+      name: buff.name,
+      image: buff.image,
+      source: buff.source || "隊伍技能 BUFF",
+      effects: { [kind]: Number(values[kind] || 0) },
+      maxLevel: Number(buff.maxLevel || 0),
+      level: partyBuffLevel(buff),
+    });
+  }
+  for (const buff of db.itemBuffs || []) {
+    if (!Number(buff.effects?.[kind] || 0)) continue;
+    rows.push({
+      id: `item:${buff.id}`,
+      type: "item",
+      rawId: String(buff.id),
+      name: buff.name,
+      image: buff.image,
+      source: "道具 BUFF",
+      effects: { [kind]: Number(buff.effects[kind] || 0) },
+    });
+  }
+  rows.push({
+    id: `custom:${kind}`,
+    type: "custom",
+    name: "自訂",
+    image: "",
+    source: "手動輸入",
+    effects: { [kind]: kind === "mad" ? numberInputValue(el.manualMagicBuff) : numberInputValue(el.manualAttackBuff) },
+  });
+  return rows;
+}
+
+function selectedNormalBuff(kind = normalBuffKind()) {
+  const candidates = normalBuffCandidates(kind);
+  return candidates.find(buff => buff.id === selectedNormalBuffId(kind)) || candidates[0];
+}
+
+function normalBuffEffectText(buff, kind = normalBuffKind()) {
+  const value = Number(buff?.effects?.[kind] || 0);
+  if (!buff?.id) return `未套用${normalBuffLabel(kind)} BUFF`;
+  return `${normalBuffLabel(kind)} +${formatNumber(value)}`;
+}
+
+function persistNormalBuffs() {
+  writeJsonCookie(DAMAGE_COOKIE_NAMES.normalBuffs, {
+    pad: String(state.selectedNormalBuffs?.pad || ""),
+    mad: String(state.selectedNormalBuffs?.mad || ""),
+  });
+}
+
+function damageInputIds() {
+  return [
+    "weaponAttack",
+    "equipAttack",
+    "weaponMagic",
+    "equipMagic",
+    "manualAttackBuff",
+    "manualMagicBuff",
+  ];
+}
+
+function persistBaseStats() {
+  const values = {};
+  for (const stat of STAT_KEYS) values[stat] = numberInputValue(`base${stat.toUpperCase()}`, baseStatMinimum(stat));
+  writeNumberObjectCookie(DAMAGE_COOKIE_NAMES.baseStats, values, STAT_KEYS, true);
+}
+
+function persistEquipStats() {
+  const values = {};
+  for (const stat of STAT_KEYS) values[stat] = numberInputValue(`equip${stat.toUpperCase()}`, 0);
+  writeNumberObjectCookie(DAMAGE_COOKIE_NAMES.equipStats, values, STAT_KEYS, true);
+}
+
+function persistAttackFields() {
+  const values = {};
+  for (const id of damageInputIds()) values[id] = numberInputValue(id, 0);
+  writeNumberObjectCookie(DAMAGE_COOKIE_NAMES.attackFields, values, damageInputIds(), true);
+}
+
+function persistSkillLevels() {
+  writeNumberObjectCookie(DAMAGE_COOKIE_NAMES.skillLevels, state.skillLevels);
+}
+
+function persistPartyBuffState() {
+  const allowed = allowedPartyBuffIds();
+  writeBooleanMapCookie(DAMAGE_COOKIE_NAMES.partyBuffs, state.activePartySkillBuffs, allowed);
+  writeNumberObjectCookie(DAMAGE_COOKIE_NAMES.partyBuffLevels, state.partySkillBuffLevels, allowed, true);
+}
+
+function persistSelectedItemBuffs() {
+  const allowed = allowedItemBuffIds();
+  writeStringArrayCookie(DAMAGE_COOKIE_NAMES.itemBuffs, [...state.selectedItemBuffs].filter(id => allowed.has(String(id))));
+}
+
+function persistDamageInputs() {
+  writeCookie("ms_damage_job", state.jobId);
+  writeCookie("ms_damage_weapon", state.weaponType);
+  writeCookie("ms_damage_level", String(state.characterLevel));
+  writeCookie("ms_damage_spirit_blessing_level", String(state.spiritBlessingLevel));
+  persistBaseStats();
+  persistEquipStats();
+  persistAttackFields();
+  persistSkillLevels();
+  persistPartyBuffState();
+  persistNormalBuffs();
+}
+
+function clearDamageInputCookies() {
+  for (const name of Object.values(DAMAGE_COOKIE_NAMES)) deleteCookie(name);
+}
+
+function restoreDamageInputs() {
+  const baseStats = readNumberObjectCookie(DAMAGE_COOKIE_NAMES.baseStats, STAT_KEYS, true);
+  for (const stat of STAT_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(baseStats, stat)) continue;
+    const input = document.querySelector(`#base${stat.toUpperCase()}`);
+    if (!input) continue;
+    input.value = String(baseStats[stat]);
+    input.dataset.userEdited = "1";
+  }
+
+  const equipStats = readNumberObjectCookie(DAMAGE_COOKIE_NAMES.equipStats, STAT_KEYS, true);
+  for (const stat of STAT_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(equipStats, stat)) continue;
+    const input = document.querySelector(`#equip${stat.toUpperCase()}`);
+    if (input) input.value = String(equipStats[stat]);
+  }
+
+  const attackFields = readNumberObjectCookie(DAMAGE_COOKIE_NAMES.attackFields, damageInputIds(), true);
+  for (const id of damageInputIds()) {
+    if (!Object.prototype.hasOwnProperty.call(attackFields, id)) continue;
+    const input = document.querySelector(`#${id}`);
+    if (input) input.value = String(attackFields[id]);
+  }
+
+  state.skillLevels = readNumberObjectCookie(DAMAGE_COOKIE_NAMES.skillLevels);
+  state.activePartySkillBuffs = readBooleanMapCookie(DAMAGE_COOKIE_NAMES.partyBuffs, allowedPartyBuffIds());
+  state.partySkillBuffLevels = readNumberObjectCookie(DAMAGE_COOKIE_NAMES.partyBuffLevels, allowedPartyBuffIds(), true);
+  const rememberedNormalBuffs = readJsonCookie(DAMAGE_COOKIE_NAMES.normalBuffs, {});
+  state.selectedNormalBuffs = {
+    pad: String(rememberedNormalBuffs?.pad || ""),
+    mad: String(rememberedNormalBuffs?.mad || ""),
+  };
 }
 
 function skillById(skillId) {
@@ -578,16 +845,12 @@ function getBuffTotals() {
     statPercent: 0,
     sources: {},
   };
-  improveBuffTotals(totals, { pad: numberInputValue(el.manualAttackBuff) }, "手動攻擊力");
-  improveBuffTotals(totals, { mad: numberInputValue(el.manualMagicBuff) }, "手動魔法攻擊力");
+  const selectedNormal = selectedNormalBuff(normalBuffKind());
+  if (selectedNormal?.id) improveBuffTotals(totals, selectedNormal.effects, selectedNormal.name);
   for (const buff of db.partySkillBuffs || []) {
+    if (!isSpecialPartyBuff(buff)) continue;
     if (!state.activePartySkillBuffs[String(buff.id)]) continue;
     improveBuffTotals(totals, partyBuffValues(buff), buff.name);
-  }
-  for (const buffId of state.selectedItemBuffs) {
-    const buff = (db.itemBuffs || []).find(row => String(row.id) === String(buffId));
-    if (!buff) continue;
-    improveBuffTotals(totals, buff.effects, buff.name);
   }
   return totals;
 }
@@ -681,10 +944,21 @@ function getAttackRange() {
 
 function isDamageSkill(skill) {
   if (isCriticalPassiveSkill(skill)) return false;
+  if (isSpecialFormulaSkill(skill)) return true;
+  if (isHealDamageSkill(skill)) return true;
   return (skill.levels || []).some(row => {
     const values = { ...(row.values || {}), ...parseLevelText(row.description || "") };
-    return values.damage || values.mad || values.z;
+    return values.damage || values.mad || values.pad || values.z || values.fixdamage;
   });
+}
+
+function isHealDamageSkill(skill) {
+  return Number(skill?.id) === 2301002 || (skill?.name || "") === "群體治癒";
+}
+
+function isSpecialFormulaSkill(skill) {
+  const name = skill?.name || "";
+  return /雙飛斬|三飛閃|飛毒殺|忍影瞬殺|影網術|楓幣攻擊|楓幣炸彈|龍咆哮|強弓|火焰噴射|毒霧|致命毒霧|炎靈地獄|寒冰地獄|召喚鳳凰|召喚銀隼|章魚砲台|砲台章魚王|海鷗突襲隊|穿透之箭|光速神弩|閃電連擊|連鎖閃電|元氣彈|閃[．.・]?連殺/.test(name);
 }
 
 function isCriticalPassiveSkill(skill) {
@@ -708,18 +982,27 @@ function hitCount(skill, values) {
 function physicalSkillDamage(skill, values, range) {
   const percent = Number(values.damage || values.z || 100);
   const hits = hitCount(skill, values);
-  if (/雙飛斬|三飛閃/.test(skill.name || "")) {
-    const luk = range.stats.luk;
-    const max = Math.floor((luk * 5.0) * range.attack / 100 * percent / 100);
-    const min = Math.floor((luk * 2.5) * range.attack / 100 * percent / 100);
-    return { min, max, hits, percent, note: "投擲公式：每段 floor(幸運 × 2.5~5.0 × 攻擊力 ÷ 100 × 技能% ÷ 100)" };
-  }
   return {
     min: Math.floor(range.min * percent / 100),
     max: Math.floor(range.max * percent / 100),
     hits,
     percent,
     note: "",
+  };
+}
+
+function throwingSkillDamage(skill, values, range) {
+  const percent = Number(values.damage || values.z || 100);
+  const hits = hitCount(skill, values);
+  const luk = range.stats.luk;
+  const max = Math.floor((luk * 5.0) * range.attack / 100 * percent / 100);
+  const min = Math.floor((luk * 2.5) * range.attack / 100 * percent / 100);
+  return {
+    min,
+    max,
+    hits,
+    percent,
+    note: "投擲特殊公式：每段 floor(幸運 × 2.5~5.0 × 攻擊力 ÷ 100 × 技能% ÷ 100)",
   };
 }
 
@@ -733,13 +1016,199 @@ function magicSkillDamage(skill, values, range) {
   return { min, max, hits: hitCount(skill, values), percent: basic, note: "魔法基本攻擊力" };
 }
 
+function formulaOnlySkillDamage(note) {
+  return { min: 0, max: 0, hits: 1, percent: 0, note, formulaOnly: true };
+}
+
+function healSkillDamage(skill, values, range) {
+  const healPercent = Number(values.hp || 0) / 100;
+  const targetCount = 2;
+  const targetMultiplier = 1.5 + 5 / targetCount;
+  const magic = range.magicAttack;
+  const intValue = range.stats.int;
+  const luk = range.stats.luk;
+  const min = Math.floor((intValue * 0.3 + luk) * magic / 1000 * targetMultiplier * healPercent);
+  const max = Math.floor((intValue * 1.2 + luk) * magic / 1000 * targetMultiplier * healPercent);
+  return {
+    min: Math.max(0, min),
+    max: Math.max(0, max),
+    hits: 1,
+    percent: Math.round(healPercent * 100),
+    note: "群體治癒特殊公式：對不死怪，預設2目標乘數4.0；實際乘數 = 1.5 + 5 ÷ 目標數",
+  };
+}
+
+function venomSkillDamage(skill, values, range) {
+  const basicAttack = Number(values.mad || values.damage || 0);
+  const { str, dex, luk } = range.stats;
+  const min = Math.floor(((8.0 * (str + luk) + dex * 2) / 100) * basicAttack);
+  const max = Math.floor(((18.5 * (str + luk) + dex * 2) / 100) * basicAttack);
+  return {
+    min,
+    max,
+    hits: 1,
+    percent: basicAttack,
+    note: "飛毒殺每秒毒傷：基本攻擊取技能等級的攻擊力",
+  };
+}
+
+function ninjaAmbushSkillDamage(skill, values, range) {
+  const percent = Number(values.damage || 100);
+  const { str, luk } = range.stats;
+  const damage = Math.floor(2 * (str + luk) * percent / 100);
+  return {
+    min: damage,
+    max: damage,
+    hits: 1,
+    percent,
+    note: "忍影瞬殺每秒傷害：floor(2 × (力量 + 幸運) × 技能%)",
+  };
+}
+
+function dragonRoarSkillDamage(skill, values, range) {
+  const percent = Number(values.damage || 100);
+  const { str, dex } = range.stats;
+  const max = Math.floor(((str * 4.0 + dex) * range.attack / 100) * percent / 100);
+  const min = Math.floor(((str * 4.0 * range.mastery * 0.9 + dex) * range.attack / 100) * percent / 100);
+  return {
+    min,
+    max,
+    hits: hitCount(skill, values),
+    percent,
+    note: "龍咆哮特殊公式：力量係數固定4.0，不使用武器係數",
+  };
+}
+
+function powerKnockbackSkillDamage(skill, values, range) {
+  const percent = Number(values.damage || 100);
+  const { str, dex } = range.stats;
+  const max = Math.floor(((dex * 3.4 + str) * range.attack / 150) * percent / 100);
+  const min = Math.floor(((dex * 3.4 * 0.1 * 0.9 + str) * range.attack / 150) * percent / 100);
+  return {
+    min,
+    max,
+    hits: hitCount(skill, values),
+    percent,
+    note: "強弓特殊公式：熟練度固定10%，並以150作為攻擊除數",
+  };
+}
+
+function summonPhysicalSkillDamage(skill, values, range) {
+  const attackRate = Number(values.pad || values.damage || 0);
+  if (!attackRate) return null;
+  const { str, dex } = range.stats;
+  return {
+    min: Math.floor((dex * 2.5 * 0.7 + str) * attackRate / 100),
+    max: Math.floor((dex * 2.5 + str) * attackRate / 100),
+    hits: 1,
+    percent: attackRate,
+    note: "召喚物特殊公式：使用敏捷、力量與召喚攻擊力，且不套用怪物防禦",
+  };
+}
+
+function shadowMesoSkillDamage(skill, values) {
+  const minCost = Number(values.y || values.moneyCon || 0);
+  const maxCost = Number(values.z || values.moneyCon || minCost);
+  const prop = Number(values.prop || 0);
+  const min = Math.floor(minCost * 10);
+  const max = Math.floor(maxCost * 10 * (prop ? 1.5 : 1));
+  return {
+    min,
+    max,
+    hits: 1,
+    percent: prop,
+    note: prop ? `楓幣攻擊特殊公式：傷害約為楓幣×10，${prop}%機率提升50%` : "楓幣攻擊特殊公式：傷害約為楓幣×10",
+  };
+}
+
+function fixedDamageSkillDamage(skill, values) {
+  const damage = Number(values.fixdamage || 0);
+  if (!damage) return null;
+  return {
+    min: damage,
+    max: damage,
+    hits: hitCount(skill, values),
+    percent: damage,
+    note: "固定傷害",
+  };
+}
+
+function targetScalingMultiplier(name, targets) {
+  if (/穿透之箭/.test(name)) return 10 * (1 - Math.pow(0.9, targets));
+  if (/光速神弩/.test(name)) return 5 * (Math.pow(1.2, targets) - 1);
+  if (/閃電連擊|連鎖閃電/.test(name)) return (10 / 3) * (1 - Math.pow(0.7, targets));
+  if (/元氣彈/.test(name)) return 3 * (1 - Math.pow(2 / 3, targets));
+  return targets;
+}
+
+function targetScalingSkillDamage(skill, values, range) {
+  const name = skill.name || "";
+  const base = range.job.kind === "magic"
+    ? magicSkillDamage(skill, values, range)
+    : physicalSkillDamage(skill, values, range);
+  const targets = Math.max(1, Number(values.mobCount || 1));
+  const multiplier = targetScalingMultiplier(name, targets);
+  const noteMap = {
+    piercing: "穿透之箭：第n目標乘0.9^(n-1)",
+    snipe: "光速神弩：第n目標乘1.2^(n-1)",
+    chain: "閃電連擊：第n目標乘0.7^(n-1)",
+    orb: "元氣彈：第n目標乘(2/3)^(n-1)",
+  };
+  const note = /穿透之箭/.test(name) ? noteMap.piercing
+    : /光速神弩/.test(name) ? noteMap.snipe
+    : /閃電連擊|連鎖閃電/.test(name) ? noteMap.chain
+    : noteMap.orb;
+  return {
+    ...base,
+    totalMin: Math.floor(base.min * multiplier),
+    totalMax: Math.floor(base.max * multiplier),
+    hitLabel: `${targets} 目標合計`,
+    note,
+  };
+}
+
+function flashFistSkillDamage(skill, values, range) {
+  const base = physicalSkillDamage(skill, values, range);
+  return {
+    ...base,
+    hits: 6,
+    totalMin: Math.floor(base.min * 10),
+    totalMax: Math.floor(base.max * 10),
+    hitLabel: "6段加權合計",
+    note: "閃．連殺：後2段加重，總量約等於10段基準傷害",
+  };
+}
+
+function specialSkillDamage(skill, values, range) {
+  const name = skill.name || "";
+  const fixed = fixedDamageSkillDamage(skill, values);
+  if (fixed) return fixed;
+  if (/雙飛斬|三飛閃/.test(name)) return throwingSkillDamage(skill, values, range);
+  if (/群體治癒/.test(name) || isHealDamageSkill(skill)) return healSkillDamage(skill, values, range);
+  if (/飛毒殺/.test(name)) return venomSkillDamage(skill, values, range);
+  if (/忍影瞬殺/.test(name)) return ninjaAmbushSkillDamage(skill, values, range);
+  if (/影網術/.test(name)) return formulaOnlySkillDamage("影網術特殊公式：每3秒傷害 = 怪物HP ÷ (50 - 技能等級)");
+  if (/楓幣攻擊/.test(name)) return shadowMesoSkillDamage(skill, values);
+  if (/楓幣炸彈/.test(name)) return formulaOnlySkillDamage("楓幣炸彈特殊公式：傷害依地上楓幣堆疊金額、堆疊數量與熟練度計算");
+  if (/龍咆哮/.test(name)) return dragonRoarSkillDamage(skill, values, range);
+  if (/強弓/.test(name)) return powerKnockbackSkillDamage(skill, values, range);
+  if (/火焰噴射/.test(name)) return formulaOnlySkillDamage("火焰噴射特殊公式：每秒傷害 = 攻擊力 × (5% + 瞬冰火加成%)");
+  if (/毒霧|致命毒霧|炎靈地獄|寒冰地獄/.test(name)) return formulaOnlySkillDamage("持續傷害特殊公式：每秒傷害 = 怪物HP ÷ (70 - 技能等級)");
+  if (/召喚鳳凰|召喚銀隼|章魚砲台|砲台章魚王|海鷗突襲隊/.test(name)) return summonPhysicalSkillDamage(skill, values, range);
+  if (/穿透之箭|光速神弩|閃電連擊|連鎖閃電|元氣彈/.test(name)) return targetScalingSkillDamage(skill, values, range);
+  if (/閃[．.・]?連殺/.test(name)) return flashFistSkillDamage(skill, values, range);
+  return null;
+}
+
 function skillDamage(skill, range) {
   const level = skillLevel(skill.id);
   if (!level) return null;
   const values = selectedSkillValues(skill);
-  if (!values.damage && !values.z && !values.mad) return null;
+  const special = specialSkillDamage(skill, values, range);
+  if (special) return special;
+  if (!values.damage && !values.z && !values.mad && !values.pad && !values.fixdamage) return null;
   const job = currentJob();
-  return job.kind === "magic"
+  return job.kind === "magic" || values.mad
     ? magicSkillDamage(skill, values, range)
     : physicalSkillDamage(skill, values, range);
 }
@@ -828,41 +1297,22 @@ function renderSkills() {
   }).join("") || `<p class="emptyState">此階段沒有技能</p>`;
 }
 
-function renderSkillBuffs() {
-  const partyRows = (db.partySkillBuffs || []).map(buff => {
+function renderSpecialBuffs() {
+  const partyRows = (db.partySkillBuffs || []).filter(isSpecialPartyBuff).map(buff => {
     const isChecked = Boolean(state.activePartySkillBuffs[String(buff.id)]);
     const checked = isChecked ? "checked" : "";
     const level = partyBuffLevel(buff);
     const effects = partyBuffValues(buff);
     const idText = state.showIds ? ` · ID ${buff.skillIds?.join("/") || buff.id}` : "";
-    return `<div class="buffRow partyBuffRow${isChecked ? " isActive" : ""}" data-party-skill-buff-row="${escapeHtml(buff.id)}">
-      <input id="partyBuff${escapeHtml(buff.id)}" data-party-skill-buff="${escapeHtml(buff.id)}" type="checkbox" ${checked} />
+    return `<div class="specialBuffRow${isChecked ? " isActive" : ""}" data-special-skill-buff-row="${escapeHtml(buff.id)}">
+      <input id="specialBuff${escapeHtml(buff.id)}" data-party-skill-buff="${escapeHtml(buff.id)}" type="checkbox" ${checked} />
+      <span class="specialBuffCheck" aria-hidden="true"></span>
       <img src="${escapeHtml(buff.image || "")}" alt="" loading="lazy" />
-      <label class="partyBuffInfo" for="partyBuff${escapeHtml(buff.id)}"><strong>${escapeHtml(buff.name)}</strong><small>${escapeHtml(buff.source || "隊伍技能 BUFF")} · ${escapeHtml(formatBuffEffects(effects))}${idText}</small></label>
-      <label class="partyBuffLevelControl">
-        <span>等級</span>
-        <input class="partyBuffLevel" data-party-skill-buff-level="${escapeHtml(buff.id)}" type="number" min="0" max="${escapeHtml(buff.maxLevel || 0)}" step="1" value="${escapeHtml(level)}" inputmode="numeric" autocomplete="off" aria-label="${escapeHtml(buff.name)} 等級" />
-      </label>
+      <label class="specialBuffInfo" for="specialBuff${escapeHtml(buff.id)}"><strong>${escapeHtml(buff.name)}</strong><small>${escapeHtml(formatBuffEffects(effects))}${idText}</small></label>
+      <input class="specialBuffLevel" data-party-skill-buff-level="${escapeHtml(buff.id)}" type="number" min="0" max="${escapeHtml(buff.maxLevel || 0)}" step="1" value="${escapeHtml(level)}" inputmode="numeric" autocomplete="off" aria-label="${escapeHtml(buff.name)} 等級" />
     </div>`;
   });
-  el.skillBuffList.innerHTML = partyRows.join("") || `<p class="emptyState">目前沒有可啟用的技能 BUFF</p>`;
-}
-
-function renderItemBuffSearch() {
-  const query = (el.itemBuffSearch.value || "").trim().toLowerCase();
-  const rows = (db.itemBuffs || []).filter(buff => !state.selectedItemBuffs.has(String(buff.id))).filter(buff => {
-    if (!query) return true;
-    return `${buff.id} ${buff.name} ${buff.desc}`.toLowerCase().includes(query);
-  }).slice(0, 18);
-  el.itemBuffResults.innerHTML = rows.map(buff => {
-    const idText = state.showIds ? ` · ID ${buff.id}` : "";
-    const effects = formatBuffEffects(buff.effects);
-    return `<button class="damageItemBuffRow" type="button" data-add-item-buff="${escapeHtml(buff.id)}">
-      <img src="${escapeHtml(buff.image || "")}" alt="" loading="lazy" />
-      <span><strong>${escapeHtml(buff.name)}</strong><small>${escapeHtml(effects)}${idText}</small></span>
-      <span class="damagePill">加入</span>
-    </button>`;
-  }).join("") || `<p class="emptyState">找不到道具 BUFF</p>`;
+  el.specialBuffList.innerHTML = partyRows.join("") || `<p class="emptyState">目前沒有可啟用的特殊 BUFF</p>`;
 }
 
 function formatBuffEffects(effects) {
@@ -875,15 +1325,45 @@ function formatBuffEffects(effects) {
   return parts.join(" · ") || "BUFF";
 }
 
-function renderSelectedItemBuffs() {
-  el.selectedItemBuffs.innerHTML = [...state.selectedItemBuffs].map(id => {
-    const buff = (db.itemBuffs || []).find(row => String(row.id) === String(id));
-    if (!buff) return "";
-    return `<div class="selectedBuff">
-      <span>${escapeHtml(buff.name)} · ${escapeHtml(formatBuffEffects(buff.effects))}</span>
-      <button type="button" data-remove-item-buff="${escapeHtml(buff.id)}" aria-label="移除 ${escapeHtml(buff.name)}">×</button>
-    </div>`;
+function renderNormalBuffPicker() {
+  const kind = normalBuffKind();
+  const candidates = normalBuffCandidates(kind);
+  if (!candidates.some(buff => buff.id === selectedNormalBuffId(kind))) {
+    setSelectedNormalBuff(kind, "");
+  }
+  const selected = selectedNormalBuff(kind);
+  const label = normalBuffLabel(kind);
+  el.normalBuffHint.textContent = selected?.id
+    ? `目前套用：${selected.name}，${normalBuffEffectText(selected, kind)}`
+    : `目前未套用${label} BUFF`;
+  el.normalBuffPicker.innerHTML = candidates.map(buff => {
+    const active = selected.id === buff.id;
+    const title = buff.id ? `${buff.name} · ${normalBuffEffectText(buff, kind)}` : `不套用${label} BUFF`;
+    const idText = state.showIds && buff.rawId ? ` · ID ${buff.rawId}` : "";
+    const image = buff.image
+      ? `<img src="${escapeHtml(buff.image)}" alt="" loading="lazy" />`
+      : `<span>${escapeHtml(buff.type === "custom" ? "+" : "無")}</span>`;
+    return `<button class="buffIconButton${active ? " isActive" : ""}${buff.type === "custom" ? " isCustom" : ""}" type="button" role="radio" aria-checked="${active}" data-normal-buff="${escapeHtml(buff.id)}" title="${escapeHtml(title)}" aria-label="${escapeHtml(`${buff.name}${idText} ${normalBuffEffectText(buff, kind)}`)}">${image}</button>`;
   }).join("");
+
+  if (selected.type === "skill") {
+    const buff = partyBuffById(selected.rawId);
+    el.normalBuffConfig.innerHTML = `<label class="damageField">
+      <span>${escapeHtml(selected.name)}等級</span>
+      <input data-party-skill-buff-level="${escapeHtml(selected.rawId)}" type="number" min="0" max="${escapeHtml(buff?.maxLevel || 0)}" step="1" value="${escapeHtml(partyBuffLevel(buff))}" inputmode="numeric" autocomplete="off" aria-label="${escapeHtml(selected.name)} 等級" />
+    </label>`;
+    return;
+  }
+  if (selected.type === "custom") {
+    const inputId = kind === "mad" ? "manualMagicBuff" : "manualAttackBuff";
+    const value = numberInputValue(el[inputId]);
+    el.normalBuffConfig.innerHTML = `<label class="damageField">
+      <span>自訂${escapeHtml(label)}</span>
+      <input data-custom-buff-kind="${escapeHtml(kind)}" type="number" min="0" step="1" value="${escapeHtml(value)}" inputmode="numeric" autocomplete="off" />
+    </label>`;
+    return;
+  }
+  el.normalBuffConfig.innerHTML = "";
 }
 
 function renderDetail() {
@@ -926,17 +1406,21 @@ function renderDetail() {
 
 function renderSkillDamageCard(skill, result) {
   const idText = state.showIds ? ` · ID ${skill.id}` : "";
-  const totalMin = result.min * result.hits;
-  const totalMax = result.max * result.hits;
+  const totalMin = result.totalMin ?? result.min * result.hits;
+  const totalMax = result.totalMax ?? result.max * result.hits;
+  const hitLabel = result.hitLabel || `${result.hits} 段合計`;
+  const numbers = result.formulaOnly
+    ? `<span class="damagePill damagePillWide">${escapeHtml(result.note)}</span>`
+    : `<span class="damagePill">單段 ${formatNumber(result.min)} ~ ${formatNumber(result.max)}</span>
+        <span class="damagePill">${escapeHtml(hitLabel)} ${formatNumber(totalMin)} ~ ${formatNumber(totalMax)}</span>
+        <span class="damagePill">${escapeHtml(result.note || `${result.percent}%`)}</span>`;
   return `<div class="damageSkillCard">
     <img src="${escapeHtml(skill.image || "")}" alt="" loading="lazy" />
     <div>
       <strong>${escapeHtml(skill.name)}</strong>
       <p>Lv.${skillLevel(skill.id)}${idText}</p>
       <div class="damageSkillNumbers">
-        <span class="damagePill">單段 ${formatNumber(result.min)} ~ ${formatNumber(result.max)}</span>
-        <span class="damagePill">${result.hits} 段合計 ${formatNumber(totalMin)} ~ ${formatNumber(totalMax)}</span>
-        <span class="damagePill">${escapeHtml(result.note || `${result.percent}%`)}</span>
+        ${numbers}
       </div>
     </div>
   </div>`;
@@ -946,22 +1430,22 @@ function renderAll() {
   updateBaseStatBudget();
   updateSpiritBlessingHint();
   renderSkills();
-  renderSkillBuffs();
-  renderItemBuffSearch();
-  renderSelectedItemBuffs();
+  renderSpecialBuffs();
+  renderNormalBuffPicker();
   renderDetail();
 }
 
 function clearAll() {
   const job = currentJob();
+  clearDamageInputCookies();
   setCharacterLevel(DEFAULT_CHARACTER_LEVEL, true);
   state.skillLevels = {};
   state.activeSkillBuffs = {};
   state.activePartySkillBuffs = {};
   state.partySkillBuffLevels = {};
+  state.selectedNormalBuffs = { pad: "", mad: "" };
   state.selectedItemBuffs.clear();
   setSpiritBlessingLevel(0, true);
-  el.itemBuffSearch.value = "";
   el.weaponAttack.value = job?.kind === "magic" ? 30 : 80;
   el.weaponMagic.value = job?.kind === "magic" ? 90 : 0;
   el.equipAttack.value = "0";
@@ -976,6 +1460,7 @@ function clearAll() {
   }
   applyJobDefaults();
   clampSkillLevelsToBudgets();
+  persistDamageInputs();
   renderAll();
 }
 
@@ -983,6 +1468,7 @@ function resetSkillPoints() {
   state.skillLevels = {};
   state.activeSkillBuffs = {};
   clampSkillLevelsToBudgets();
+  persistSkillLevels();
   renderAll();
 }
 
@@ -1028,6 +1514,9 @@ function setupEvents() {
     setCharacterLevel(state.characterLevel, true);
     applyJobDefaults();
     clampSkillLevelsToBudgets();
+    persistBaseStats();
+    persistSkillLevels();
+    persistAttackFields();
     renderAll();
   });
   el.weaponSelect.addEventListener("change", () => {
@@ -1042,6 +1531,8 @@ function setupEvents() {
       setCharacterLevel(target.value, true);
       clampBaseStats();
       clampSkillLevelsToBudgets();
+      persistBaseStats();
+      persistSkillLevels();
       renderAll();
       return;
     }
@@ -1054,6 +1545,25 @@ function setupEvents() {
       target.dataset.userEdited = "1";
       const stat = STAT_KEYS.find(key => target.id === `base${key.toUpperCase()}`);
       clampBaseStats(stat);
+      persistBaseStats();
+    }
+    if (STAT_KEYS.some(key => target.id === `equip${key.toUpperCase()}`)) {
+      persistEquipStats();
+    }
+    if (damageInputIds().includes(target.id)) {
+      persistAttackFields();
+    }
+    const customBuffKind = target.dataset.customBuffKind;
+    if (customBuffKind) {
+      const hiddenInput = customBuffKind === "mad" ? el.manualMagicBuff : el.manualAttackBuff;
+      if (hiddenInput) hiddenInput.value = String(Math.max(0, Math.floor(Number(target.value || 0))));
+      persistAttackFields();
+      const selected = selectedNormalBuff(customBuffKind);
+      el.normalBuffHint.textContent = selected?.id
+        ? `目前套用：${selected.name}，${normalBuffEffectText(selected, customBuffKind)}`
+        : `目前未套用${normalBuffLabel(customBuffKind)} BUFF`;
+      renderDetail();
+      return;
     }
     const skillId = target.dataset.skillLevel;
     if (skillId) {
@@ -1062,12 +1572,20 @@ function setupEvents() {
       const value = Math.max(0, Math.min(max, Number(target.value || 0)));
       state.skillLevels[String(skillId)] = value;
       clampSkillLevelsToBudgets(skillId);
+      persistSkillLevels();
     }
     const partyBuffId = target.dataset.partySkillBuffLevel;
     if (partyBuffId) {
       const buff = partyBuffById(partyBuffId);
       const max = Number(buff?.maxLevel || 0);
       state.partySkillBuffLevels[String(partyBuffId)] = Math.max(0, Math.min(max, Number(target.value || 0)));
+      persistPartyBuffState();
+      const selected = selectedNormalBuff(normalBuffKind());
+      if (selected?.type === "skill" && String(selected.rawId) === String(partyBuffId)) {
+        el.normalBuffHint.textContent = `目前套用：${selected.name}，${normalBuffEffectText(selected, normalBuffKind())}`;
+      }
+      renderDetail();
+      return;
     }
     renderAll();
   });
@@ -1082,6 +1600,7 @@ function setupEvents() {
     const partySkillBuff = target.dataset.partySkillBuff;
     if (partySkillBuff) {
       state.activePartySkillBuffs[String(partySkillBuff)] = target.checked;
+      persistPartyBuffState();
       renderAll();
     }
   });
@@ -1100,30 +1619,26 @@ function setupEvents() {
       if (skill) {
         state.skillLevels[String(skillId)] = skillAssignableMax(skill);
         clampSkillLevelsToBudgets(skillId);
+        persistSkillLevels();
         renderAll();
       }
       return;
     }
-    const addButton = event.target.closest("[data-add-item-buff]");
-    if (addButton) {
-      state.selectedItemBuffs.add(String(addButton.dataset.addItemBuff));
+    const normalBuffButton = event.target.closest("[data-normal-buff]");
+    if (normalBuffButton) {
+      setSelectedNormalBuff(normalBuffKind(), normalBuffButton.dataset.normalBuff || "");
+      persistNormalBuffs();
       renderAll();
       return;
     }
-    const removeButton = event.target.closest("[data-remove-item-buff]");
-    if (removeButton) {
-      state.selectedItemBuffs.delete(String(removeButton.dataset.removeItemBuff));
-      renderAll();
-      return;
-    }
-    const partyBuffRow = event.target.closest("[data-party-skill-buff-row]");
+    const partyBuffRow = event.target.closest("[data-special-skill-buff-row]");
     if (partyBuffRow && !event.target.closest("input, button, a, label")) {
-      const partySkillBuff = partyBuffRow.dataset.partySkillBuffRow;
+      const partySkillBuff = partyBuffRow.dataset.specialSkillBuffRow;
       state.activePartySkillBuffs[String(partySkillBuff)] = !state.activePartySkillBuffs[String(partySkillBuff)];
+      persistPartyBuffState();
       renderAll();
     }
   });
-  el.itemBuffSearch.addEventListener("input", renderItemBuffSearch);
 }
 
 function init() {
@@ -1132,7 +1647,9 @@ function init() {
   initFields();
   initJobs();
   setSpiritBlessingLevel(readCookie("ms_damage_spirit_blessing_level") || 0, false);
+  restoreDamageInputs();
   applyJobDefaults();
+  clampSkillLevelsToBudgets();
   setupTheme();
   setupEvents();
   renderAll();
