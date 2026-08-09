@@ -286,23 +286,72 @@ function presetDimensions(key) {
   return { width: Number(match[1]), height: Number(match[2]) };
 }
 
+function defaultFrame(width, height) {
+  return {
+    x: 0,
+    y: 0,
+    width: Math.max(1, Math.round(width)),
+    height: Math.max(1, Math.round(height)),
+    adjusted: false,
+  };
+}
+
+function frameForPresetSize(size, width, height) {
+  if (!size || !width || !height) return null;
+  if (Math.round(width) === size.width && Math.round(height) === size.height) {
+    return { ...defaultFrame(width, height), exact: true };
+  }
+  const extraWidth = Math.round(width - size.width);
+  const extraHeight = Math.round(height - size.height);
+  if (extraWidth < 0 || extraHeight < 0) return null;
+
+  const maxExtraWidth = Math.max(32, Math.round(size.width * 0.04));
+  const maxExtraHeight = Math.max(48, Math.round(size.height * 0.08));
+  if (extraWidth > maxExtraWidth || extraHeight > maxExtraHeight) return null;
+
+  const sideBorder = Math.round(extraWidth / 2);
+  const topChrome = extraHeight > sideBorder * 2
+    ? extraHeight - sideBorder
+    : Math.round(extraHeight / 2);
+  const x = clamp(sideBorder, 0, Math.max(0, width - size.width));
+  const y = clamp(topChrome, 0, Math.max(0, height - size.height));
+  return {
+    x,
+    y,
+    width: size.width,
+    height: size.height,
+    exact: false,
+    adjusted: x > 0 || y > 0 || width !== size.width || height !== size.height,
+    extraWidth,
+    extraHeight,
+  };
+}
+
 function findRegionPreset(width, height) {
   const key = resolutionKey(width, height);
   if (OCR_REGION_PRESETS[key]) {
-    return { key, exact: true, regions: OCR_REGION_PRESETS[key] };
+    return { key, exact: true, regions: OCR_REGION_PRESETS[key], frame: defaultFrame(width, height) };
   }
   let best = null;
   const currentAspect = width / Math.max(1, height);
   for (const [candidateKey, regions] of Object.entries(OCR_REGION_PRESETS)) {
     const size = presetDimensions(candidateKey);
     if (!size) continue;
+    const frame = frameForPresetSize(size, width, height);
+    if (frame) {
+      const score = frame.exact ? 0 : (frame.extraWidth + frame.extraHeight) / Math.max(1, size.width + size.height);
+      if (!best || score < best.score) {
+        best = { key: candidateKey, exact: frame.exact, adjusted: frame.adjusted, regions, frame, score };
+      }
+      continue;
+    }
     const candidateAspect = size.width / Math.max(1, size.height);
     const widthScore = Math.abs(Math.log(width / size.width));
     const heightScore = Math.abs(Math.log(height / size.height));
     const aspectScore = Math.abs(currentAspect - candidateAspect);
     const score = widthScore + heightScore + aspectScore * 3;
     if (!best || score < best.score) {
-      best = { key: candidateKey, exact: false, regions, score };
+      best = { key: candidateKey, exact: false, adjusted: false, regions, frame: defaultFrame(width, height), score };
     }
   }
   return best;
@@ -310,28 +359,33 @@ function findRegionPreset(width, height) {
 
 function selectedRegionPreset(width, height) {
   if (OCR_REGION_PRESETS[state.ocrResolutionKey]) {
+    const size = presetDimensions(state.ocrResolutionKey);
+    const frame = frameForPresetSize(size, width, height) || defaultFrame(width, height);
     return {
       key: state.ocrResolutionKey,
       exact: resolutionKey(width, height) === state.ocrResolutionKey,
+      adjusted: Boolean(frame.adjusted),
       forced: true,
       regions: OCR_REGION_PRESETS[state.ocrResolutionKey],
+      frame,
     };
   }
   return findRegionPreset(width, height);
 }
 
-function regionToRect(region, width, height) {
+function regionToRect(region, width, height, frame = null) {
+  const base = frame || defaultFrame(width, height);
   const x = clamp(region?.x, 0, 0.995);
   const y = clamp(region?.y, 0, 0.995);
   const regionWidth = clamp(region?.width, 0.003, 1 - x);
   const regionHeight = clamp(region?.height, 0.003, 1 - y);
-  const rectX = Math.round(x * width);
-  const rectY = Math.round(y * height);
+  const rectX = Math.round(base.x + x * base.width);
+  const rectY = Math.round(base.y + y * base.height);
   return {
     x: Math.min(Math.max(0, rectX), Math.max(0, width - 1)),
     y: Math.min(Math.max(0, rectY), Math.max(0, height - 1)),
-    width: Math.min(Math.max(1, Math.round(regionWidth * width)), Math.max(1, width - rectX)),
-    height: Math.min(Math.max(1, Math.round(regionHeight * height)), Math.max(1, height - rectY)),
+    width: Math.min(Math.max(1, Math.round(regionWidth * base.width)), Math.max(1, width - rectX)),
+    height: Math.min(Math.max(1, Math.round(regionHeight * base.height)), Math.max(1, height - rectY)),
   };
 }
 
@@ -350,10 +404,14 @@ function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.vide
     return;
   }
   if (preset.forced) {
-    el.regionPresetStatus.textContent = `${current} · 手動使用 ${preset.key} 辨識區塊`;
+    el.regionPresetStatus.textContent = preset.adjusted
+      ? `${current} · 手動使用 ${preset.key}，已避開視窗外框`
+      : `${current} · 手動使用 ${preset.key} 辨識區塊`;
     return;
   }
-  el.regionPresetStatus.textContent = preset.exact
+  el.regionPresetStatus.textContent = preset.adjusted
+    ? `${current} · 自動校正為 ${preset.key} 遊戲畫面`
+    : preset.exact
     ? `${current} · 使用 ${preset.key} 辨識區塊`
     : `${current} · 使用最接近的 ${preset.key} 辨識區塊推估`;
 }
@@ -361,7 +419,7 @@ function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.vide
 function rectFor(type, width, height) {
   const preset = selectedRegionPreset(width, height);
   const region = preset?.regions?.[type];
-  if (region) return regionToRect(region, width, height);
+  if (region) return regionToRect(region, width, height, preset.frame);
   if (type === "lv") {
     return {
       x: Math.round(width * 0.2),
