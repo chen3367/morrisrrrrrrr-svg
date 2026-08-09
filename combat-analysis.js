@@ -43,6 +43,45 @@ const OCR_DIGIT_TEMPLATES = {
   "8": ["000011111100001110001110011100000011011100000011011100000011011100000011011110000010001111001110000011111100001110111110011100001111110000000011110000000011110000000011110000000011011100000011011110011110001111111100","000111111000000111111000000111111000111000000111111000000111111000000111111000000111111000000111000111111000000111111000111000000111111000000111111000000111111000000111111000000111000111111000000111111000000111111000","001111111000001111111000001000000100111000000100111000000100001000000100001000000100001110000100001111111000001111111000111000011100110000000111110000000111110000000111110000000111111000000100001111111000001111111000","001111111100001111111100001111111100110000000011110000000011110000000011110000000011110000000011001111111100001111111100110000000011110000000011110000000011110000000011110000000011001111111100001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011001110000000001110000000001111111100001111111100110000011111110000011111110000000011110000000011110000000011110000000011001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100"],
   "9": ["001111100000001111100000110000011100110000011100110000000011110000000011110000000011110000000011110000011111110000011111000000000011000000000011000000000011000000000011000000011100000000011100111111100000111111100000","001111111000001111111000111000011100110000000100110000000100110000000100110000000100110000000111111000011111111000011111000111100100000000000100000000000100000000000100000000000100110000011100001111100000001111100000","001111111100011110011110011100001110110000000011110000000011110000000011110000000011110000000011011100001111011111110011000011100011000000000011000000000011000000001110000000001110010000011110011111111100001111110000"],
 };
+const OCR_EXP_DIGIT_TEMPLATES = {
+  "0": [{ width: 5, height: 7, bits: "01110100011000110001100011000101110" }],
+  "1": [
+    { width: 2, height: 7, bits: "11111101010101" },
+    { width: 1, height: 7, bits: "1111111" },
+  ],
+  "2": [{ width: 5, height: 7, bits: "01110100010000100010001000100011111" }],
+  "3": [{ width: 5, height: 7, bits: "01110100010000100110000011000101110" }],
+  "4": [{ width: 5, height: 7, bits: "00010001100101010010111110001000010" }],
+  "5": [{ width: 5, height: 7, bits: "11111100001000001110000011000101110" }],
+  "6": [{ width: 5, height: 7, bits: "01110100011000011110100011000101110" }],
+  "7": [{ width: 5, height: 7, bits: "11111000010000100001000100010000100" }],
+  "8": [{ width: 5, height: 7, bits: "01110100011000101110100011000101110" }],
+  "9": [{ width: 5, height: 7, bits: "01110100011000101111000011000101110" }],
+};
+const OCR_LEVEL_DIGIT_TEMPLATES = {
+  "0": [
+    { width: 5, height: 7, bits: "00000010011100111001110010100100000" },
+    { width: 5, height: 7, bits: "00000010111101111011110110101100000" },
+    { width: 5, height: 7, bits: "00000000000101101011010110000000000" },
+    { width: 5, height: 7, bits: "01110100011000110001100011000101110" },
+  ],
+  "1": [{ width: 3, height: 7, bits: "011111011011011011011" }],
+  "2": [{ width: 5, height: 7, bits: "01110100010000100010001000100011111" }],
+  "3": [{ width: 5, height: 7, bits: "01110100010000100110000011000101110" }],
+  "4": [
+    { width: 5, height: 7, bits: "00000001000011000110101101011000110" },
+    { width: 5, height: 7, bits: "00000001100011100011100111001100011" },
+    { width: 5, height: 7, bits: "00000001110111111011111111111100011" },
+    { width: 5, height: 7, bits: "00000001100111111111111111111100010" },
+    { width: 5, height: 7, bits: "00010001100101010010111110001000010" },
+    { width: 5, height: 7, bits: "00110011100101010010111110001000010" },
+  ],
+  "5": [{ width: 5, height: 7, bits: "11111100001000001110000011000101110" }],
+  "6": [{ width: 5, height: 7, bits: "01110100011000011110100011000101110" }],
+  "7": [{ width: 5, height: 7, bits: "11111000010000100001000100010000100" }],
+  "8": [{ width: 5, height: 7, bits: "01110100011000101110100011000101110" }],
+  "9": [{ width: 5, height: 7, bits: "01110100011000101111000011000101110" }],
+};
 
 const state = {
   theme: initialTheme(),
@@ -526,9 +565,27 @@ function thresholdRegionCanvas(sourceCanvas, region, type, scale = 8) {
   return raw;
 }
 
-function expInkPixel(r, g, b) {
+function expWhiteInkPixel(r, g, b) {
   const brightness = (r + g + b) / 3;
-  return brightness > 150 || (g > 150 && r > 80);
+  const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+  return brightness > 145 && saturation < 135;
+}
+
+function expBracketInkPixel(r, g, b) {
+  return g > 125 && r < 190 && b < 170 && (g - r) > 25;
+}
+
+function levelWhiteInkPixel(r, g, b) {
+  return r > 220 && g > 220 && b > 220;
+}
+
+function levelOrangeInkPixel(r, g, b) {
+  return r > 150 && g > 45 && g < 190 && b < 95 && (r - g) > 45;
+}
+
+function levelDigitInkPixel(r, g, b) {
+  return levelWhiteInkPixel(r, g, b)
+    || (r > 120 && r < 235 && g > 35 && g < 150 && b < 85 && (r - g) > 45);
 }
 
 function mesoInkPixel(r, g, b) {
@@ -637,49 +694,307 @@ function classifyDigit(mask) {
   return best;
 }
 
-function extractExpParts(image) {
-  const groups = extractGlyphGroupsFromImage(image, expInkPixel, 0, 8);
-  let openingBracket = -1;
-  for (let index = 2; index < groups.length; index += 1) {
-    if (groups[index].white === 0) {
-      openingBracket = index;
-      break;
+function downsampleImageData(image, factor = 8) {
+  if (!image || factor <= 1 || image.width < factor * 16 || image.height < factor * 6) return image;
+  const width = Math.max(1, Math.round(image.width / factor));
+  const height = Math.max(1, Math.round(image.height / factor));
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const sourceX = Math.min(image.width - 1, Math.floor((x + 0.5) * factor));
+      const sourceY = Math.min(image.height - 1, Math.floor((y + 0.5) * factor));
+      const sourceIndex = (sourceY * image.width + sourceX) * 4;
+      const targetIndex = (y * width + x) * 4;
+      data[targetIndex] = image.data[sourceIndex];
+      data[targetIndex + 1] = image.data[sourceIndex + 1];
+      data[targetIndex + 2] = image.data[sourceIndex + 2];
+      data[targetIndex + 3] = image.data[sourceIndex + 3];
     }
   }
-  const closingBracket = openingBracket >= 0
-    ? groups.findIndex((group, index) => index > openingBracket && group.white === 0)
-    : -1;
+  return { width, height, data };
+}
+
+function expGlyphBounds(image, group, inkFn) {
+  let minX = group.x2;
+  let minY = image.height;
+  let maxX = group.x1;
+  let maxY = -1;
+  for (let x = group.x1; x <= group.x2; x += 1) {
+    for (let y = 0; y < image.height; y += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (inkFn(r, g, b)) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+  if (maxY < minY) return null;
   return {
-    expDigits: openingBracket > 2 ? groups.slice(2, openingBracket) : [],
-    percentDigits: closingBracket > openingBracket
-      ? groups.slice(openingBracket + 1, closingBracket - 1)
-      : [],
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
   };
+}
+
+function extractExpGlyphGroups(image, inkFn, closingGap = 1, minColumnPixels = 0) {
+  const columns = [];
+  const yStart = Math.max(0, Math.floor(image.height * 0.12));
+  const yEnd = Math.min(image.height, Math.ceil(image.height * 0.92));
+  for (let x = 0; x < image.width; x += 1) {
+    let count = 0;
+    for (let y = yStart; y < yEnd; y += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (inkFn(r, g, b)) count += 1;
+    }
+    columns.push(count);
+  }
+
+  const groups = [];
+  let start = null;
+  let gap = 0;
+  for (let x = 0; x < columns.length; x += 1) {
+    if (columns[x] > minColumnPixels) {
+      if (start === null) start = x;
+      gap = 0;
+    } else if (start !== null) {
+      gap += 1;
+      if (gap >= closingGap) {
+        const group = { x1: start, x2: x - gap };
+        const bounds = expGlyphBounds(image, group, inkFn);
+        if (bounds) groups.push({ ...group, ...bounds });
+        start = null;
+        gap = 0;
+      }
+    }
+  }
+  if (start !== null) {
+    const group = { x1: start, x2: columns.length - 1 };
+    const bounds = expGlyphBounds(image, group, inkFn);
+    if (bounds) groups.push({ ...group, ...bounds });
+  }
+  return groups;
+}
+
+function sampleExpGlyph(image, bounds, inkFn, width, height) {
+  let output = "";
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const sourceX = Math.round(bounds.minX + (x + 0.5) * bounds.width / width - 0.5);
+      const sourceY = Math.round(bounds.minY + (y + 0.5) * bounds.height / height - 0.5);
+      const [r, g, b] = imagePixel(
+        image,
+        clamp(sourceX, 0, image.width - 1),
+        clamp(sourceY, 0, image.height - 1),
+      );
+      output += inkFn(r, g, b) ? "1" : "0";
+    }
+  }
+  return output;
+}
+
+function sampleGlyphGrid(image, bounds, inkFn, width, height, threshold = 0.25) {
+  let output = "";
+  for (let y = 0; y < height; y += 1) {
+    const y0 = Math.round(bounds.minY + y * bounds.height / height);
+    const y1 = Math.max(y0 + 1, Math.round(bounds.minY + (y + 1) * bounds.height / height));
+    for (let x = 0; x < width; x += 1) {
+      const x0 = Math.round(bounds.minX + x * bounds.width / width);
+      const x1 = Math.max(x0 + 1, Math.round(bounds.minX + (x + 1) * bounds.width / width));
+      let total = 0;
+      let ink = 0;
+      for (let sourceY = Math.max(0, y0); sourceY < Math.min(image.height, y1); sourceY += 1) {
+        for (let sourceX = Math.max(0, x0); sourceX < Math.min(image.width, x1); sourceX += 1) {
+          const [r, g, b] = imagePixel(image, sourceX, sourceY);
+          total += 1;
+          if (inkFn(r, g, b)) ink += 1;
+        }
+      }
+      output += total > 0 && ink / total >= threshold ? "1" : "0";
+    }
+  }
+  return output;
+}
+
+function classifyNarrowExpOne(image, group) {
+  if (group.width > 4 || group.height < 6) return null;
+  let tallestColumn = 0;
+  for (let x = group.minX; x <= group.maxX; x += 1) {
+    let count = 0;
+    for (let y = group.minY; y <= group.maxY; y += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (expWhiteInkPixel(r, g, b)) count += 1;
+    }
+    tallestColumn = Math.max(tallestColumn, count);
+  }
+  return tallestColumn >= Math.max(5, Math.round(group.height * 0.75))
+    ? { digit: "1", score: 0 }
+    : null;
+}
+
+function classifyExpDigit(image, group) {
+  const narrowOne = classifyNarrowExpOne(image, group);
+  if (narrowOne) return narrowOne;
+  let best = null;
+  for (const [digit, templates] of Object.entries(OCR_EXP_DIGIT_TEMPLATES)) {
+    for (const template of templates) {
+      const mask = sampleExpGlyph(image, group, expWhiteInkPixel, template.width, template.height);
+      const score = digitDistance(mask, template.bits);
+      if (!best || score < best.score) best = { digit, score };
+    }
+  }
+  return best;
+}
+
+function isLikelyExpDot(group, image) {
+  return group.width <= Math.max(3, Math.round(image.width * 0.02))
+    && group.height <= Math.max(4, Math.round(image.height * 0.35));
+}
+
+function readExpDigitsFromGroups(image, groups, options = {}) {
+  const maxScore = options.maxScore ?? 0.3;
+  return groups
+    .filter(group => !options.skipDots || !isLikelyExpDot(group, image))
+    .map(group => ({ group, match: classifyExpDigit(image, group) }))
+    .filter(row => row.match && row.match.score <= maxScore)
+    .map(row => row.match.digit);
 }
 
 function readExpFromCanvas(canvas) {
   if (!canvas) return { exp: null, percent: null };
-  const image = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
-  const parts = extractExpParts(image);
-  const digits = parts.expDigits.map(group => classifyDigit(glyphMaskFromImage(image, group, expInkPixel)));
-  if (!digits.length || digits.some(row => !row || row.score > 0.35)) {
+  const rawImage = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
+  const image = downsampleImageData(rawImage, 8);
+  const bracketGroups = extractExpGlyphGroups(image, expBracketInkPixel, 2)
+    .filter(group => group.width <= Math.max(6, Math.round(image.width * 0.04)));
+  if (bracketGroups.length < 2) {
     return { exp: null, percent: null };
   }
-  const exp = Number(digits.map(row => row.digit).join(""));
-  const percentDigits = parts.percentDigits
-    .map(group => classifyDigit(glyphMaskFromImage(image, group, expInkPixel)))
-    .filter(row => row && row.score <= 0.35)
-    .map(row => row.digit)
-    .join("");
+  const openingBracket = bracketGroups[0];
+  const closingBracket = bracketGroups[bracketGroups.length - 1];
+  const whiteGroups = extractExpGlyphGroups(image, expWhiteInkPixel, 1);
+  const expDigits = readExpDigitsFromGroups(
+    image,
+    whiteGroups.filter(group => group.x2 < openingBracket.x1),
+  ).slice(-12);
+  if (!expDigits.length) return { exp: null, percent: null };
+
+  const exp = Number(expDigits.join(""));
+  const percentDigits = readExpDigitsFromGroups(
+    image,
+    whiteGroups.filter(group => group.x1 > openingBracket.x2 && group.x2 < closingBracket.x1),
+    { skipDots: true },
+  ).join("");
   let percent = null;
   if (percentDigits.length >= 3) {
     percent = Number(`${percentDigits.slice(0, -2)}.${percentDigits.slice(-2)}`);
-    if (percent > 100 && percentDigits.startsWith("1")) {
-      const trimmed = percentDigits.slice(1);
-      percent = Number(`${trimmed.slice(0, -2)}.${trimmed.slice(-2)}`);
-    }
+    if (percent > 100) percent = null;
   }
   return { exp, percent };
+}
+
+function classifyLevelDigit(image, group) {
+  let best = null;
+  for (const [digit, templates] of Object.entries(OCR_LEVEL_DIGIT_TEMPLATES)) {
+    for (const template of templates) {
+      if (digit === "1" && group.width > Math.max(4, Math.round(group.height * 0.55))) continue;
+      const mask = sampleGlyphGrid(image, group, levelWhiteInkPixel, template.width, template.height, 0.25);
+      const score = digitDistance(mask, template.bits);
+      if (!best || score < best.score) best = { digit, score };
+    }
+  }
+  return best;
+}
+
+function extractLevelDigitGroups(image, band) {
+  if (!band) return [];
+  const insetX = Math.max(2, Math.round(band.width * 0.07));
+  const insetY = Math.max(1, Math.round(band.height * 0.12));
+  const minX = Math.min(image.width - 1, band.minX + insetX);
+  const maxX = Math.max(minX, band.maxX - insetX);
+  const minY = Math.min(image.height - 1, band.minY + insetY);
+  const maxY = Math.max(minY, band.maxY - insetY);
+  const minColumnPixels = Math.max(1, Math.round((maxY - minY + 1) * 0.12));
+  const columns = [];
+  for (let x = minX; x <= maxX; x += 1) {
+    let count = 0;
+    for (let y = minY; y <= maxY; y += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (levelDigitInkPixel(r, g, b)) count += 1;
+    }
+    columns.push(count);
+  }
+
+  const runs = [];
+  let start = null;
+  let gap = 0;
+  for (let index = 0; index < columns.length; index += 1) {
+    if (columns[index] >= minColumnPixels) {
+      if (start === null) start = index;
+      gap = 0;
+    } else if (start !== null) {
+      gap += 1;
+      if (gap >= 2) {
+        const end = index - gap;
+        if (end - start + 1 >= 2) runs.push({ x1: minX + start, x2: minX + end });
+        start = null;
+        gap = 0;
+      }
+    }
+  }
+  if (start !== null) {
+    const end = columns.length - 1;
+    if (end - start + 1 >= 2) runs.push({ x1: minX + start, x2: minX + end });
+  }
+
+  return runs.map(run => {
+    let glyphMinX = run.x2;
+    let glyphMinY = maxY;
+    let glyphMaxX = run.x1;
+    let glyphMaxY = minY;
+    let found = false;
+    for (let x = run.x1; x <= run.x2; x += 1) {
+      for (let y = minY; y <= maxY; y += 1) {
+        const [r, g, b] = imagePixel(image, x, y);
+        if (levelDigitInkPixel(r, g, b)) {
+          found = true;
+          glyphMinX = Math.min(glyphMinX, x);
+          glyphMinY = Math.min(glyphMinY, y);
+          glyphMaxX = Math.max(glyphMaxX, x);
+          glyphMaxY = Math.max(glyphMaxY, y);
+        }
+      }
+    }
+    if (!found) return null;
+    return {
+      minX: glyphMinX,
+      minY: glyphMinY,
+      maxX: glyphMaxX,
+      maxY: glyphMaxY,
+      width: glyphMaxX - glyphMinX + 1,
+      height: glyphMaxY - glyphMinY + 1,
+    };
+  }).filter(Boolean);
+}
+
+function readLevelFromCanvas(canvas) {
+  if (!canvas) return { level: null };
+  const rawImage = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
+  const image = downsampleImageData(rawImage, 8);
+  const orangeGroups = extractExpGlyphGroups(image, levelOrangeInkPixel, 2)
+    .filter(group => group.height >= 5 && group.width >= 8 && group.minX > image.width * 0.35)
+    .sort((a, b) => (b.width * b.height) - (a.width * a.height));
+  const digitGroups = extractLevelDigitGroups(image, orangeGroups[0])
+    .sort((a, b) => a.minX - b.minX);
+  if (!digitGroups.length || digitGroups.length > 3) return { level: null };
+  const matches = digitGroups.map(group => classifyLevelDigit(image, group));
+  if (matches.some(match => !match || match.score > 0.24)) return { level: null };
+  const level = Number(matches.map(match => match.digit).join(""));
+  if (!Number.isFinite(level) || level < 1 || level > 200) return { level: null };
+  return { level };
 }
 
 function readMesoFromCanvas(canvas) {
@@ -851,22 +1166,24 @@ async function captureFrame(addToTimeline = true) {
   drawRegion(sourceCanvas, expRegion, el.expCrop);
   drawRegion(sourceCanvas, mesoRegion, el.mesoCrop);
 
+  const lvRawCanvas = cropRegionCanvas(sourceCanvas, lvRegion, 8);
   const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
   const mesoRawCanvas = cropRegionCanvas(sourceCanvas, mesoRegion, 8);
+  const templateLevel = readLevelFromCanvas(lvRawCanvas);
   const templateExp = readExpFromCanvas(expRawCanvas);
   const templateMeso = readMesoFromCanvas(mesoRawCanvas);
   const fallback = snapshotFromFields();
   const manualLevel = parseNumber(el.manualLevel?.value);
 
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
-    manualLevel ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
+    manualLevel || templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
     templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
     templateMeso.meso !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.mesoCrop),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
-  const level = parsedLevel || parsedExp.level || fallback?.level || manualLevel || null;
+  const level = manualLevel || templateLevel.level || parsedLevel || parsedExp.level || fallback?.level || null;
   let exp = templateExp.exp ?? parsedExp.exp;
   const expToNext = getExpToNext(level);
   let percent = exp !== null && exp !== undefined && expToNext
