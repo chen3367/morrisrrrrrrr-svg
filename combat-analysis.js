@@ -2,6 +2,28 @@ const db = window.MS_COMBAT_ANALYSIS_DB || {};
 const levelRows = Array.isArray(db.levels) ? db.levels : [];
 const COOKIE_DAYS = 180;
 const CAPTURE_INTERVAL_MS = 10000;
+const OCR_REGION_PRESETS = {
+  "1366x768": {
+    exp: { x: 0.528913, y: 0.955321, width: 0.090558, height: 0.017685 },
+    meso: { x: 0.848105, y: 0.394967, width: 0.112695, height: 0.030088 },
+  },
+  "1920x1080": {
+    exp: { x: 0.519505, y: 0.968093, width: 0.064862, height: 0.013179 },
+    meso: { x: 0.892415, y: 0.283051, width: 0.079214, height: 0.018941 },
+  },
+  "2560x1440": {
+    exp: { x: 0.529064, y: 0.959139, width: 0.090317, height: 0.015446 },
+    meso: { x: 0.848442, y: 0.397155, width: 0.110875, height: 0.024178 },
+  },
+  "2732x1440": {
+    exp: { x: 0.526452, y: 0.958579, width: 0.086042, height: 0.015653 },
+    meso: { x: 0.857949, y: 0.39307, width: 0.103671, height: 0.032763 },
+  },
+  "3840x2160": {
+    exp: { x: 0.518695, y: 0.971186, width: 0.060811, height: 0.011738 },
+    meso: { x: 0.898966, y: 0.265834, width: 0.073318, height: 0.017707 },
+  },
+};
 
 const state = {
   theme: initialTheme(),
@@ -26,6 +48,7 @@ const el = {
   stop: document.getElementById("stopAnalysisButton"),
   reset: document.getElementById("resetSnapshotsButton"),
   status: document.getElementById("ocrStatus"),
+  regionPresetStatus: document.getElementById("regionPresetStatus"),
   expCrop: document.getElementById("expCropCanvas"),
   mesoCrop: document.getElementById("mesoCropCanvas"),
   manualLevel: document.getElementById("manualLevel"),
@@ -199,7 +222,80 @@ function parseDetectedText(text) {
   return result;
 }
 
+function resolutionKey(width, height) {
+  return `${Math.round(Number(width) || 0)}x${Math.round(Number(height) || 0)}`;
+}
+
+function clamp(value, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return min;
+  return Math.min(max, Math.max(min, number));
+}
+
+function presetDimensions(key) {
+  const match = String(key).match(/^(\d+)x(\d+)$/);
+  if (!match) return null;
+  return { width: Number(match[1]), height: Number(match[2]) };
+}
+
+function findRegionPreset(width, height) {
+  const key = resolutionKey(width, height);
+  if (OCR_REGION_PRESETS[key]) {
+    return { key, exact: true, regions: OCR_REGION_PRESETS[key] };
+  }
+  let best = null;
+  const currentAspect = width / Math.max(1, height);
+  for (const [candidateKey, regions] of Object.entries(OCR_REGION_PRESETS)) {
+    const size = presetDimensions(candidateKey);
+    if (!size) continue;
+    const candidateAspect = size.width / Math.max(1, size.height);
+    const widthScore = Math.abs(Math.log(width / size.width));
+    const heightScore = Math.abs(Math.log(height / size.height));
+    const aspectScore = Math.abs(currentAspect - candidateAspect);
+    const score = widthScore + heightScore + aspectScore * 3;
+    if (!best || score < best.score) {
+      best = { key: candidateKey, exact: false, regions, score };
+    }
+  }
+  return best;
+}
+
+function regionToRect(region, width, height) {
+  const x = clamp(region?.x, 0, 0.995);
+  const y = clamp(region?.y, 0, 0.995);
+  const regionWidth = clamp(region?.width, 0.003, 1 - x);
+  const regionHeight = clamp(region?.height, 0.003, 1 - y);
+  const rectX = Math.round(x * width);
+  const rectY = Math.round(y * height);
+  return {
+    x: Math.min(Math.max(0, rectX), Math.max(0, width - 1)),
+    y: Math.min(Math.max(0, rectY), Math.max(0, height - 1)),
+    width: Math.min(Math.max(1, Math.round(regionWidth * width)), Math.max(1, width - rectX)),
+    height: Math.min(Math.max(1, Math.round(regionHeight * height)), Math.max(1, height - rectY)),
+  };
+}
+
+function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.video?.videoHeight) {
+  if (!el.regionPresetStatus) return;
+  if (!width || !height) {
+    el.regionPresetStatus.textContent = "尚未取得畫面解析度。";
+    return;
+  }
+  const preset = findRegionPreset(width, height);
+  const current = resolutionKey(width, height);
+  if (!preset) {
+    el.regionPresetStatus.textContent = `${current} · 使用預設辨識區塊`;
+    return;
+  }
+  el.regionPresetStatus.textContent = preset.exact
+    ? `${current} · 使用 ${preset.key} 辨識區塊`
+    : `${current} · 使用最接近的 ${preset.key} 辨識區塊推估`;
+}
+
 function rectFor(type, width, height) {
+  const preset = findRegionPreset(width, height);
+  const region = preset?.regions?.[type];
+  if (region) return regionToRect(region, width, height);
   if (type === "exp") {
     return {
       x: Math.round(width * 0.34),
@@ -360,6 +456,7 @@ async function ensureScreenShare() {
     state.stream = stream;
     el.video.srcObject = stream;
     await el.video.play();
+    updateRegionPresetStatus();
     stream.getVideoTracks().forEach(track => {
       track.addEventListener("ended", stopAnalysis);
     });
@@ -394,6 +491,7 @@ async function captureFrame(addToTimeline = true) {
   const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
   sourceCtx.drawImage(el.video, 0, 0, sourceCanvas.width, sourceCanvas.height);
 
+  updateRegionPresetStatus(sourceCanvas.width, sourceCanvas.height);
   const expRegion = rectFor("exp", sourceCanvas.width, sourceCanvas.height);
   const mesoRegion = rectFor("meso", sourceCanvas.width, sourceCanvas.height);
   drawRegion(sourceCanvas, expRegion, el.expCrop);
@@ -677,6 +775,8 @@ function initialize() {
       if (number !== null) input.value = formatNumber(number);
     });
   }
+  el.video?.addEventListener("loadedmetadata", () => updateRegionPresetStatus());
+  updateRegionPresetStatus();
   render();
   setStatus(state.ocrAvailable ? "可使用瀏覽器原生 OCR。" : "會在需要時載入前端 OCR 元件。");
 }
