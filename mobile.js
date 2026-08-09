@@ -18,7 +18,7 @@
 
   function hasDetailPane() {
     return !!document.querySelector(
-      "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, .patchNotesDetail"
+      "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, #levelDetail, .patchNotesDetail"
     );
   }
 
@@ -65,7 +65,7 @@
     if (nextPane === "detail" && options.scrollTop !== false) {
       requestAnimationFrame(() => {
         const paneEl = document.querySelector(
-          "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, .patchNotesDetail"
+          "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, #levelDetail, .patchNotesDetail"
         );
         paneEl?.scrollTo({ top: 0, behavior: "auto" });
       });
@@ -147,9 +147,9 @@
     }
 
     const row = event.target.closest(
-      ".monsterRow, .patchVersionRow"
+      ".monsterRow, .levelExpRow, .patchVersionRow"
     );
-    if (row && (row.classList.contains("patchVersionRow") || !event.target.closest("a[href], button:not(.monsterRow)"))) {
+    if (row && (row.classList.contains("patchVersionRow") || row.classList.contains("levelExpRow") || !event.target.closest("a[href], button:not(.monsterRow)"))) {
       requestAnimationFrame(() => setPane("detail", { scrollTop: true }));
       return;
     }
