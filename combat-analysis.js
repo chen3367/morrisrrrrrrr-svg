@@ -6,25 +6,42 @@ const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const OCR_REGION_PRESETS = {
   "1366x768": {
+    lv: { x: 0.211973, y: 0.96, width: 0.051542, height: 0.038541 },
     exp: { x: 0.528913, y: 0.955321, width: 0.090558, height: 0.017685 },
     meso: { x: 0.848105, y: 0.394967, width: 0.112695, height: 0.030088 },
   },
   "1920x1080": {
+    lv: { x: 0.295238, y: 0.96875, width: 0.036366, height: 0.03125 },
     exp: { x: 0.519505, y: 0.968093, width: 0.064862, height: 0.013179 },
     meso: { x: 0.892415, y: 0.283051, width: 0.079214, height: 0.018941 },
   },
   "2560x1440": {
+    lv: { x: 0.210742, y: 0.96, width: 0.052362, height: 0.034895 },
     exp: { x: 0.529064, y: 0.959139, width: 0.090317, height: 0.015446 },
     meso: { x: 0.848442, y: 0.397155, width: 0.110875, height: 0.024178 },
   },
   "2732x1440": {
+    lv: { x: 0.227149, y: 0.959786, width: 0.052363, height: 0.039222 },
     exp: { x: 0.526452, y: 0.958579, width: 0.086042, height: 0.015653 },
     meso: { x: 0.857949, y: 0.39307, width: 0.103671, height: 0.032763 },
   },
   "3840x2160": {
+    lv: { x: 0.304671, y: 0.970209, width: 0.038418, height: 0.029791 },
     exp: { x: 0.518695, y: 0.971186, width: 0.060811, height: 0.011738 },
     meso: { x: 0.898966, y: 0.265834, width: 0.073318, height: 0.017707 },
   },
+};
+const OCR_DIGIT_TEMPLATES = {
+  "0": ["001111111100001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100001111111100"],
+  "1": ["000000111111000000111111000000111111111111111111111111111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111"],
+  "2": ["000111111000000111111000000111111000111000000111111000000111111000000111000000000111000000000111000000011000000000011000000001100000000001100000000110000000000110000000000110000000111111111111111111111111111111111111","001111111100001111111100001111111100110000000011110000000011000000000011000000000011000000000011000000011100000000011100000001100000000001100000000001100000001110000000001110000000111111111111111111111111111111111111","001111111100001111111100001111111100110000000011110000000011110000000011000000000011000000000011000000011100000000011100000001100000000001100000001110000000001110000000001110000000111111111111111111111111111111111111","001111111100001111111100110000000011110000000011110000000011110000000011000000000011000000000011000000001100000000001100000011110000000011110000001100000000001100000000001100000000001100000000111111111111111111111111"],
+  "3": ["000111111000000111111000000111111000111000000111111000000111111000000111000000000111000000000111000001111000000001111000000000000111000000000111111000000111111000000111111000000111000111111000000111111000000111111000","001111111100001111111100001111111100110000000011110000000011000000000011000000000011000000000011000001111100000001111100000000000011000000000011000000000011110000000011110000000011001111111100001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011000000000011000000000011000001111100000001111100000000000011000000000011110000000011110000000011110000000011110000000011001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011000000000011000000000011000011111100000011111100000000000011000000000011110000000011110000000011110000000011110000000011001111111100001111111100","001111111100001111111100110000001111000000000011000000000011000000000011000000000011000000001100000011111100000011111100000000001111000000000011000000000011000000000011000000000011110000001111001111111100001111111100","001111111100001111111100110000011111110000011111000000000011000000000011000000011100000000011100001111111100001111111100000000000011000000000011000000000011000000000011000000000011000000000011111111111100111111111100","001111111100011110011110010000001110000000001111000000001111000000001111000000001110000000111100000011110000000000111110000000001111000000000011000000000011000000000011000000000011110000001111111111111110001111111100"],
+  "4": ["000000011100000000011100000000111100000011011100000011011100000011011100000011011100000100011100011100011100011100011100011000011100111111111111111111111111000000011100000000011100000000011100000000011100000000011100","000000011100000000011100000001111100000001111100001110011100001110011100001110011100001110011100110000011100110000011100110000011100110000011100000000011111000000011111000000011100000000011100000000011100000000011100","000000011100000001111100000011111100000011101100000110001100000110001100001110001100001100001100011000001100011000001100110000011100111111111111000000011100000000001100000000001100000000001100000000001100000000001100"],
+  "5": ["111111111111111111111111110000000000110000000000110000000000110000000000110000000000110000000000001111111100001111111100000000000011000000000011110000000011110000000011110000000011110000000011001111111100001111111100","111111111111111111111111111111111111110000000000110000000000110000000000110000000000110000000000001111111100001111111100000000000011000000000011000000000011110000000011110000000011001111111100001111111100001111111100","111111111111111111111111111111111111110000000000110000000000110000000000110000000000110000000000001111111100001111111100000000000011000000000011110000000011110000000011110000000011001111111100001111111100001111111100","111111111111111111111111111111111111111000000000111000000000111000000000111000000000111000000000000111111000000111111000000000000111000000000111111000000111111000000111111000000111000111111000000111111000000111111000"],
+  "6": ["000001111100000001111100001110000000001110000000110000000000110000000000110000000000110000000000111110011111111110011111110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100","000011111110001111101111001110000000011100000000011100000000011100000000011100000000110001111100111111111110111100000011111100000011010000000011011100000011011100000011011100000011011110000011001111111110000011111100","000111111100000111111100001110000100111000000000111000000000110000000000110000000000110001111000111000000100111000000100110000000111110000000111110000000111111000000111111000000111001000000100000111111000000111111000"],
+  "7": ["111111111111111111111111111111111111000000000011000000000011000000000011000000000011000000000011000000000011000000000011000000011100000000011100000000011100000001100000000001100000000001100000000001100000000001100000"],
+  "8": ["000011111100001110001110011100000011011100000011011100000011011100000011011110000010001111001110000011111100001110111110011100001111110000000011110000000011110000000011110000000011011100000011011110011110001111111100","000111111000000111111000000111111000111000000111111000000111111000000111111000000111111000000111000111111000000111111000111000000111111000000111111000000111111000000111111000000111000111111000000111111000000111111000","001111111000001111111000001000000100111000000100111000000100001000000100001000000100001110000100001111111000001111111000111000011100110000000111110000000111110000000111110000000111111000000100001111111000001111111000","001111111100001111111100001111111100110000000011110000000011110000000011110000000011110000000011001111111100001111111100110000000011110000000011110000000011110000000011110000000011001111111100001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011001110000000001110000000001111111100001111111100110000011111110000011111110000000011110000000011110000000011110000000011001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100"],
+  "9": ["001111100000001111100000110000011100110000011100110000000011110000000011110000000011110000000011110000011111110000011111000000000011000000000011000000000011000000000011000000011100000000011100111111100000111111100000","001111111000001111111000111000011100110000000100110000000100110000000100110000000100110000000111111000011111111000011111000111100100000000000100000000000100000000000100000000000100110000011100001111100000001111100000","001111111100011110011110011100001110110000000011110000000011110000000011110000000011110000000011011100001111011111110011000011100011000000000011000000000011000000001110000000001110010000011110011111111100001111110000"],
 };
 
 const state = {
@@ -53,6 +70,7 @@ const el = {
   status: document.getElementById("ocrStatus"),
   ocrResolution: document.getElementById("ocrResolutionSelect"),
   regionPresetStatus: document.getElementById("regionPresetStatus"),
+  lvCrop: document.getElementById("lvCropCanvas"),
   expCrop: document.getElementById("expCropCanvas"),
   mesoCrop: document.getElementById("mesoCropCanvas"),
   manualLevel: document.getElementById("manualLevel"),
@@ -220,15 +238,36 @@ function parseDetectedText(text) {
   const levelMatch = compact.match(/(?:LV\.?|Lv\.?|L[Vv])[^0-9]{0,5}([0-9]{1,3})/);
   if (levelMatch) result.level = Number(levelMatch[1]);
 
-  const expMatch = compact.match(/EXP[^0-9]{0,8}([0-9,]{2,12})[\[(（]?([0-9]{1,3}(?:\.[0-9]{1,2})?)%/) || compact.match(/([0-9,]{3,12})[\[(（]([0-9]{1,3}(?:\.[0-9]{1,2})?)%/);
-  if (expMatch) {
-    result.exp = parseNumber(expMatch[1]);
-    result.percent = Number(expMatch[2]);
+  const percentMatch = compact.match(/([0-9]{1,3}(?:\.[0-9]{1,2})?)%/);
+  if (percentMatch) {
+    result.percent = Number(percentMatch[1]);
+    const prefix = compact.slice(0, percentMatch.index).replace(/[)\]）]+$/, "");
+    const expCandidates = [...prefix.matchAll(/([0-9][0-9,]{0,12})/g)]
+      .map(match => match[1])
+      .filter(value => parseNumber(value) !== result.level);
+    if (expCandidates.length) result.exp = parseNumber(expCandidates[expCandidates.length - 1]);
+  }
+  if (result.exp === null || result.percent === null) {
+    const expMatch = compact.match(/EXP[^0-9]{0,8}([0-9,]{2,12})[\[(（]?([0-9]{1,3}(?:\.[0-9]{1,2})?)%/) || compact.match(/([0-9,]{3,12})[\[(（]([0-9]{1,3}(?:\.[0-9]{1,2})?)%/);
+    if (expMatch) {
+      result.exp = parseNumber(expMatch[1]);
+      result.percent = Number(expMatch[2]);
+    }
   }
 
   const mesoMatch = compact.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})楓幣/) || compact.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})/);
   if (mesoMatch) result.meso = parseNumber(mesoMatch[1]);
   return result;
+}
+
+function parseLevelText(text) {
+  const compact = normalizeOcrText(text).replace(/\s+/g, "");
+  const withLabel = compact.match(/(?:LV\.?|Lv\.?|L[Vv])[^0-9]{0,5}([0-9]{1,3})/);
+  if (withLabel) return Number(withLabel[1]);
+  const values = [...compact.matchAll(/[0-9]{1,3}/g)]
+    .map(match => Number(match[0]))
+    .filter(value => value >= 1 && value <= 200);
+  return values.length ? values[values.length - 1] : null;
 }
 
 function resolutionKey(width, height) {
@@ -323,6 +362,14 @@ function rectFor(type, width, height) {
   const preset = selectedRegionPreset(width, height);
   const region = preset?.regions?.[type];
   if (region) return regionToRect(region, width, height);
+  if (type === "lv") {
+    return {
+      x: Math.round(width * 0.2),
+      y: Math.round(height * 0.94),
+      width: Math.round(width * 0.09),
+      height: Math.round(height * 0.06),
+    };
+  }
   if (type === "exp") {
     return {
       x: Math.round(width * 0.34),
@@ -366,6 +413,221 @@ function typeScale(region) {
   if (region.width < 480) return 3;
   if (region.width < 900) return 2;
   return 1;
+}
+
+function cropRegionCanvas(sourceCanvas, region, scale = 8) {
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(region.width * scale));
+  canvas.height = Math.max(1, Math.round(region.height * scale));
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(
+    sourceCanvas,
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
+  return canvas;
+}
+
+function thresholdRegionCanvas(sourceCanvas, region, type, scale = 8) {
+  const raw = cropRegionCanvas(sourceCanvas, region, scale);
+  const ctx = raw.getContext("2d", { willReadFrequently: true });
+  const image = ctx.getImageData(0, 0, raw.width, raw.height);
+  for (let index = 0; index < image.data.length; index += 4) {
+    const r = image.data[index];
+    const g = image.data[index + 1];
+    const b = image.data[index + 2];
+    const brightness = (r + g + b) / 3;
+    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+    let ink = false;
+    if (type === "lv") {
+      ink = r > 150 && g > 45 && g < 190 && b < 85;
+    } else if (type === "meso") {
+      ink = brightness < 125 && saturation < 95;
+    } else {
+      ink = brightness > 135 || (r > 140 && g > 55 && b < 80) || (g > 140 && r > 90);
+    }
+    const value = ink ? 0 : 255;
+    image.data[index] = value;
+    image.data[index + 1] = value;
+    image.data[index + 2] = value;
+    image.data[index + 3] = 255;
+  }
+  ctx.putImageData(image, 0, 0);
+  return raw;
+}
+
+function expInkPixel(r, g, b) {
+  const brightness = (r + g + b) / 3;
+  return brightness > 150 || (g > 150 && r > 80);
+}
+
+function mesoInkPixel(r, g, b) {
+  return (r + g + b) / 3 < 80;
+}
+
+function imagePixel(image, x, y) {
+  const index = (y * image.width + x) * 4;
+  return [image.data[index], image.data[index + 1], image.data[index + 2]];
+}
+
+function extractGlyphGroupsFromImage(image, inkFn, minColumnPixels = 0, closingGap = 2) {
+  const columns = [];
+  for (let x = 0; x < image.width; x += 1) {
+    let count = 0;
+    for (let y = 0; y < image.height; y += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (inkFn(r, g, b)) count += 1;
+    }
+    columns.push(count);
+  }
+
+  const groups = [];
+  let start = null;
+  let gap = 0;
+  for (let x = 0; x < columns.length; x += 1) {
+    if (columns[x] > minColumnPixels) {
+      if (start === null) start = x;
+      gap = 0;
+    } else if (start !== null) {
+      gap += 1;
+      if (gap >= closingGap) {
+        groups.push({ x1: start, x2: x - gap });
+        start = null;
+        gap = 0;
+      }
+    }
+  }
+  if (start !== null) groups.push({ x1: start, x2: columns.length - 1 });
+
+  return groups.map(group => {
+    let white = 0;
+    let dark = 0;
+    for (let x = group.x1; x <= group.x2; x += 1) {
+      for (let y = 0; y < image.height; y += 1) {
+        const [r, g, b] = imagePixel(image, x, y);
+        const brightness = (r + g + b) / 3;
+        if (brightness > 160) white += 1;
+        if (brightness < 80) dark += 1;
+      }
+    }
+    return { ...group, width: group.x2 - group.x1 + 1, white, dark };
+  });
+}
+
+function glyphMaskFromImage(image, group, inkFn, width = 12, height = 18) {
+  let minX = group.x2;
+  let minY = image.height;
+  let maxX = group.x1;
+  let maxY = -1;
+  for (let x = group.x1; x <= group.x2; x += 1) {
+    for (let y = 0; y < image.height; y += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (inkFn(r, g, b)) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+  if (maxY < minY) return "";
+  let output = "";
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const sourceX = Math.round(minX + (x + 0.5) * (maxX - minX + 1) / width - 0.5);
+      const sourceY = Math.round(minY + (y + 0.5) * (maxY - minY + 1) / height - 0.5);
+      const [r, g, b] = imagePixel(
+        image,
+        clamp(sourceX, 0, image.width - 1),
+        clamp(sourceY, 0, image.height - 1),
+      );
+      output += inkFn(r, g, b) ? "1" : "0";
+    }
+  }
+  return output;
+}
+
+function digitDistance(a, b) {
+  if (!a || !b || a.length !== b.length) return 1;
+  let different = 0;
+  for (let index = 0; index < a.length; index += 1) {
+    if (a[index] !== b[index]) different += 1;
+  }
+  return different / a.length;
+}
+
+function classifyDigit(mask) {
+  let best = null;
+  for (const [digit, masks] of Object.entries(OCR_DIGIT_TEMPLATES)) {
+    for (const template of masks) {
+      const score = digitDistance(mask, template);
+      if (!best || score < best.score) best = { digit, score };
+    }
+  }
+  return best;
+}
+
+function extractExpParts(image) {
+  const groups = extractGlyphGroupsFromImage(image, expInkPixel, 0, 8);
+  let openingBracket = -1;
+  for (let index = 2; index < groups.length; index += 1) {
+    if (groups[index].white === 0) {
+      openingBracket = index;
+      break;
+    }
+  }
+  const closingBracket = openingBracket >= 0
+    ? groups.findIndex((group, index) => index > openingBracket && group.white === 0)
+    : -1;
+  return {
+    expDigits: openingBracket > 2 ? groups.slice(2, openingBracket) : [],
+    percentDigits: closingBracket > openingBracket
+      ? groups.slice(openingBracket + 1, closingBracket - 1)
+      : [],
+  };
+}
+
+function readExpFromCanvas(canvas) {
+  if (!canvas) return { exp: null, percent: null };
+  const image = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
+  const parts = extractExpParts(image);
+  const digits = parts.expDigits.map(group => classifyDigit(glyphMaskFromImage(image, group, expInkPixel)));
+  if (!digits.length || digits.some(row => !row || row.score > 0.35)) {
+    return { exp: null, percent: null };
+  }
+  const exp = Number(digits.map(row => row.digit).join(""));
+  const percentDigits = parts.percentDigits
+    .map(group => classifyDigit(glyphMaskFromImage(image, group, expInkPixel)))
+    .filter(row => row && row.score <= 0.35)
+    .map(row => row.digit)
+    .join("");
+  let percent = null;
+  if (percentDigits.length >= 3) {
+    percent = Number(`${percentDigits.slice(0, -2)}.${percentDigits.slice(-2)}`);
+    if (percent > 100 && percentDigits.startsWith("1")) {
+      const trimmed = percentDigits.slice(1);
+      percent = Number(`${trimmed.slice(0, -2)}.${trimmed.slice(-2)}`);
+    }
+  }
+  return { exp, percent };
+}
+
+function readMesoFromCanvas(canvas) {
+  if (!canvas) return { meso: null };
+  const image = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
+  const groups = extractGlyphGroupsFromImage(image, mesoInkPixel, 2, 8)
+    .slice(1, 8)
+    .filter(group => group.width > 25);
+  const digits = groups.map(group => classifyDigit(glyphMaskFromImage(image, group, mesoInkPixel)));
+  if (!digits.length || digits.some(row => !row || row.score > 0.35)) return { meso: null };
+  return { meso: Number(digits.map(row => row.digit).join("")) };
 }
 
 async function detectTextFromCanvas(canvas) {
@@ -519,40 +781,67 @@ async function captureFrame(addToTimeline = true) {
   sourceCtx.drawImage(el.video, 0, 0, sourceCanvas.width, sourceCanvas.height);
 
   updateRegionPresetStatus(sourceCanvas.width, sourceCanvas.height);
+  const lvRegion = rectFor("lv", sourceCanvas.width, sourceCanvas.height);
   const expRegion = rectFor("exp", sourceCanvas.width, sourceCanvas.height);
   const mesoRegion = rectFor("meso", sourceCanvas.width, sourceCanvas.height);
+  drawRegion(sourceCanvas, lvRegion, el.lvCrop);
   drawRegion(sourceCanvas, expRegion, el.expCrop);
   drawRegion(sourceCanvas, mesoRegion, el.mesoCrop);
 
-  const [expDetection, mesoDetection] = await Promise.all([
-    detectTextFromCanvas(el.expCrop),
-    detectTextFromCanvas(el.mesoCrop),
+  const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
+  const mesoRawCanvas = cropRegionCanvas(sourceCanvas, mesoRegion, 8);
+  const templateExp = readExpFromCanvas(expRawCanvas);
+  const templateMeso = readMesoFromCanvas(mesoRawCanvas);
+  const fallback = snapshotFromFields();
+  const manualLevel = parseNumber(el.manualLevel?.value);
+
+  const [lvDetection, expDetection, mesoDetection] = await Promise.all([
+    manualLevel ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
+    templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
+    templateMeso.meso !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.mesoCrop),
   ]);
+  const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
-  const fallback = snapshotFromFields();
-  const level = parsedExp.level || fallback?.level || null;
-  let exp = parsedExp.exp;
-  const percent = parsedExp.percent ?? fallback?.percent ?? null;
+  const level = parsedLevel || parsedExp.level || fallback?.level || manualLevel || null;
+  let exp = templateExp.exp ?? parsedExp.exp;
   const expToNext = getExpToNext(level);
+  let percent = exp !== null && exp !== undefined && expToNext
+    ? Math.round((Number(exp) / expToNext) * 10000) / 100
+    : templateExp.percent ?? parsedExp.percent ?? fallback?.percent ?? null;
   if ((exp === null || exp === undefined) && percent !== null && expToNext) {
     exp = Math.floor(expToNext * percent / 100);
+    percent = Math.round((Number(exp) / expToNext) * 10000) / 100;
   }
   if ((exp === null || exp === undefined) && fallback) exp = fallback.exp;
+  const meso = templateMeso.meso ?? parsedMeso.meso ?? fallback?.meso ?? null;
 
   const snapshot = level && exp !== null && exp !== undefined ? {
     time: Date.now(),
     level,
     exp: Math.max(0, Math.min(expToNext || exp, exp)),
     percent,
-    meso: parsedMeso.meso ?? fallback?.meso ?? null,
-    rawText: [parsedExp.rawText, parsedMeso.rawText].filter(Boolean).join(" | "),
+    meso,
+    rawText: [lvDetection.text, parsedExp.rawText, parsedMeso.rawText].filter(Boolean).join(" | "),
   } : null;
+
+  if (!snapshot) {
+    updateFieldsFromSnapshot({
+      level,
+      exp,
+      percent,
+      meso,
+    });
+  }
 
   if (!state.ocrAvailable && state.tesseractFailed) {
     setStatus("OCR 無法載入；請用校正欄加入紀錄。");
   } else if (!snapshot) {
-    setStatus("尚未辨識到完整 EXP，請確認分享的是遊戲視窗。");
+    if (exp !== null && exp !== undefined) {
+      setStatus(`已讀取 EXP ${formatNumber(exp)}${percent !== null && percent !== undefined ? ` · ${formatPercent(percent)}` : ""}，請在校正欄補上等級後再加入紀錄。`);
+    } else {
+      setStatus("尚未辨識到 EXP 數值，請確認分享的是遊戲視窗與解析度設定。");
+    }
   } else {
     const mesoText = snapshot.meso === null || snapshot.meso === undefined ? "楓幣未讀取" : `楓幣 ${formatNumber(snapshot.meso)}`;
     setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}`);
