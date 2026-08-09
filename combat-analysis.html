@@ -182,7 +182,8 @@
       font-size: 12px;
       font-weight: 900;
     }
-    .combatField input {
+    .combatField input,
+    .combatField select {
       min-width: 0;
       width: 100%;
       border: 1px solid var(--input-border);
@@ -454,6 +455,16 @@
 
         <section class="combatSection">
           <h3>辨識區塊</h3>
+          <label class="combatField">辨識解析度
+            <select id="ocrResolutionSelect">
+              <option value="auto">自動偵測</option>
+              <option value="1366x768">1366x768</option>
+              <option value="1920x1080">1920x1080</option>
+              <option value="2560x1440">2560x1440</option>
+              <option value="2732x1440">2732x1440</option>
+              <option value="3840x2160">3840x2160</option>
+            </select>
+          </label>
           <div class="combatCropGrid">
             <label class="combatCropCard">
               EXP

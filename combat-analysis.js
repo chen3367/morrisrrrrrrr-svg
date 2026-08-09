@@ -2,6 +2,8 @@ const db = window.MS_COMBAT_ANALYSIS_DB || {};
 const levelRows = Array.isArray(db.levels) ? db.levels : [];
 const COOKIE_DAYS = 180;
 const CAPTURE_INTERVAL_MS = 10000;
+const OCR_REGION_AUTO = "auto";
+const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const OCR_REGION_PRESETS = {
   "1366x768": {
     exp: { x: 0.528913, y: 0.955321, width: 0.090558, height: 0.017685 },
@@ -27,6 +29,7 @@ const OCR_REGION_PRESETS = {
 
 const state = {
   theme: initialTheme(),
+  ocrResolutionKey: initialOcrResolutionKey(),
   stream: null,
   timer: null,
   snapshots: [],
@@ -48,6 +51,7 @@ const el = {
   stop: document.getElementById("stopAnalysisButton"),
   reset: document.getElementById("resetSnapshotsButton"),
   status: document.getElementById("ocrStatus"),
+  ocrResolution: document.getElementById("ocrResolutionSelect"),
   regionPresetStatus: document.getElementById("regionPresetStatus"),
   expCrop: document.getElementById("expCropCanvas"),
   mesoCrop: document.getElementById("mesoCropCanvas"),
@@ -93,6 +97,11 @@ function initialTheme() {
   } catch (_error) {
     return "light";
   }
+}
+
+function initialOcrResolutionKey() {
+  const saved = readCookie(OCR_REGION_COOKIE);
+  return OCR_REGION_PRESETS[saved] ? saved : OCR_REGION_AUTO;
 }
 
 function setTheme(theme) {
@@ -260,6 +269,18 @@ function findRegionPreset(width, height) {
   return best;
 }
 
+function selectedRegionPreset(width, height) {
+  if (OCR_REGION_PRESETS[state.ocrResolutionKey]) {
+    return {
+      key: state.ocrResolutionKey,
+      exact: resolutionKey(width, height) === state.ocrResolutionKey,
+      forced: true,
+      regions: OCR_REGION_PRESETS[state.ocrResolutionKey],
+    };
+  }
+  return findRegionPreset(width, height);
+}
+
 function regionToRect(region, width, height) {
   const x = clamp(region?.x, 0, 0.995);
   const y = clamp(region?.y, 0, 0.995);
@@ -278,13 +299,19 @@ function regionToRect(region, width, height) {
 function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.video?.videoHeight) {
   if (!el.regionPresetStatus) return;
   if (!width || !height) {
-    el.regionPresetStatus.textContent = "尚未取得畫面解析度。";
+    el.regionPresetStatus.textContent = OCR_REGION_PRESETS[state.ocrResolutionKey]
+      ? `手動使用 ${state.ocrResolutionKey} 辨識區塊，分享畫面後會套用。`
+      : "尚未取得畫面解析度。";
     return;
   }
-  const preset = findRegionPreset(width, height);
+  const preset = selectedRegionPreset(width, height);
   const current = resolutionKey(width, height);
   if (!preset) {
     el.regionPresetStatus.textContent = `${current} · 使用預設辨識區塊`;
+    return;
+  }
+  if (preset.forced) {
+    el.regionPresetStatus.textContent = `${current} · 手動使用 ${preset.key} 辨識區塊`;
     return;
   }
   el.regionPresetStatus.textContent = preset.exact
@@ -293,7 +320,7 @@ function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.vide
 }
 
 function rectFor(type, width, height) {
-  const preset = findRegionPreset(width, height);
+  const preset = selectedRegionPreset(width, height);
   const region = preset?.regions?.[type];
   if (region) return regionToRect(region, width, height);
   if (type === "exp") {
@@ -760,6 +787,14 @@ function initialize() {
   el.captureOnce?.addEventListener("click", () => captureFrame(true));
   el.stop?.addEventListener("click", stopAnalysis);
   el.reset?.addEventListener("click", resetSnapshots);
+  if (el.ocrResolution) {
+    el.ocrResolution.value = state.ocrResolutionKey;
+    el.ocrResolution.addEventListener("change", () => {
+      state.ocrResolutionKey = OCR_REGION_PRESETS[el.ocrResolution.value] ? el.ocrResolution.value : OCR_REGION_AUTO;
+      writeCookie(OCR_REGION_COOKIE, state.ocrResolutionKey);
+      updateRegionPresetStatus();
+    });
+  }
   el.addManual?.addEventListener("click", () => {
     const snapshot = snapshotFromFields();
     if (!snapshot) {
