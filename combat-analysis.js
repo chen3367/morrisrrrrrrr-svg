@@ -167,6 +167,11 @@ function formatRate(value) {
   return formatNumber(value);
 }
 
+function formatMetricNumber(value) {
+  if (!Number.isFinite(value)) return "等待資料";
+  return formatNumber(Math.max(0, value));
+}
+
 function formatPercent(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return "";
@@ -931,70 +936,173 @@ function resetSnapshots() {
   setStatus("紀錄已重設。");
 }
 
+function median(values) {
+  const sorted = values
+    .filter(value => Number.isFinite(value))
+    .sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function robustRateLimit(rates, floor) {
+  const positive = rates.filter(value => Number.isFinite(value) && value > 0);
+  if (positive.length < 4) return Infinity;
+  const center = median(positive);
+  const deviations = positive.map(value => Math.abs(value - center));
+  const mad = median(deviations) || 0;
+  return center + Math.max(center * 5, mad * 8, floor);
+}
+
+function buildAnalysisSegments(snapshots) {
+  const points = snapshots
+    .map(snapshot => ({
+      snapshot,
+      absExp: getAbsoluteExp(snapshot),
+      meso: snapshot.meso === null || snapshot.meso === undefined ? null : Number(snapshot.meso),
+    }))
+    .filter(point => point.absExp !== null)
+    .sort((a, b) => a.snapshot.time - b.snapshot.time);
+  const rawSegments = [];
+  for (let index = 1; index < points.length; index += 1) {
+    const prev = points[index - 1];
+    const next = points[index];
+    const minutes = (next.snapshot.time - prev.snapshot.time) / 60000;
+    if (!Number.isFinite(minutes) || minutes <= 0) continue;
+    const expDelta = next.absExp - prev.absExp;
+    const mesoDelta = prev.meso === null || next.meso === null ? null : next.meso - prev.meso;
+    const expToNext = getExpToNext(prev.snapshot.level) || getExpToNext(next.snapshot.level) || 0;
+    const shortWindowLimit = minutes <= 1
+      ? Math.max(100000, expToNext * 0.35)
+      : Infinity;
+    const mesoShortWindowLimit = minutes <= 1 ? 5000000 : Infinity;
+    rawSegments.push({
+      from: prev.snapshot,
+      to: next.snapshot,
+      minutes,
+      expDelta,
+      mesoDelta,
+      expRate: expDelta / minutes,
+      mesoRate: mesoDelta === null ? null : mesoDelta / minutes,
+      expReason: expDelta < 0
+        ? "negative"
+        : expDelta > shortWindowLimit
+          ? "spike"
+          : "",
+      mesoReason: mesoDelta === null
+        ? "missing"
+        : mesoDelta < 0
+          ? "negative"
+          : mesoDelta > mesoShortWindowLimit
+            ? "spike"
+            : "",
+    });
+  }
+
+  const expLimit = robustRateLimit(
+    rawSegments
+      .filter(segment => !segment.expReason)
+      .map(segment => segment.expRate),
+    10000,
+  );
+  const mesoLimit = robustRateLimit(
+    rawSegments
+      .filter(segment => !segment.mesoReason)
+      .map(segment => segment.mesoRate),
+    1000000,
+  );
+
+  const expSegments = rawSegments.filter(segment => {
+    if (segment.expReason) return false;
+    return !Number.isFinite(expLimit) || segment.expRate <= expLimit;
+  });
+  const mesoSegments = rawSegments.filter(segment => {
+    if (segment.mesoReason) return false;
+    return !Number.isFinite(mesoLimit) || segment.mesoRate <= mesoLimit;
+  });
+
+  return {
+    rawSegments,
+    expSegments,
+    mesoSegments,
+    ignoredExpSegments: rawSegments.length - expSegments.length,
+    ignoredMesoSegments: rawSegments.length - mesoSegments.length,
+  };
+}
+
+function sumSegments(segments, field, sinceTime = null) {
+  const filtered = sinceTime === null
+    ? segments
+    : segments.filter(segment => segment.to.time >= sinceTime);
+  return {
+    delta: filtered.reduce((total, segment) => total + Math.max(0, Number(segment[field] || 0)), 0),
+    minutes: filtered.reduce((total, segment) => total + Number(segment.minutes || 0), 0),
+  };
+}
+
 function computeStats() {
   const snapshots = state.snapshots.filter(row => row.level && row.exp !== null && row.exp !== undefined);
   if (snapshots.length < 2) return null;
-  const first = snapshots[0];
-  const last = snapshots[snapshots.length - 1];
-  const elapsedMinutes = Math.max(0, (last.time - first.time) / 60000);
-  const firstAbs = getAbsoluteExp(first);
-  const lastAbs = getAbsoluteExp(last);
-  if (!elapsedMinutes || firstAbs === null || lastAbs === null) return null;
-  const expDelta = Math.max(0, lastAbs - firstAbs);
-  const mesoDelta = first.meso !== null && first.meso !== undefined && last.meso !== null && last.meso !== undefined
-    ? Math.max(0, Number(last.meso) - Number(first.meso))
-    : null;
-  const expPerMin = expDelta / elapsedMinutes;
-  const mesoPerMin = mesoDelta === null ? null : mesoDelta / elapsedMinutes;
-  const expToNext = getExpToNext(last.level);
-  const remainingExp = expToNext ? Math.max(0, expToNext - Number(last.exp || 0)) : null;
+  const { rawSegments, expSegments, mesoSegments, ignoredExpSegments, ignoredMesoSegments } = buildAnalysisSegments(snapshots);
+  if (!rawSegments.length) return null;
+  const lastReliable = expSegments[expSegments.length - 1]?.to || snapshots[snapshots.length - 1];
+  const lastTime = lastReliable.time || snapshots[snapshots.length - 1].time;
+  const totalExp = sumSegments(expSegments, "expDelta");
+  const totalMeso = sumSegments(mesoSegments, "mesoDelta");
+  const recentSince = lastTime - 10 * 60000;
+  const recentExp = sumSegments(expSegments, "expDelta", recentSince);
+  const recentMeso = sumSegments(mesoSegments, "mesoDelta", recentSince);
+  const expPerMin = totalExp.minutes > 0 ? totalExp.delta / totalExp.minutes : 0;
+  const mesoPerMin = totalMeso.minutes > 0 ? totalMeso.delta / totalMeso.minutes : null;
+  const expToNext = getExpToNext(lastReliable.level);
+  const remainingExp = expToNext ? Math.max(0, expToNext - Number(lastReliable.exp || 0)) : null;
   return {
-    elapsedMinutes,
-    expDelta,
-    mesoDelta,
+    elapsedMinutes: totalExp.minutes,
+    expDelta: totalExp.delta,
+    mesoDelta: totalMeso.minutes > 0 ? totalMeso.delta : null,
+    recentExpDelta: recentExp.delta,
+    recentMesoDelta: recentMeso.minutes > 0 ? recentMeso.delta : null,
     expPerMin,
     mesoPerMin,
+    forecast10Exp: expPerMin * 10,
+    forecast30Exp: expPerMin * 30,
+    forecast10Meso: mesoPerMin === null ? null : mesoPerMin * 10,
+    forecast30Meso: mesoPerMin === null ? null : mesoPerMin * 30,
     expToNext,
     remainingExp,
+    ignoredExpSegments,
+    ignoredMesoSegments,
+    acceptedExpSegments: expSegments.length,
+    acceptedMesoSegments: mesoSegments.length,
     etaMinutes: remainingExp !== null && expPerMin > 0 ? remainingExp / expPerMin : null,
   };
 }
 
-function renderSummaryCards(stats) {
-  const expPerMin = stats?.expPerMin || 0;
-  const mesoPerMin = stats?.mesoPerMin || 0;
+function renderMetricCard(title, expValue, mesoValue = null, expSuffix = "EXP") {
   return `
     <div class="combatMetricCard">
-      <strong>${formatRate(expPerMin)}</strong>
-      <span>EXP / 分</span>
+      <strong>${formatMetricNumber(expValue)}</strong>
+      <span>${title} ${expSuffix}</span>
+      <small>${mesoValue === null || mesoValue === undefined ? "楓幣等待資料" : `${formatMetricNumber(mesoValue)} 楓幣`}</small>
     </div>
-    <div class="combatMetricCard">
-      <strong>${formatRate(expPerMin * 10)}</strong>
-      <span>EXP / 10 分</span>
-    </div>
-    <div class="combatMetricCard">
-      <strong>${formatRate(expPerMin * 60)}</strong>
-      <span>EXP / 小時</span>
-    </div>
+  `;
+}
+
+function renderSummaryCards(stats) {
+  const expPerMin = stats?.expPerMin ?? 0;
+  const mesoPerMin = stats?.mesoPerMin ?? null;
+  return `
+    ${renderMetricCard("累計每分鐘", expPerMin, mesoPerMin, "EXP")}
+    ${renderMetricCard("累計10分鐘", stats?.recentExpDelta ?? 0, stats?.recentMesoDelta ?? null, "EXP")}
+    ${renderMetricCard("總累計", stats?.expDelta ?? 0, stats?.mesoDelta ?? null, "EXP")}
+    ${renderMetricCard("預估10分鐘", stats?.forecast10Exp ?? 0, stats?.forecast10Meso ?? null, "EXP")}
+    ${renderMetricCard("預估30分鐘", stats?.forecast30Exp ?? 0, stats?.forecast30Meso ?? null, "EXP")}
     <div class="combatMetricCard">
       <strong>${formatDuration(stats?.etaMinutes)}</strong>
-      <span>升下一級</span>
-    </div>
-    <div class="combatMetricCard">
-      <strong>${formatRate(mesoPerMin)}</strong>
-      <span>楓幣 / 分</span>
-    </div>
-    <div class="combatMetricCard">
-      <strong>${formatRate(mesoPerMin * 10)}</strong>
-      <span>楓幣 / 10 分</span>
-    </div>
-    <div class="combatMetricCard">
-      <strong>${formatRate(mesoPerMin * 60)}</strong>
-      <span>楓幣 / 小時</span>
-    </div>
-    <div class="combatMetricCard">
-      <strong>${state.snapshots.length}</strong>
-      <span>已記錄</span>
+      <span>預估升等所需時間</span>
+      <small>${stats ? `${stats.acceptedExpSegments} 段有效 · 排除 ${stats.ignoredExpSegments} 段` : `${state.snapshots.length} 筆紀錄`}</small>
     </div>
   `;
 }
@@ -1013,7 +1121,7 @@ function renderCurrentSnapshot(snapshot, stats) {
       <div class="combatSnapshot"><b>${formatNumber(remaining)}</b><span>剩餘 EXP</span></div>
       <div class="combatSnapshot"><b>${snapshot.meso === null || snapshot.meso === undefined ? "未讀取" : formatNumber(snapshot.meso)}</b><span>目前楓幣</span></div>
     </div>
-    <p class="combatHint">${stats ? `已分析 ${stats.elapsedMinutes.toFixed(1)} 分鐘，累積 ${formatNumber(stats.expDelta)} EXP。` : "至少需要兩筆紀錄才會開始估算效率。"}</p>
+    <p class="combatHint">${stats ? `已分析 ${stats.elapsedMinutes.toFixed(1)} 分鐘，累積 ${formatNumber(stats.expDelta)} EXP；已排除 ${stats.ignoredExpSegments} 段可能誤判的 EXP 區間。` : "至少需要兩筆紀錄才會開始估算效率。"}</p>
   `;
 }
 
