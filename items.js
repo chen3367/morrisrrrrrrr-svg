@@ -1098,7 +1098,10 @@ function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
   return sourceBlock("任務獲取", rows, row => {
     const meta = [`${formatNumber(row.count)} 個`];
-    if (row.random) meta.push("隨機獎勵");
+    if (row.choice) meta.push("自選獎勵");
+    else if (row.random) meta.push("隨機獎勵");
+    const jobLabel = formatQuestRewardJob(row.job);
+    if (jobLabel) meta.push(`職業 ${jobLabel}`);
     if (row.sourceLabel && row.sourceLabel !== "任務獎勵") meta.push(row.sourceLabel);
     const sourceNpc = row.sourceNpc || row.rewardNpc || null;
     if (sourceNpc?.name) meta.push(sourceNpc.name);

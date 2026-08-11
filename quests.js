@@ -810,6 +810,22 @@ function formatJobs(jobs) {
   return [...labels].join(" / ");
 }
 
+function formatQuestRewardJob(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const groups = [
+    ["劍士", [1, 11, 21, 31]],
+    ["法師", [2, 12, 22, 32]],
+    ["弓箭手", [3, 13, 23, 33]],
+    ["盜賊", [4, 14, 24, 34]],
+    ["海盜", [5, 15, 25, 35]],
+  ];
+  return groups
+    .filter(([, bits]) => bits.some(bit => n & (2 ** bit)))
+    .map(([label]) => label)
+    .join(" / ");
+}
+
 function renderRewards(title, act = {}, nextQuest = null) {
   const visibleItems = visibleIndexRows(act.items || [], "item");
   const rewards = visibleItems.filter(item => item.action === "give");
@@ -854,7 +870,10 @@ function renderRewards(title, act = {}, nextQuest = null) {
 function questRewardItemCard(item, actionLabel = "獎勵") {
   const metaParts = [];
   metaParts.push(`${actionLabel} ${formatNumber(item.count || 1)} 個`);
-  if (item.random) metaParts.push("隨機");
+  if (item.choice) metaParts.push("自選");
+  else if (item.random) metaParts.push("隨機");
+  const jobLabel = formatQuestRewardJob(item.job);
+  if (jobLabel) metaParts.push(`職業 ${jobLabel}`);
   metaParts.push(itemTypeText(item));
   if (state.showIds) metaParts.push(`ID ${item.id}`);
   const meta = metaParts.map(escapeHtml).join(" · ");
@@ -922,7 +941,10 @@ function renderRefs(quest) {
 function itemLink(item) {
   const meta = [`${formatNumber(item.count || 1)} 個`];
   if (state.showIds) meta.push(`ID ${item.id}`);
-  if (item.random) meta.push("隨機");
+  if (item.choice) meta.push("自選");
+  else if (item.random) meta.push("隨機");
+  const jobLabel = formatQuestRewardJob(item.job);
+  if (jobLabel) meta.push(`職業 ${jobLabel}`);
   return `
     <a class="miniLink" href="${itemUrl(item.id)}">
       ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "miniIcon")}

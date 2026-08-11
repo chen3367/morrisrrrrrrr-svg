@@ -93,6 +93,7 @@ const state = {
   ocrAvailable: typeof window.TextDetector === "function",
   tesseractPromise: null,
   tesseractFailed: false,
+  pendingCalibration: null,
 };
 
 const el = {
@@ -629,15 +630,29 @@ function extractGlyphGroupsFromImage(image, inkFn, minColumnPixels = 0, closingG
   return groups.map(group => {
     let white = 0;
     let dark = 0;
+    let minY = image.height;
+    let maxY = -1;
     for (let x = group.x1; x <= group.x2; x += 1) {
       for (let y = 0; y < image.height; y += 1) {
         const [r, g, b] = imagePixel(image, x, y);
         const brightness = (r + g + b) / 3;
         if (brightness > 160) white += 1;
-        if (brightness < 80) dark += 1;
+        if (brightness < 80) {
+          dark += 1;
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
       }
     }
-    return { ...group, width: group.x2 - group.x1 + 1, white, dark };
+    return {
+      ...group,
+      width: group.x2 - group.x1 + 1,
+      height: maxY >= minY ? maxY - minY + 1 : 0,
+      minY,
+      maxY,
+      white,
+      dark,
+    };
   });
 }
 
@@ -901,12 +916,26 @@ function classifyLevelDigit(image, group) {
   for (const [digit, templates] of Object.entries(OCR_LEVEL_DIGIT_TEMPLATES)) {
     for (const template of templates) {
       if (digit === "1" && group.width > Math.max(4, Math.round(group.height * 0.55))) continue;
-      const mask = sampleGlyphGrid(image, group, levelWhiteInkPixel, template.width, template.height, 0.25);
+      const mask = sampleGlyphGrid(image, group, levelDigitInkPixel, template.width, template.height, 0.2);
       const score = digitDistance(mask, template.bits);
       if (!best || score < best.score) best = { digit, score };
     }
   }
   return best;
+}
+
+function readLevelFromDigitGroups(image, digitGroups, maxScore = 0.28) {
+  const groups = [...digitGroups].sort((a, b) => a.minX - b.minX);
+  if (!groups.length || groups.length > 3) return null;
+  const matches = groups.map(group => classifyLevelDigit(image, group));
+  if (matches.some(match => !match || match.score > maxScore)) return null;
+  const level = Number(matches.map(match => match.digit).join(""));
+  if (!Number.isFinite(level) || level < 1 || level > 200) return null;
+  return {
+    level,
+    score: Math.max(...matches.map(match => match.score)),
+    digits: groups.length,
+  };
 }
 
 function extractLevelDigitGroups(image, band) {
@@ -984,25 +1013,75 @@ function readLevelFromCanvas(canvas) {
   if (!canvas) return { level: null };
   const rawImage = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
   const image = downsampleImageData(rawImage, 8);
+  const candidates = [];
   const orangeGroups = extractExpGlyphGroups(image, levelOrangeInkPixel, 2)
     .filter(group => group.height >= 5 && group.width >= 8 && group.minX > image.width * 0.35)
     .sort((a, b) => (b.width * b.height) - (a.width * a.height));
-  const digitGroups = extractLevelDigitGroups(image, orangeGroups[0])
-    .sort((a, b) => a.minX - b.minX);
-  if (!digitGroups.length || digitGroups.length > 3) return { level: null };
-  const matches = digitGroups.map(group => classifyLevelDigit(image, group));
-  if (matches.some(match => !match || match.score > 0.24)) return { level: null };
-  const level = Number(matches.map(match => match.digit).join(""));
-  if (!Number.isFinite(level) || level < 1 || level > 200) return { level: null };
-  return { level };
+  const badgeLevel = readLevelFromDigitGroups(image, extractLevelDigitGroups(image, orangeGroups[0]), 0.28);
+  if (badgeLevel) candidates.push({ ...badgeLevel, source: "badge" });
+
+  const broadBand = {
+    minX: Math.round(image.width * 0.35),
+    minY: 0,
+    maxX: image.width - 1,
+    maxY: image.height - 1,
+    width: Math.max(1, image.width - Math.round(image.width * 0.35)),
+    height: image.height,
+  };
+  const broadGroups = extractLevelDigitGroups(image, broadBand)
+    .filter(group => group.height >= 4 && group.width >= 2)
+    .sort((a, b) => a.minX - b.minX)
+    .slice(-3);
+  const broadLevel = readLevelFromDigitGroups(image, broadGroups, 0.3);
+  if (broadLevel) candidates.push({ ...broadLevel, source: "full" });
+
+  if (!candidates.length) return { level: null };
+  candidates.sort((a, b) => {
+    if (b.digits !== a.digits) return b.digits - a.digits;
+    return a.score - b.score;
+  });
+  return { level: candidates[0].level };
+}
+
+function isLikelyMesoIconGroup(group, image) {
+  return group.x1 < image.width * 0.2
+    && group.width >= image.height * 0.42
+    && group.height >= image.height * 0.42;
+}
+
+function mesoDigitGroupsFromImage(image) {
+  const maxDigitGap = Math.max(28, Math.round(image.height * 0.32));
+  const groups = extractGlyphGroupsFromImage(image, mesoInkPixel, 2, 8)
+    .filter(group => !isLikelyMesoIconGroup(group, image))
+    .sort((a, b) => a.x1 - b.x1);
+  const sequences = [];
+  let current = [];
+  for (const group of groups) {
+    const previous = current[current.length - 1];
+    if (previous && group.x1 - previous.x2 > maxDigitGap) {
+      sequences.push(current);
+      current = [];
+    }
+    current.push(group);
+  }
+  if (current.length) sequences.push(current);
+
+  const minDigitHeight = Math.max(8, Math.round(image.height * 0.25));
+  const candidates = sequences
+    .map(sequence => sequence.filter(group => group.width > 25 && group.height >= minDigitHeight))
+    .filter(sequence => sequence.length);
+  if (!candidates.length) return [];
+  candidates.sort((a, b) => {
+    if (b.length !== a.length) return b.length - a.length;
+    return a[0].x1 - b[0].x1;
+  });
+  return candidates[0].slice(0, 10);
 }
 
 function readMesoFromCanvas(canvas) {
   if (!canvas) return { meso: null };
   const image = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
-  const groups = extractGlyphGroupsFromImage(image, mesoInkPixel, 2, 8)
-    .slice(1, 8)
-    .filter(group => group.width > 25);
+  const groups = mesoDigitGroupsFromImage(image);
   const digits = groups.map(group => classifyDigit(glyphMaskFromImage(image, group, mesoInkPixel)));
   if (!digits.length || digits.some(row => !row || row.score > 0.35)) return { meso: null };
   return { meso: Number(digits.map(row => row.digit).join("")) };
@@ -1075,32 +1154,40 @@ function snapshotFromFields() {
   const exp = parseNumber(el.manualExp?.value);
   const percent = parseNumber(el.manualPercent?.value);
   const meso = parseNumber(el.manualMeso?.value);
-  if (!level || level < 1 || level > 200 || exp === null) return null;
-  const expToNext = getExpToNext(level);
-  const normalizedExp = Math.max(0, Math.min(expToNext || exp, exp));
+  const hasManualValue = [level, exp, percent, meso].some(value => value !== null && value !== undefined);
+  const pending = hasManualValue ? state.pendingCalibration || {} : {};
+  const resolvedLevel = level ?? pending.level ?? null;
+  const resolvedExp = exp ?? pending.exp ?? null;
+  const resolvedPercent = percent ?? pending.percent ?? null;
+  const resolvedMeso = meso ?? pending.meso ?? null;
+  if (!resolvedLevel || resolvedLevel < 1 || resolvedLevel > 200 || resolvedExp === null) return null;
+  const expToNext = getExpToNext(resolvedLevel);
+  const normalizedExp = Math.max(0, Math.min(expToNext || resolvedExp, resolvedExp));
   return {
     time: Date.now(),
-    level,
+    level: resolvedLevel,
     exp: normalizedExp,
-    percent: percent === null && expToNext ? (normalizedExp / expToNext) * 100 : percent,
-    meso,
+    percent: resolvedPercent === null && expToNext ? (normalizedExp / expToNext) * 100 : resolvedPercent,
+    meso: resolvedMeso,
     rawText: "手動校正",
   };
 }
 
-function updateFieldsFromSnapshot(snapshot) {
-  if (!snapshot) return;
-  if (el.manualLevel && snapshot.level) el.manualLevel.value = String(snapshot.level);
-  if (el.manualExp && snapshot.exp !== null && snapshot.exp !== undefined) el.manualExp.value = formatNumber(snapshot.exp);
-  if (el.manualPercent && snapshot.percent !== null && snapshot.percent !== undefined) el.manualPercent.value = formatPercent(snapshot.percent).replace("%", "");
-  if (el.manualMeso && snapshot.meso !== null && snapshot.meso !== undefined) el.manualMeso.value = formatNumber(snapshot.meso);
+function hasCalibrationFieldValues() {
+  return [el.manualLevel, el.manualExp, el.manualPercent, el.manualMeso]
+    .some(input => String(input?.value || "").trim());
+}
+
+function clearCalibrationFields() {
+  for (const input of [el.manualLevel, el.manualExp, el.manualPercent, el.manualMeso]) {
+    if (input) input.value = "";
+  }
 }
 
 function addSnapshot(snapshot) {
   if (!snapshot) return false;
   state.snapshots.push(snapshot);
   state.latest = snapshot;
-  updateFieldsFromSnapshot(snapshot);
   render();
   return true;
 }
@@ -1173,17 +1260,19 @@ async function captureFrame(addToTimeline = true) {
   const templateExp = readExpFromCanvas(expRawCanvas);
   const templateMeso = readMesoFromCanvas(mesoRawCanvas);
   const fallback = snapshotFromFields();
-  const manualLevel = parseNumber(el.manualLevel?.value);
+  const fieldLevel = parseNumber(el.manualLevel?.value);
+  const levelWasEdited = fieldLevel !== null && fieldLevel !== undefined;
+  const hadManualCalibration = hasCalibrationFieldValues();
 
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
-    manualLevel || templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
+    levelWasEdited || templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
     templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
     templateMeso.meso !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.mesoCrop),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
-  const level = manualLevel || templateLevel.level || parsedLevel || parsedExp.level || fallback?.level || null;
+  const level = levelWasEdited ? fieldLevel : (templateLevel.level || parsedLevel || parsedExp.level || fieldLevel || fallback?.level || null);
   let exp = templateExp.exp ?? parsedExp.exp;
   const expToNext = getExpToNext(level);
   let percent = exp !== null && exp !== undefined && expToNext
@@ -1206,12 +1295,14 @@ async function captureFrame(addToTimeline = true) {
   } : null;
 
   if (!snapshot) {
-    updateFieldsFromSnapshot({
+    state.pendingCalibration = {
       level,
       exp,
       percent,
       meso,
-    });
+    };
+  } else {
+    state.pendingCalibration = null;
   }
 
   if (!state.ocrAvailable && state.tesseractFailed) {
@@ -1226,10 +1317,13 @@ async function captureFrame(addToTimeline = true) {
     const mesoText = snapshot.meso === null || snapshot.meso === undefined ? "楓幣未讀取" : `楓幣 ${formatNumber(snapshot.meso)}`;
     setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}`);
   }
-  if (snapshot && addToTimeline) addSnapshot(snapshot);
+  if (snapshot && addToTimeline) {
+    addSnapshot(snapshot);
+    if (hadManualCalibration) clearCalibrationFields();
+  }
   else if (snapshot) {
     state.latest = snapshot;
-    updateFieldsFromSnapshot(snapshot);
+    if (hadManualCalibration) clearCalibrationFields();
     render();
   }
   return snapshot;
@@ -1574,6 +1668,8 @@ function initialize() {
       return;
     }
     addSnapshot(snapshot);
+    state.pendingCalibration = null;
+    clearCalibrationFields();
     setStatus("已加入校正紀錄。");
   });
   for (const input of [el.manualExp, el.manualMeso]) {
