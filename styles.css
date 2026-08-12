@@ -2310,6 +2310,38 @@ h3 {
 .gachaTierIcon {
   font-size: 14px;
 }
+.gachaPrizeIcon,
+.gachaLogIcon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 1px solid var(--mini-border);
+  border-radius: 7px;
+  background: var(--icon-bg);
+  object-fit: contain;
+  padding: 3px;
+}
+.gachaPrizePickerIcon {
+  display: block;
+}
+.gachaPrizeIconFallback {
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-strong);
+  font-size: 12px;
+  font-weight: 950;
+}
+.gachaPrizeNameCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.gachaPrizeNameCell > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .gachaTierSettings {
   display: grid;
   gap: 8px;
@@ -2516,11 +2548,17 @@ h3 {
   font-weight: 800;
 }
 .gachaLogEntry {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   min-width: 0;
   border-radius: 4px;
   padding: 3px 5px;
   line-height: 1.45;
   overflow-wrap: anywhere;
+}
+.gachaLogEntry > span {
+  min-width: 0;
 }
 .gachaLogBigPrize {
   background: #ffe66d;

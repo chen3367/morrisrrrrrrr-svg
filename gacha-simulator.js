@@ -154,6 +154,15 @@ function escapeHtml(value) {
   }[ch]));
 }
 
+function prizeIconHtml(prize, className = "gachaPrizeIcon") {
+  const image = prize?.image || "";
+  const tier = prize?.tier || "";
+  if (image) {
+    return `<img class="${escapeHtml(className)}" src="${escapeHtml(image)}" alt="" loading="lazy" />`;
+  }
+  return `<span class="${escapeHtml(className)} gachaPrizeIconFallback">${escapeHtml(tier)}</span>`;
+}
+
 function isSelectablePool(pool) {
   if (!pool || pool.selectable === false || pool.kind === "exchangeReward") return false;
   return pool.id !== "brilliant-comet-20260729";
@@ -413,6 +422,8 @@ function addPrizeLog(prize, productName) {
     time: currentTimeLabel(),
     product: productName,
     prize: prize.name,
+    image: prize.image || "",
+    tier: prize.tier || "",
     big: isBigPrize(prize),
   });
   if (state.simulation.log.length > LOG_LIMIT) state.simulation.log.shift();
@@ -633,7 +644,7 @@ function renderTargets() {
     const active = target.id === state.targetId ? " active" : "";
     return `
       <button class="simPickerRow${active}" type="button" data-target-id="${escapeHtml(target.id)}" role="option" aria-selected="${target.id === state.targetId}">
-        <span class="simPickerIcon gachaTierIcon">${escapeHtml(target.tier)}</span>
+        ${prizeIconHtml(target, "simPickerIcon gachaPrizePickerIcon")}
         <span class="simPickerText">
           <strong>${escapeHtml(target.name)}${state.showIds ? ` · ${escapeHtml(target.id)}` : ""}</strong>
           <span>${escapeHtml(target.group)} · ${formatPct(Number(target.chance || 0))}</span>
@@ -682,14 +693,15 @@ function renderLogEntry(entry) {
   if (!entry || entry.type !== "prize") {
     return `<li class="gachaLogEntry">${escapeHtml(entry?.text || "")}</li>`;
   }
+  const icon = prizeIconHtml(entry, "gachaLogIcon");
   if (entry.big) {
     return `
       <li class="gachaLogEntry gachaLogBigPrize">
-        [${escapeHtml(entry.time)}]恭喜從${escapeHtml(entry.product)}獲得<span class="gachaLogPrize">${escapeHtml(entry.prize)}</span>。
+        ${icon}<span>[${escapeHtml(entry.time)}]恭喜從${escapeHtml(entry.product)}獲得<span class="gachaLogPrize">${escapeHtml(entry.prize)}</span>。</span>
       </li>
     `;
   }
-  return `<li class="gachaLogEntry">[${escapeHtml(entry.time)}]獲得${escapeHtml(entry.prize)}。</li>`;
+  return `<li class="gachaLogEntry">${icon}<span>[${escapeHtml(entry.time)}]獲得${escapeHtml(entry.prize)}。</span></li>`;
 }
 
 function renderExpectation(pool, target, expectation) {
@@ -776,7 +788,7 @@ function renderPrizePool(pool, target) {
       .map(prize => `
         <tr class="${target?.id === prize.id ? "active" : ""}">
           <td>${escapeHtml(prize.tier)}</td>
-          <td>${escapeHtml(prize.name)}${state.showIds ? ` <small>${escapeHtml(prize.id)}</small>` : ""}</td>
+          <td><span class="gachaPrizeNameCell">${prizeIconHtml(prize)}<span>${escapeHtml(prize.name)}${state.showIds ? ` <small>${escapeHtml(prize.id)}</small>` : ""}</span></span></td>
           <td>${formatPct(Number(prize.chance || 0))}</td>
         </tr>
       `).join("");
