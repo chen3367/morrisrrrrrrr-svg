@@ -691,6 +691,8 @@ function shopSourceRows(item) {
 }
 
 function npcOnlyUnnamedMaps(npc) {
+  if (npc?.onlyUnnamedMaps === false) return false;
+  if (npc?.onlyUnnamedMaps === true) return true;
   const maps = npc?.maps || [];
   return maps.length > 0 && maps.every(map => map?.unnamed);
 }
@@ -1177,6 +1179,7 @@ function renderShopSources(item) {
   const rows = sourceRows(item).shops;
   return sourceBlock("商人購買", rows, row => {
     const isNpcShop = row.sourceType === "npcShop";
+    const questText = requiredQuestText(row);
     const meta = [];
     if (row.locationText) meta.push(row.locationText);
     if (row.sourceLabel) meta.push(row.sourceLabel);
@@ -1190,6 +1193,7 @@ function renderShopSources(item) {
         <strong>${escapeHtml(row.merchantName)}</strong>
         <span>${shopPriceHtml(row)}</span>
         <p>${meta.map(escapeHtml).join(" · ") || `${formatNumber(row.count || 1)} 個`}</p>
+        ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
       </div>
       <small>${row.sourceType === "cashShop" ? "商城" : "商店"}</small>
     </article>
@@ -1267,7 +1271,11 @@ function craftNpcImage(row) {
 function requiredQuestText(row) {
   const quests = row.requiredQuests || [];
   if (!quests.length) return "";
-  return quests.map(quest => `任務 ${quest.id}${quest.state !== null && quest.state !== undefined ? ` / 狀態 ${quest.state}` : ""}`).join("、");
+  return quests.map(quest => {
+    const name = quest.name || `任務 ${quest.id}`;
+    const state = quest.stateLabel || (quest.state !== null && quest.state !== undefined ? `狀態 ${quest.state}` : "");
+    return `${name}${state ? ` / ${state}` : ""}`;
+  }).join("、");
 }
 
 function randomOutputText(row) {
