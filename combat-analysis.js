@@ -59,28 +59,16 @@ const OCR_EXP_DIGIT_TEMPLATES = {
   "9": [{ width: 5, height: 7, bits: "01110100011000101111000011000101110" }],
 };
 const OCR_LEVEL_DIGIT_TEMPLATES = {
-  "0": [
-    { width: 5, height: 7, bits: "00000010011100111001110010100100000" },
-    { width: 5, height: 7, bits: "00000010111101111011110110101100000" },
-    { width: 5, height: 7, bits: "00000000000101101011010110000000000" },
-    { width: 5, height: 7, bits: "01110100011000110001100011000101110" },
-  ],
+  "0": [{ width: 7, height: 7, bits: "0111110110001111000111100011110001111000110111110" }],
   "1": [{ width: 3, height: 7, bits: "011111011011011011011" }],
-  "2": [{ width: 5, height: 7, bits: "01110100010000100010001000100011111" }],
-  "3": [{ width: 5, height: 7, bits: "01110100010000100110000011000101110" }],
-  "4": [
-    { width: 5, height: 7, bits: "00000001000011000110101101011000110" },
-    { width: 5, height: 7, bits: "00000001100011100011100111001100011" },
-    { width: 5, height: 7, bits: "00000001110111111011111111111100011" },
-    { width: 5, height: 7, bits: "00000001100111111111111111111100010" },
-    { width: 5, height: 7, bits: "00010001100101010010111110001000010" },
-    { width: 5, height: 7, bits: "00110011100101010010111110001000010" },
-  ],
-  "5": [{ width: 5, height: 7, bits: "11111100001000001110000011000101110" }],
-  "6": [{ width: 5, height: 7, bits: "01110100011000011110100011000101110" }],
-  "7": [{ width: 5, height: 7, bits: "11111000010000100001000100010000100" }],
-  "8": [{ width: 5, height: 7, bits: "01110100011000101110100011000101110" }],
-  "9": [{ width: 5, height: 7, bits: "01110100011000101111000011000101110" }],
+  "2": [{ width: 7, height: 7, bits: "0111110110001100000110011110011000011000001111111" }],
+  "3": [{ width: 7, height: 7, bits: "0111110110001100000110011110000001111000110111110" }],
+  "4": [{ width: 7, height: 7, bits: "0001110001111001101101100110111111100001100000110" }],
+  "5": [{ width: 7, height: 7, bits: "1111111110000011000000111110000001111000110111110" }],
+  "6": [{ width: 7, height: 7, bits: "0111110110001111000001111110110001111000110111110" }],
+  "7": [{ width: 7, height: 7, bits: "1111111000001100001100001100000110000110000011000" }],
+  "8": [{ width: 7, height: 7, bits: "0111110110001111000110111110110001111000110111110" }],
+  "9": [{ width: 7, height: 7, bits: "0111110110001111000110111111000001111000110111110" }],
 };
 
 const state = {
@@ -577,7 +565,9 @@ function expBracketInkPixel(r, g, b) {
 }
 
 function levelWhiteInkPixel(r, g, b) {
-  return r > 220 && g > 220 && b > 220;
+  const brightness = (r + g + b) / 3;
+  const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+  return brightness > 180 && saturation < 90 && r > 150 && g > 150 && b > 145;
 }
 
 function levelOrangeInkPixel(r, g, b) {
@@ -585,8 +575,7 @@ function levelOrangeInkPixel(r, g, b) {
 }
 
 function levelDigitInkPixel(r, g, b) {
-  return levelWhiteInkPixel(r, g, b)
-    || (r > 120 && r < 235 && g > 35 && g < 150 && b < 85 && (r - g) > 45);
+  return levelWhiteInkPixel(r, g, b);
 }
 
 function mesoInkPixel(r, g, b) {
@@ -1013,34 +1002,11 @@ function readLevelFromCanvas(canvas) {
   if (!canvas) return { level: null };
   const rawImage = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
   const image = downsampleImageData(rawImage, 8);
-  const candidates = [];
   const orangeGroups = extractExpGlyphGroups(image, levelOrangeInkPixel, 2)
     .filter(group => group.height >= 5 && group.width >= 8 && group.minX > image.width * 0.35)
     .sort((a, b) => (b.width * b.height) - (a.width * a.height));
   const badgeLevel = readLevelFromDigitGroups(image, extractLevelDigitGroups(image, orangeGroups[0]), 0.28);
-  if (badgeLevel) candidates.push({ ...badgeLevel, source: "badge" });
-
-  const broadBand = {
-    minX: Math.round(image.width * 0.35),
-    minY: 0,
-    maxX: image.width - 1,
-    maxY: image.height - 1,
-    width: Math.max(1, image.width - Math.round(image.width * 0.35)),
-    height: image.height,
-  };
-  const broadGroups = extractLevelDigitGroups(image, broadBand)
-    .filter(group => group.height >= 4 && group.width >= 2)
-    .sort((a, b) => a.minX - b.minX)
-    .slice(-3);
-  const broadLevel = readLevelFromDigitGroups(image, broadGroups, 0.3);
-  if (broadLevel) candidates.push({ ...broadLevel, source: "full" });
-
-  if (!candidates.length) return { level: null };
-  candidates.sort((a, b) => {
-    if (b.digits !== a.digits) return b.digits - a.digits;
-    return a.score - b.score;
-  });
-  return { level: candidates[0].level };
+  return badgeLevel ? { level: badgeLevel.level } : { level: null };
 }
 
 function isLikelyMesoIconGroup(group, image) {
