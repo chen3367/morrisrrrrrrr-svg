@@ -70,7 +70,8 @@
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#c7336efd"><strong>7336efd</strong><span>2026-08-12</span></a>
+      <a class="patchVersionRow active" href="#c8cb62b5"><strong>8cb62b5</strong><span>2026-08-12</span></a>
+      <a class="patchVersionRow" href="#c7336efd"><strong>7336efd</strong><span>2026-08-12</span></a>
       <a class="patchVersionRow" href="#ced54b95"><strong>ed54b95</strong><span>2026-08-12</span></a>
       <a class="patchVersionRow" href="#cdb57138"><strong>db57138</strong><span>2026-08-12</span></a>
       <a class="patchVersionRow" href="#ce62b0ea"><strong>e62b0ea</strong><span>2026-08-12</span></a>
@@ -107,10 +108,19 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>26</strong>
+            <strong>27</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="c8cb62b5" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/8cb62b5e5075bb5d3b1fcce8f0b4dd88a2a9581a">8cb62b5</a> 戰鬥分析等級辨識修正</h3>
+          <ul class="patchChangeList">
+            <li>戰鬥分析改用遊戲本地素材中的 LV 數字樣板辨識等級。</li>
+            <li>等級辨識只比對 LV 徽章內的白色數字筆畫，降低橘色底框或其他畫面元素造成的誤判。</li>
+            <li>移除容易亂猜的全區域等級備援，避免出現 111 這類不合理等級。</li>
+          </ul>
+        </section>
 
         <section id="c7336efd" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/7336efd68d4243e075f3fafa751d7a0aba623eef">7336efd</a> 妖精艾溫合成來源補正</h3>
