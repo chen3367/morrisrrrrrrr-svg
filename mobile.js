@@ -16,9 +16,13 @@
     return document.getElementById("settingsToggle");
   }
 
+  function navButton() {
+    return document.getElementById("navDrawerToggle");
+  }
+
   function hasDetailPane() {
     return !!document.querySelector(
-      "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, #levelDetail, .patchNotesDetail"
+      "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, #gachaDetail, #levelDetail, .patchNotesDetail"
     );
   }
 
@@ -45,6 +49,7 @@
     const panel = settingsPanel();
     const button = settingsButton();
     if (!panel) return;
+    if (!isMobile() && panel.classList.contains("utilitySettingsPanel")) return;
     const isOpen = !panel.hidden;
     if (open === isOpen) return;
     if (button) {
@@ -65,7 +70,7 @@
     if (nextPane === "detail" && options.scrollTop !== false) {
       requestAnimationFrame(() => {
         const paneEl = document.querySelector(
-          "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, #levelDetail, .patchNotesDetail"
+          "#detail, #itemDetail, #questDetail, #mapDetail, #worldMapDetail, #skillDetail, #simulatorDetail, #damageDetail, #gachaDetail, #levelDetail, .patchNotesDetail"
         );
         paneEl?.scrollTo({ top: 0, behavior: "auto" });
       });
@@ -108,14 +113,146 @@
     });
   }
 
+  const hoverNavMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
+  const reducedMotionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const navAnimations = new WeakMap();
+  const navCloseTimers = new WeakMap();
+
+  function animateNav(group, direction) {
+    const links = group.querySelector(".navMenuLinks");
+    if (!links || reducedMotionMedia.matches || typeof links.animate !== "function") return;
+    navAnimations.get(group)?.cancel();
+    const opening = direction === "open";
+    const animation = links.animate(
+      opening
+        ? [
+            { opacity: 0, transform: "translateY(-6px) scale(0.98)" },
+            { opacity: 1, transform: "translateY(0) scale(1)" },
+          ]
+        : [
+            { opacity: 1, transform: "translateY(0) scale(1)" },
+            { opacity: 0, transform: "translateY(-6px) scale(0.98)" },
+          ],
+      { duration: opening ? 130 : 105, easing: opening ? "cubic-bezier(.2,.8,.2,1)" : "ease-in" }
+    );
+    navAnimations.set(group, animation);
+    return animation;
+  }
+
+  function openNavGroup(group) {
+    if (!group) return;
+    const timer = navCloseTimers.get(group);
+    if (timer) window.clearTimeout(timer);
+    document.querySelectorAll(".navMenuGroup[open]").forEach(openGroup => {
+      if (openGroup !== group) closeNavGroup(openGroup, { animate: false });
+    });
+    group.removeAttribute("data-nav-closing");
+    if (!group.open) {
+      group.open = true;
+      animateNav(group, "open");
+    }
+  }
+
+  function closeNavGroup(group, options = {}) {
+    if (!group || !group.open) return;
+    const animate = options.animate !== false;
+    if (!animate || reducedMotionMedia.matches) {
+      navAnimations.get(group)?.cancel();
+      group.removeAttribute("data-nav-closing");
+      group.open = false;
+      return;
+    }
+    group.setAttribute("data-nav-closing", "true");
+    const animation = animateNav(group, "close");
+    if (!animation) {
+      group.removeAttribute("data-nav-closing");
+      group.open = false;
+      return;
+    }
+    animation.finished
+      .catch(() => {})
+      .then(() => {
+        if (group.matches(":hover") || group.contains(document.activeElement)) {
+          group.removeAttribute("data-nav-closing");
+          return;
+        }
+        group.removeAttribute("data-nav-closing");
+        group.open = false;
+      });
+  }
+
+  function scheduleCloseNavGroup(group) {
+    const timer = navCloseTimers.get(group);
+    if (timer) window.clearTimeout(timer);
+    navCloseTimers.set(
+      group,
+      window.setTimeout(() => {
+        if (!group.matches(":hover") && !group.contains(document.activeElement)) closeNavGroup(group);
+      }, 120)
+    );
+  }
+
+  function closeAllNavGroups(except = null, options = {}) {
+    document.querySelectorAll(".navMenuGroup[open]").forEach(group => {
+      if (group !== except) closeNavGroup(group, options);
+    });
+  }
+
+  function ensureNavBackdrop() {
+    let backdrop = document.querySelector(".navDrawerBackdrop");
+    if (backdrop) return backdrop;
+    backdrop = document.createElement("button");
+    backdrop.type = "button";
+    backdrop.className = "navDrawerBackdrop";
+    backdrop.setAttribute("aria-label", "關閉選單");
+    document.body.appendChild(backdrop);
+    return backdrop;
+  }
+
+  function setNavDrawer(open) {
+    const button = navButton();
+    if (!isMobile()) open = false;
+    root.dataset.navDrawerOpen = open ? "true" : "false";
+    if (!open) closeAllNavGroups(null, { animate: false });
+    if (button) {
+      button.setAttribute("aria-expanded", String(open));
+      button.setAttribute("aria-label", open ? "關閉選單" : "開啟選單");
+      button.title = open ? "關閉選單" : "開啟選單";
+      button.textContent = open ? "×" : "☰";
+    }
+  }
+
+  function initializeNavMenus() {
+    document.querySelectorAll(".navMenuGroup").forEach(group => {
+      group.open = false;
+      group.addEventListener("mouseenter", () => {
+        if (hoverNavMedia.matches) openNavGroup(group);
+      });
+      group.addEventListener("mouseleave", () => {
+        if (hoverNavMedia.matches) scheduleCloseNavGroup(group);
+      });
+      group.addEventListener("focusin", () => {
+        if (hoverNavMedia.matches) openNavGroup(group);
+      });
+      group.addEventListener("focusout", () => {
+        requestAnimationFrame(() => {
+          if (hoverNavMedia.matches && !group.contains(document.activeElement) && !group.matches(":hover")) scheduleCloseNavGroup(group);
+        });
+      });
+    });
+  }
+
   function initializeMobileState() {
     if (!isMobile()) {
       delete root.dataset.mobilePane;
+      setNavDrawer(false);
       toggleSettings(false);
       closeWorldLabels();
       return;
     }
     ensureDock();
+    ensureNavBackdrop();
+    setNavDrawer(false);
     const stored = readStoredPane();
     const initial = stored === "filters" ? lastContentPane : stored || "list";
     setPane(initial, { settings: "keep", scrollTop: false });
@@ -124,6 +261,35 @@
   }
 
   document.addEventListener("click", event => {
+    const navToggle = event.target.closest("#navDrawerToggle");
+    if (navToggle) {
+      event.preventDefault();
+      setNavDrawer(root.dataset.navDrawerOpen !== "true");
+      return;
+    }
+
+    if (event.target.closest(".navDrawerBackdrop")) {
+      event.preventDefault();
+      setNavDrawer(false);
+      return;
+    }
+
+    const navLink = event.target.closest(".topNav a");
+    if (navLink && isMobile()) {
+      setNavDrawer(false);
+      return;
+    }
+
+    const summary = event.target.closest(".navMenuGroup > summary");
+    if (summary) {
+      event.preventDefault();
+      const group = summary.parentElement;
+      if (group.open) closeNavGroup(group);
+      else openNavGroup(group);
+      return;
+    }
+    if (!event.target.closest(".navMenuGroup")) closeAllNavGroups(null, { animate: false });
+
     if (!isMobile()) return;
 
     const dockAction = event.target.closest("[data-mobile-action]");
@@ -167,24 +333,30 @@
     if (!event.target.closest(".worldMapNode")) closeWorldLabels();
   }, true);
 
-  document.addEventListener("toggle", event => {
-    if (!isMobile()) return;
-    if (event.target.matches(".navMenuGroup") && event.target.open) {
-      document.querySelectorAll(".navMenuGroup[open]").forEach(group => {
-        if (group !== event.target && !group.classList.contains("active")) group.open = false;
-      });
-    }
-  }, true);
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    setNavDrawer(false);
+    closeAllNavGroups(null, { animate: false });
+  });
 
   const observer = new MutationObserver(() => {
     if (isMobile()) updateDock();
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  let mobileEnhancementsStarted = false;
+
+  function startMobileEnhancements() {
+    if (mobileEnhancementsStarted) return;
+    mobileEnhancementsStarted = true;
+    initializeNavMenus();
     initializeMobileState();
     observer.observe(document.body, { childList: true, subtree: true });
-  });
+  }
 
   media.addEventListener?.("change", initializeMobileState);
-  if (document.readyState !== "loading") initializeMobileState();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startMobileEnhancements);
+  } else {
+    startMobileEnhancements();
+  }
 })();

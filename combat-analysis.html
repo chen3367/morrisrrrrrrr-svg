@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleStory Classic 戰鬥分析</title>
+  <title>楓憶MapleMemory —— 新楓之谷：經典版資料庫</title>
   <link rel="icon" href="data:," />
   <script>
     (function () {
@@ -26,6 +26,8 @@
       }
     })();
   </script>
+  <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css" />
   <style>
     .combatAnalysisPage {
@@ -403,9 +405,11 @@
 <body>
   <header class="appHeader">
     <div class="titleArea">
-      <h1>戰鬥分析</h1>
-      <nav class="topNav groupedTopNav" aria-label="頁面切換">
-        <details class="navMenuGroup" open>
+      <h1 class="siteBrandTitle"><img class="siteBrandIcon" src="./assets/items/4031456.png" alt="" loading="lazy" /><span class="siteBrandText"><strong class="siteBrandMain">楓憶MapleMemory</strong><span class="siteBrandSubtitle">新楓之谷：經典版資料庫</span></span></h1>
+      <button id="navDrawerToggle" class="navDrawerToggle" type="button" aria-expanded="false" aria-controls="siteNavigation" aria-label="開啟選單" title="開啟選單">☰</button>
+      <div class="headerActions"><button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button></div>
+      <nav id="siteNavigation" class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup">
           <summary>楓葉圖鑑</summary>
           <div class="navMenuLinks">
           <a href="./index.html">怪物</a>
@@ -415,15 +419,16 @@
           <a href="./skills.html">技能</a>
           </div>
         </details>
-        <details class="navMenuGroup active" open>
+        <details class="navMenuGroup active">
           <summary>實用工具</summary>
           <div class="navMenuLinks">
           <a href="./scroll-simulator.html">卷軸模擬器</a>
           <a href="./damage-calculator.html">戰鬥力計算機</a>
           <a class="active" href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./gacha-simulator.html">轉蛋模擬器</a>
           </div>
         </details>
-        <details class="navMenuGroup" open>
+        <details class="navMenuGroup">
           <summary>其他</summary>
           <div class="navMenuLinks">
           <a href="./patch-notes.html">遊戲更新日誌</a>
@@ -433,11 +438,11 @@
       </nav>
       <div class="buildMeta" id="buildMeta"></div>
     </div>
-    <div class="searchWrap">
-      <button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button>
-      <span id="resultCount"></span>
-    </div>
+
   </header>
+  <span id="resultCount" hidden></span>
+
+
 
   <main class="combatAnalysisPage">
     <div class="combatAnalysisShell">

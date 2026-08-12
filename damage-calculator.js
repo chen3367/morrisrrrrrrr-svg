@@ -1375,7 +1375,9 @@ function renderDetail() {
   const attackCards = job?.kind === "magic"
     ? `<div class="damageResultCard"><strong>${formatNumber(range.magicAttack)}</strong><span>魔法攻擊力</span></div>`
     : `<div class="damageResultCard"><strong>${formatNumber(range.min)}</strong><span>最小攻擊力</span></div><div class="damageResultCard"><strong>${formatNumber(range.max)}</strong><span>最大攻擊力</span></div>`;
-  el.resultCount.textContent = `${formatNumber((db.skills || []).length)} 技能 · ${formatNumber((db.partySkillBuffs || []).length + (db.itemBuffs || []).length)} BUFF`;
+  if (el.resultCount) {
+    el.resultCount.textContent = `${formatNumber((db.skills || []).length)} 技能 · ${formatNumber((db.partySkillBuffs || []).length + (db.itemBuffs || []).length)} BUFF`;
+  }
   el.damageDetail.innerHTML = `<article class="damagePanel">
     <header class="damageHero">
       <img class="damageHeroIcon" src="${escapeHtml(job?.image || "./assets/skills/1121000.png")}" alt="" />

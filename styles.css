@@ -4,31 +4,36 @@
   color-scheme: light;
   --ink: #1f2933;
   --muted: #64748b;
-  --line: #d7dee8;
-  --panel: rgba(255, 255, 255, 0.88);
-  --accent: #2f7d5b;
-  --accent-soft: #dff1e5;
+  --line: #d9e2ec;
+  --panel: rgba(255, 255, 255, 0.94);
+  --accent: #2fa66f;
+  --accent-soft: #e5f7ee;
   --gold: #b97b25;
   --blue: #4777a8;
-  --shell: rgba(255, 251, 239, 0.78);
+  --shell: rgba(248, 251, 249, 0.84);
+  --panel-soft: rgba(248, 251, 249, 0.72);
+  --shadow: 0 18px 40px rgba(37, 58, 79, 0.12);
+  --shadow-soft: 0 10px 26px rgba(37, 58, 79, 0.08);
   --page-bg:
-    linear-gradient(rgba(255, 252, 239, 0.88), rgba(255, 252, 239, 0.93)),
-    repeating-linear-gradient(0deg, rgba(71, 119, 168, 0.08) 0 1px, transparent 1px 44px),
-    linear-gradient(135deg, #dcebd8 0%, #f2e6bb 52%, #d7e6ee 100%);
-  --header-bg: #b7b7b7;
-  --header-border: #9ca3af;
-  --control-bg: rgba(255, 255, 255, 0.94);
-  --control-soft: rgba(255, 255, 255, 0.72);
-  --control-hover: rgba(255, 255, 255, 0.94);
-  --control-border: #7f8b99;
+    radial-gradient(circle at 16% -10%, rgba(104, 211, 145, 0.18), transparent 32%),
+    radial-gradient(circle at 90% 0%, rgba(99, 179, 237, 0.14), transparent 26%),
+    linear-gradient(180deg, #f7fafc 0%, #eef5f0 54%, #f8fafc 100%);
+  --header-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 249, 0.92)),
+    rgba(255, 255, 255, 0.94);
+  --header-border: #dce5ee;
+  --control-bg: rgba(255, 255, 255, 0.96);
+  --control-soft: rgba(248, 251, 249, 0.84);
+  --control-hover: rgba(239, 249, 243, 0.96);
+  --control-border: #c6d2df;
   --control-text: #334155;
   --nav-bg: rgba(255, 255, 255, 0.56);
-  --nav-hover: rgba(255, 255, 255, 0.9);
+  --nav-hover: rgba(239, 249, 243, 0.96);
   --row-border: #edf1f6;
   --detail-bg: rgba(255, 255, 255, 0.62);
   --hero-bg: rgba(255, 255, 255, 0.93);
-  --hero-border: #cfd9e4;
-  --card-bg: rgba(255, 255, 255, 0.72);
+  --hero-border: #dbe5ef;
+  --card-bg: rgba(255, 255, 255, 0.82);
   --icon-bg: rgba(255, 255, 255, 0.88);
   --dash-line: #b9d7ec;
   --mini-border: #c9d9e8;
@@ -60,21 +65,26 @@
   color-scheme: dark;
   --ink: #e5edf5;
   --muted: #9fb2c8;
-  --line: #334155;
-  --panel: rgba(15, 23, 42, 0.88);
+  --line: #293548;
+  --panel: rgba(18, 25, 38, 0.92);
   --accent: #56d58f;
   --accent-soft: rgba(86, 213, 143, 0.18);
   --gold: #f6c56f;
   --blue: #83b7ff;
-  --shell: rgba(17, 24, 39, 0.78);
+  --shell: rgba(13, 19, 31, 0.82);
+  --panel-soft: rgba(21, 30, 45, 0.68);
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.28);
   --page-bg:
-    linear-gradient(rgba(7, 10, 18, 0.88), rgba(8, 13, 23, 0.94)),
-    repeating-linear-gradient(0deg, rgba(131, 183, 255, 0.08) 0 1px, transparent 1px 44px),
-    linear-gradient(135deg, #101827 0%, #1e293b 52%, #12302b 100%);
-  --header-bg: #111827;
-  --header-border: #334155;
-  --control-bg: rgba(15, 23, 42, 0.94);
-  --control-soft: rgba(30, 41, 59, 0.78);
+    radial-gradient(circle at 12% -10%, rgba(86, 213, 143, 0.14), transparent 30%),
+    radial-gradient(circle at 90% 0%, rgba(96, 165, 250, 0.12), transparent 28%),
+    linear-gradient(180deg, #0c111b 0%, #111827 58%, #0e151f 100%);
+  --header-bg:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.97), rgba(13, 20, 33, 0.94)),
+    #111827;
+  --header-border: #253246;
+  --control-bg: rgba(20, 29, 43, 0.96);
+  --control-soft: rgba(27, 38, 54, 0.82);
   --control-hover: rgba(51, 65, 85, 0.95);
   --control-border: #526173;
   --control-text: #e5edf5;
@@ -125,37 +135,116 @@ body {
   z-index: 100;
   display: flex;
   gap: 18px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 12px 18px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--header-border);
   background: var(--header-bg);
+  box-shadow: 0 10px 30px rgba(37, 58, 79, 0.1);
+  backdrop-filter: blur(14px);
 }
 .titleArea {
   display: grid;
-  gap: 5px;
-  min-width: 214px;
+  grid-template-columns: minmax(260px, 0.7fr) minmax(420px, 1.6fr) auto;
+  grid-template-areas:
+    "brand nav actions"
+    "meta nav actions";
+  gap: 6px 14px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 h1 {
   margin: 0;
   font-size: 24px;
   letter-spacing: 0;
 }
-.topNav {
+.siteBrandTitle {
+  grid-area: brand;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  line-height: 1.16;
 }
-.navMenuGroup {
+.navDrawerToggle {
+  display: none;
+}
+.navDrawerBackdrop {
+  display: none;
+}
+.headerActions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 42px;
+}
+.siteBrandIcon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  object-fit: contain;
   border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--nav-bg);
+  padding: 3px;
+  box-shadow: 0 6px 14px rgba(37, 58, 79, 0.12);
+}
+.siteBrandText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.siteBrandMain,
+.siteBrandSubtitle {
+  display: block;
+  min-width: 0;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.siteBrandMain {
+  color: var(--text-strong);
+  font-size: 25px;
+  font-weight: 950;
+  line-height: 1.12;
+}
+.siteBrandSubtitle {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+.topNav {
+  grid-area: nav;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+}
+.navMenuGroup {
+  position: relative;
+  display: block;
+  min-width: 0;
+  align-items: stretch;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--nav-bg);
+  overflow: visible;
+}
+.navMenuGroup[open] {
+  z-index: 160;
 }
 .navMenuGroup summary {
-  min-height: 28px;
-  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  padding: 5px 9px 5px 11px;
   color: var(--control-text);
   cursor: pointer;
   font-size: 13px;
@@ -178,18 +267,38 @@ h1 {
 .navMenuGroup.active > summary {
   color: var(--active-text);
   background: var(--accent-soft);
+  box-shadow: inset 4px 0 0 var(--accent);
 }
 .navMenuLinks {
-  display: flex;
-  flex-wrap: wrap;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 170;
+  transform-origin: top left;
+  will-change: opacity, transform;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
-  border-top: 1px solid var(--control-border);
-  padding: 6px;
+  width: max-content;
+  min-width: max(100%, 210px);
+  max-width: min(300px, calc(100vw - 32px));
+  padding: 7px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--nav-bg);
+  box-shadow: 0 16px 36px rgba(37, 58, 79, 0.18);
+}
+.navMenuGroup:last-child .navMenuLinks {
+  right: 0;
+  left: auto;
+}
+.navMenuGroup[data-nav-closing] .navMenuLinks {
+  pointer-events: none;
 }
 .topNav a {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 28px;
   padding: 0 10px;
   border: 1px solid var(--control-border);
@@ -199,14 +308,40 @@ h1 {
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
+  transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease;
 }
+.topNav a::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin-right: 6px;
+  background-image: var(--nav-icon);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.topNav a[href$="index.html"] { --nav-icon: url("./assets/monster_frames/100100.png"); }
+.topNav a[href$="items.html"] { --nav-icon: url("./assets/items/2000000.png"); }
+.topNav a[href$="quests.html"] { --nav-icon: url("./assets/npcs/2005.png"); }
+.topNav a[href$="maps.html"] { --nav-icon: url("./assets/map_marks/Henesys.png"); }
+.topNav a[href$="skills.html"] { --nav-icon: url("./assets/skills/2301002.png"); }
+.topNav a[href$="scroll-simulator.html"] { --nav-icon: url("./assets/items/2040407.png"); }
+.topNav a[href$="damage-calculator.html"] { --nav-icon: url("./assets/skills/1121002.png"); }
+.topNav a[href$="combat-analysis.html"] { --nav-icon: url("./assets/meso/gold.png"); }
+.topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
+.topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
+.topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
 .topNav a:hover {
   background: var(--nav-hover);
+  border-color: var(--link-hover-border);
+  transform: translateY(-1px);
 }
 .topNav a.active {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--active-text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 html[data-map-view="maps"] .worldModeOnly,
 html[data-map-view="world"] .mapModeOnly {
@@ -242,6 +377,7 @@ html[data-map-view="world"] #worldMapViewTab {
   color: var(--active-text);
 }
 .buildMeta {
+  grid-area: meta;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -250,12 +386,34 @@ html[data-map-view="world"] #worldMapViewTab {
   font-weight: 750;
   line-height: 1.3;
 }
+.pageToolbar {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--header-border);
+  background: color-mix(in srgb, var(--page-bg) 84%, var(--panel));
+}
+.pageToolbar .searchWrap {
+  width: min(1220px, 100%);
+  margin: 0 auto;
+}
+.pageToolbar .simulatorHeaderControls {
+  justify-content: flex-end;
+}
+.pageToolbar .pageToolbarNoSearch {
+  justify-content: flex-end;
+}
 .searchWrap {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  width: min(1040px, 70vw);
+  width: min(760px, 55vw);
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
 }
 input, select {
   width: 100%;
@@ -266,6 +424,12 @@ input, select {
   font: inherit;
   color: var(--control-text);
   background: var(--control-bg);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+input:focus, select:focus, button:focus-visible, a:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 input {
   flex: 1 1 260px;
@@ -513,6 +677,27 @@ select {
 .settingsPanel[hidden] {
   display: none;
 }
+.settingsPanel.utilitySettingsPanel {
+  position: static;
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  width: 100%;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.settingsPanel.utilitySettingsPanel::before {
+  display: none;
+}
+.utilitySettingsSection .advancedField,
+.utilitySettingsSection .toggleButton,
+.utilitySettingsSection .toggleIdButton {
+  width: 100%;
+  min-width: 0;
+}
 .settingsSection {
   display: flex;
   flex: 1 0 100%;
@@ -575,8 +760,8 @@ select {
 .layout {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
-  gap: 14px;
-  padding: 12px;
+  gap: 16px;
+  padding: 16px;
 }
 .itemLayout {
   grid-template-columns: 410px minmax(0, 1fr);
@@ -791,6 +976,8 @@ select {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
 }
 .monsterRow {
   display: grid;
@@ -806,11 +993,15 @@ select {
   text-align: left;
   font: inherit;
   cursor: pointer;
+  transition: background 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
 }
 .monsterList .monsterRow:not(.skillIndexRow):not(.worldRegionRow) {
   grid-template-columns: 52px minmax(0, 1fr);
 }
-.monsterRow:hover { background: var(--hover-bg); }
+.monsterRow:hover {
+  background: var(--hover-bg);
+  transform: translateX(1px);
+}
 .monsterRow.active {
   background: var(--accent-soft);
   box-shadow: inset 4px 0 0 var(--accent);
@@ -939,6 +1130,8 @@ select {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--detail-bg);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
 }
 .monsterHero {
   position: sticky;
@@ -951,6 +1144,7 @@ select {
   padding: 14px;
   border-bottom: 1px solid var(--hero-border);
   background: var(--hero-bg);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.38) inset;
 }
 .monsterMark, .rowMonsterImage {
   display: grid;
@@ -2051,6 +2245,317 @@ h3 {
   font-size: 12px;
   font-weight: 850;
 }
+.gachaProductGrid {
+  display: grid;
+  gap: 8px;
+}
+.gachaProductCard {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  color: var(--plain-text);
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+.gachaProductCard:hover {
+  border-color: var(--link-hover-border);
+  background: var(--hover-bg);
+}
+.gachaProductCard.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.gachaProductCard img {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--icon-bg);
+  object-fit: contain;
+  padding: 4px;
+}
+.gachaProductCard strong,
+.gachaProductCard small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gachaProductCard strong {
+  font-size: 15px;
+  font-weight: 950;
+}
+.gachaProductCard small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.gachaProductCard em {
+  color: var(--item-glyph-text);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 950;
+  white-space: nowrap;
+}
+.gachaPrizePicker {
+  max-height: 330px;
+}
+.gachaTierIcon {
+  font-size: 14px;
+}
+.gachaTierSettings {
+  display: grid;
+  gap: 8px;
+}
+.gachaTierControl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  padding: 8px 10px;
+}
+.gachaTierControl label {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--plain-text);
+  font-size: 13px;
+  font-weight: 900;
+}
+.gachaTierControl label span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gachaTierControl input[type="checkbox"] {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.gachaTierControl input[type="number"] {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 8px;
+  text-align: right;
+}
+.gachaCheckField {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  color: var(--plain-text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 900;
+}
+.gachaCheckField span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gachaCheckField input[type="checkbox"] {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.gachaDrawButtons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.gachaDrawButtons .primaryActionButton,
+.gachaDrawButtons .clearFiltersButton {
+  grid-column: 1 / -1;
+}
+.gachaHero .monsterPortrait {
+  object-fit: contain;
+  padding: 6px;
+}
+.gachaPanel {
+  border-top: 1px dashed var(--dash-line);
+  padding: 14px 16px;
+}
+.gachaPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.gachaPanelHeader h2,
+.gachaPanelHeader h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.gachaPanelHeader span,
+.gachaPanelHeader a {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+.gachaPanelHeader a:hover {
+  color: var(--link);
+}
+.gachaStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: 8px;
+}
+.gachaStatCard {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid var(--stat-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 10px 12px;
+}
+.gachaStatCard span,
+.gachaStatCard small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+.gachaStatCard strong {
+  min-width: 0;
+  color: var(--text-strong);
+  font-size: 22px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.gachaFormulaNote {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.gachaSplitGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+.gachaSubPanel {
+  min-width: 0;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  padding: 10px;
+}
+.gachaSubPanel h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.gachaTableWrap {
+  overflow-x: auto;
+}
+.gachaTable {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--plain-text);
+  font-size: 13px;
+}
+.gachaTable th,
+.gachaTable td {
+  border-bottom: 1px solid var(--row-border);
+  padding: 8px 9px;
+  text-align: left;
+  white-space: nowrap;
+}
+.gachaTable th {
+  color: var(--text-strong);
+  font-weight: 950;
+}
+.gachaTable td:last-child,
+.gachaTable th:last-child {
+  text-align: right;
+}
+.gachaTable tr.active {
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.gachaLog {
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  margin: 0;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 8px;
+  color: var(--plain-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+.gachaLogEntry {
+  min-width: 0;
+  border-radius: 4px;
+  padding: 3px 5px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.gachaLogBigPrize {
+  background: #ffe66d;
+  color: #111111;
+  font-family: "MingLiU", "PMingLiU", serif;
+  font-weight: 900;
+}
+.gachaLogPrize {
+  color: #7e22ce;
+  font-weight: 950;
+}
+.gachaPrizeGroup {
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  overflow: hidden;
+}
+.gachaPrizeGroup + .gachaPrizeGroup {
+  margin-top: 10px;
+}
+.gachaPrizeGroup summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px 12px;
+  color: var(--text-strong);
+  font-weight: 950;
+}
+.gachaPrizeGroup summary small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
 .hiddenMapClusterList {
   display: grid;
   gap: 12px;
@@ -3029,53 +3534,154 @@ h3 {
     flex-direction: column;
   }
   .appHeader {
-    display: grid;
-    gap: 8px;
+    display: flex;
+    align-items: center;
     flex: 0 0 auto;
-    padding: 8px 10px;
+    z-index: 520;
+    padding: 9px 10px;
+    min-height: 58px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+    backdrop-filter: none;
   }
   .titleArea {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px 42px;
+    grid-template-areas:
+      "brand actions menu"
+      "meta meta meta";
+    align-items: center;
     min-width: 0;
+    width: 100%;
     gap: 4px;
   }
   h1 {
     font-size: 20px;
     line-height: 1.2;
   }
+  .siteBrandTitle {
+    grid-area: brand;
+    gap: 8px;
+  }
+  .siteBrandMain {
+    font-size: 18px;
+  }
+  .siteBrandSubtitle {
+    font-size: 11px;
+  }
+  .siteBrandIcon {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+    border-radius: 7px;
+    padding: 2px;
+  }
   .buildMeta {
+    grid-area: meta;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 11px;
   }
-  .topNav {
-    flex-wrap: nowrap;
-    gap: 6px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    padding-bottom: 2px;
-    scrollbar-width: none;
+  .navDrawerToggle {
+    grid-area: menu;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    border: 1px solid var(--control-border);
+    border-radius: 8px;
+    background: var(--control-soft);
+    color: var(--control-text);
+    font: inherit;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
   }
-  .topNav::-webkit-scrollbar {
-    display: none;
+  .navDrawerToggle[aria-expanded="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--active-text);
+  }
+  .navDrawerBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 360;
+    display: block;
+    background: rgba(15, 23, 42, 0.38);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+  :root[data-nav-drawer-open="true"] .navDrawerBackdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .topNav {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 370;
+    display: block;
+    width: min(330px, calc(100vw - 52px));
+    padding: 72px 12px 18px;
+    border-right: 1px solid var(--header-border);
+    background: var(--panel);
+    box-shadow: 22px 0 44px rgba(15, 23, 42, 0.22);
+    overflow: auto;
+    overscroll-behavior: contain;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-104%);
+    transition: transform 0.2s cubic-bezier(.2,.8,.2,1), opacity 0.18s ease;
+  }
+  :root[data-nav-drawer-open="true"] .topNav {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
   }
   .navMenuGroup {
-    display: contents;
+    position: static;
+    display: block;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border-radius: 10px;
   }
   .navMenuGroup summary {
-    display: none;
+    display: flex;
+    min-height: 30px;
+    padding: 4px 8px;
+    border-right: 0;
+    border-bottom: 0;
+    font-size: 12px;
   }
   .navMenuLinks {
-    flex: 0 0 auto;
-    flex-wrap: nowrap;
+    position: static;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
+    width: auto;
+    min-width: 0;
+    max-width: none;
     border: 0;
-    padding: 0;
+    border-top: 1px solid var(--control-border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 6px;
   }
   .topNav a {
-    min-height: 30px;
-    padding: 0 10px;
+    justify-content: flex-start;
+    min-height: 28px;
+    padding: 0 9px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pageToolbar {
+    padding: 8px 10px;
   }
   .searchWrap {
     display: grid;
@@ -3083,6 +3689,10 @@ h3 {
     gap: 7px;
     width: 100%;
     margin-top: 0;
+  }
+  .searchWrap.pageToolbarNoSearch {
+    display: flex;
+    justify-content: flex-end;
   }
   .searchWrap > input[type="search"] {
     grid-column: 1 / -1;
@@ -3123,6 +3733,18 @@ h3 {
     padding: 10px;
     box-shadow: 0 16px 42px rgba(15, 23, 42, 0.24);
     overscroll-behavior: contain;
+  }
+  .settingsPanel.utilitySettingsPanel {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    box-shadow: none;
+    overscroll-behavior: auto;
   }
   .advancedField {
     flex: 1 1 calc(50% - 10px);
@@ -3402,12 +4024,31 @@ h3 {
     grid-template-columns: repeat(4, minmax(120px, 1fr));
   }
   .skillTable,
-  .simTable {
+  .simTable,
+  .gachaTable {
     min-width: 0;
   }
   .skillTable th,
-  .skillTable td {
+  .skillTable td,
+  .gachaTable th,
+  .gachaTable td {
     padding: 7px 8px;
+  }
+  .gachaSplitGrid,
+  .gachaStatsGrid {
+    grid-template-columns: 1fr;
+  }
+  .gachaPanel {
+    padding: 12px;
+  }
+  .gachaPanelHeader,
+  .gachaPrizeGroup summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .gachaDrawButtons {
+    grid-template-columns: 1fr;
   }
   .mapCanvas {
     max-height: none;

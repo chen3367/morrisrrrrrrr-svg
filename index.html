@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MapleStory Classic 怪物掉落搜尋</title>
+  <title>楓憶MapleMemory —— 新楓之谷：經典版資料庫</title>
   <link rel="icon" href="data:," />
   <script>
     (function () {
@@ -26,14 +26,18 @@
       }
     })();
   </script>
+  <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="appHeader">
     <div class="titleArea">
-      <h1>怪物掉落搜尋</h1>
-      <nav class="topNav groupedTopNav" aria-label="頁面切換">
-        <details class="navMenuGroup active" open>
+      <h1 class="siteBrandTitle"><img class="siteBrandIcon" src="./assets/items/4031456.png" alt="" loading="lazy" /><span class="siteBrandText"><strong class="siteBrandMain">楓憶MapleMemory</strong><span class="siteBrandSubtitle">新楓之谷：經典版資料庫</span></span></h1>
+      <button id="navDrawerToggle" class="navDrawerToggle" type="button" aria-expanded="false" aria-controls="siteNavigation" aria-label="開啟選單" title="開啟選單">☰</button>
+      <div class="headerActions"><button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button></div>
+      <nav id="siteNavigation" class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup active">
           <summary>楓葉圖鑑</summary>
           <div class="navMenuLinks">
           <a class="active" href="./index.html">怪物</a>
@@ -43,15 +47,16 @@
           <a href="./skills.html">技能</a>
           </div>
         </details>
-        <details class="navMenuGroup" open>
+        <details class="navMenuGroup">
           <summary>實用工具</summary>
           <div class="navMenuLinks">
           <a href="./scroll-simulator.html">卷軸模擬器</a>
           <a href="./damage-calculator.html">戰鬥力計算機</a>
           <a href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./gacha-simulator.html">轉蛋模擬器</a>
           </div>
         </details>
-        <details class="navMenuGroup" open>
+        <details class="navMenuGroup">
           <summary>其他</summary>
           <div class="navMenuLinks">
           <a href="./patch-notes.html">遊戲更新日誌</a>
@@ -61,14 +66,16 @@
       </nav>
       <div class="buildMeta" id="buildMeta"></div>
     </div>
-    <div class="searchWrap">
+
+  </header>
+  <section class="pageToolbar" aria-label="頁面搜尋與條件">
+    <div class="searchWrap pageToolbarControls">
       <input id="search" type="search" autocomplete="off" list="searchHistoryOptions" placeholder="輸入怪物、道具、地圖名稱或 ID" />
       <datalist id="searchHistoryOptions"></datalist>
       <label id="nameOnlySearchControl" class="nameOnlySearchControl">
         <input id="nameOnlySearch" type="checkbox" autocomplete="off" />
         <span>只搜尋名稱</span>
       </label>
-      <button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button>
       <button id="settingsToggle" class="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel" aria-label="顯示設定" title="顯示設定">⚙</button>
       <span id="resultCount"></span>
       <div id="settingsPanel" class="settingsPanel" hidden>
@@ -108,7 +115,8 @@
         </div>
       </div>
     </div>
-  </header>
+  </section>
+
 
   <main class="layout">
     <aside class="monsterList" id="monsterList"></aside>

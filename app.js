@@ -1,5 +1,6 @@
 const db = window.MS_DROP_DB;
 const COOKIE_DAYS = 180;
+const HIDDEN_MONSTER_INDEX_IDS = new Set(["9300058", "9300059", "9300060"]);
 
 function readCookie(name) {
   try {
@@ -410,6 +411,7 @@ function matchesBossFilter(monster) {
 function filteredMonsters() {
   const q = norm(state.query);
   return db.monsters.filter(monster => {
+    if (HIDDEN_MONSTER_INDEX_IDS.has(String(monster.id))) return false;
     const unnamedMapOk = state.showUnnamedMapMonsters || !onlyUnnamedMapMonster(monster);
     const continentOk = matchesSelectedContinents(monster);
     const levelOk = matchesLevelFilters(monster);
