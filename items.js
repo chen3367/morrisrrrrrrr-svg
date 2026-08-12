@@ -204,14 +204,39 @@ function setTheme(theme) {
 }
 
 function initialItemId() {
-  const value = new URLSearchParams(window.location.search).get("item");
-  return value && /^\d+$/.test(value) ? Number(value) : null;
+  const value = safeSearchParam("item");
+  if (value && /^\d+$/.test(value)) return Number(value);
+  const item = itemByName(value);
+  return item ? Number(item.id) : null;
 }
 
 function initialShowUnnamedMapMonsters() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("showUnnamedMaps") === "1") return true;
+  if (safeSearchParam("showUnnamedMaps") === "1") return true;
   return cookieBool("ms_show_unnamed_map_monsters");
+}
+
+function safeSearchParam(name) {
+  try {
+    return new URLSearchParams(window.location.search).get(name) || "";
+  } catch (_error) {
+    const query = String(window.location.search || "").replace(/^\?/, "");
+    for (const part of query.split("&")) {
+      const [rawKey, ...rawValue] = part.split("=");
+      const key = safeDecodeQueryPart(rawKey || "");
+      if (key !== name) continue;
+      return safeDecodeQueryPart(rawValue.join("="));
+    }
+  }
+  return "";
+}
+
+function safeDecodeQueryPart(value) {
+  const text = String(value || "").replace(/\+/g, " ");
+  try {
+    return decodeURIComponent(text);
+  } catch (_error) {
+    return text;
+  }
 }
 
 function setItemUrl(itemId) {
@@ -751,6 +776,28 @@ function filteredItems() {
 
 function itemById(itemId) {
   return (db.items || []).find(item => itemMatchesId(item, itemId));
+}
+
+function itemByName(name) {
+  const target = norm(name);
+  if (!target) return null;
+  return (db.items || []).find(item => norm(item.name) === target) || null;
+}
+
+function formatQuestRewardJob(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const groups = [
+    ["劍士", [1, 11, 21, 31]],
+    ["法師", [2, 12, 22, 32]],
+    ["弓箭手", [3, 13, 23, 33]],
+    ["盜賊", [4, 14, 24, 34]],
+    ["海盜", [5, 15, 25, 35]],
+  ];
+  return groups
+    .filter(([, bits]) => bits.some(bit => n & (2 ** bit)))
+    .map(([label]) => label)
+    .join(" / ");
 }
 
 function itemRequiredLevel(item) {
