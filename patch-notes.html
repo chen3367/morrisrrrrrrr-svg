@@ -28,7 +28,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=20260813194432" />
 </head>
 <body>
   <header class="appHeader">
@@ -70,13 +70,72 @@
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="版本列表">
-      <a class="patchVersionRow active" href="#v1-13-6">
+      <a class="patchVersionRow active" href="#v1-14-2">
+        <strong>1.14.2</strong>
+        <span>2026-08-13</span>
+      </a>
+      <a class="patchVersionRow" href="#v1-13-6">
         <strong>1.13.6</strong>
         <span>2026-08-06</span>
       </a>
     </aside>
 
     <section class="detail patchNotesDetail">
+      <article id="v1-14-2" class="patchNoteArticle">
+        <header class="patchNoteHero">
+          <div>
+            <p class="patchEyebrow">資料版本更新</p>
+            <h2>遊戲資料 1.14.2</h2>
+            <p>本次更新以商城、外觀與道具來源資料同步為主。</p>
+          </div>
+          <div class="patchNoteDate">
+            <strong>2026-08-13</strong>
+            <span>GMT+8</span>
+          </div>
+        </header>
+
+        <section class="patchNoteSection">
+          <h3>道具與來源</h3>
+          <ul class="patchChangeList">
+            <li>道具索引更新至遊戲資料 <b>1.14.2</b>。</li>
+            <li>道具取得來源資料增加，尤其商城來源資料由 <b>692</b> 筆增加為 <b>994</b> 筆。</li>
+            <li>道具來源總量由 <b>3449</b> 筆增加為 <b>3740</b> 筆，搜尋道具時能看到更多取得途徑。</li>
+          </ul>
+        </section>
+
+        <section class="patchNoteSection">
+          <h3>外觀資料</h3>
+          <ul class="patchChangeList">
+            <li>新增 <b>38</b> 筆外觀、髮型與臉型資料，例如暗笑的臉型、羽翼造型、瓦片頭造型、逆風飄揚造型、雪姬造型等。</li>
+            <li>移除或替換 <b>54</b> 筆已不在本版資料中的外觀索引，避免道具圖鑑顯示過期資料。</li>
+          </ul>
+        </section>
+
+        <section class="patchNoteSection">
+          <h3>完整資料 diff</h3>
+          <details class="patchDiffPanel">
+            <summary>
+              <span>
+                <strong>1.13.6 → 1.14.2</strong>
+                <em>展開查看資料表差異細節</em>
+              </span>
+            </summary>
+            <div class="patchDiffBody">
+              <div class="patchDiffBlock">
+                <h4>道具資料</h4>
+                <ul class="patchChangeList">
+                  <li>道具總數：<b>11386</b> → <b>11370</b></li>
+                  <li>已命名道具：<b>11057</b> → <b>11041</b></li>
+                  <li>有取得來源的道具資料：<b>3449</b> → <b>3740</b></li>
+                  <li>商店/商城來源資料：<b>3351</b> → <b>3653</b></li>
+                  <li>商城來源資料：<b>692</b> → <b>994</b></li>
+                </ul>
+              </div>
+            </div>
+          </details>
+        </section>
+      </article>
+
       <article id="v1-13-6" class="patchNoteArticle">
         <header class="patchNoteHero">
           <div>
@@ -129,7 +188,7 @@
     </section>
   </main>
 
-  <script src="./patch-notes.js"></script>
-  <script src="./mobile.js"></script>
+  <script src="./patch-notes.js?v=20260813194432"></script>
+  <script src="./mobile.js?v=20260813194432"></script>
 </body>
 </html>

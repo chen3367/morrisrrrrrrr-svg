@@ -165,7 +165,7 @@ function prizeIconHtml(prize, className = "gachaPrizeIcon") {
 
 function isSelectablePool(pool) {
   if (!pool || pool.selectable === false || pool.kind === "exchangeReward") return false;
-  return pool.id !== "brilliant-comet-20260729";
+  return true;
 }
 
 function selectablePoolById(poolId) {
@@ -177,7 +177,7 @@ function currentPool() {
 }
 
 function isRoyalPool(pool = currentPool()) {
-  return pool?.id === "royal-beauty-20260729" || pool?.kind === "royalBeauty";
+  return pool?.kind === "royalBeauty" || String(pool?.id || "").startsWith("royal-beauty-");
 }
 
 function royalCouponLabel() {
@@ -191,6 +191,15 @@ function royalGenderText() {
 function royalGroupName() {
   const kind = state.royalCoupon === "face" ? "皇家整形" : "皇家美髮";
   return `${kind}(${royalGenderText()})`;
+}
+
+function isRoyalPrize(prize) {
+  const group = String(prize?.group || prize?.tier || "");
+  return group.includes("皇家美髮") || group.includes("皇家整形") || String(prize?.image || "").includes("/royal_avatars/");
+}
+
+function iconClassForPrize(prize, baseClass) {
+  return isRoyalPrize(prize) ? `${baseClass} gachaRoyalAvatarIcon` : baseClass;
 }
 
 function activePoolGroups(pool = currentPool()) {
@@ -425,6 +434,7 @@ function addPrizeLog(prize, productName) {
     image: prize.image || "",
     tier: prize.tier || "",
     big: isBigPrize(prize),
+    royal: isRoyalPrize(prize),
   });
   if (state.simulation.log.length > LOG_LIMIT) state.simulation.log.shift();
 }
@@ -642,9 +652,10 @@ function renderTargets() {
   if (!els.targetList) return;
   els.targetList.innerHTML = targets.length ? targets.map(target => {
     const active = target.id === state.targetId ? " active" : "";
+    const royalClass = isRoyalPrize(target) ? " gachaRoyalPrizeRow" : "";
     return `
-      <button class="simPickerRow${active}" type="button" data-target-id="${escapeHtml(target.id)}" role="option" aria-selected="${target.id === state.targetId}">
-        ${prizeIconHtml(target, "simPickerIcon gachaPrizePickerIcon")}
+      <button class="simPickerRow${active}${royalClass}" type="button" data-target-id="${escapeHtml(target.id)}" role="option" aria-selected="${target.id === state.targetId}">
+        ${prizeIconHtml(target, iconClassForPrize(target, "simPickerIcon gachaPrizePickerIcon"))}
         <span class="simPickerText">
           <strong>${escapeHtml(target.name)}${state.showIds ? ` · ${escapeHtml(target.id)}` : ""}</strong>
           <span>${escapeHtml(target.group)} · ${formatPct(Number(target.chance || 0))}</span>
@@ -693,7 +704,7 @@ function renderLogEntry(entry) {
   if (!entry || entry.type !== "prize") {
     return `<li class="gachaLogEntry">${escapeHtml(entry?.text || "")}</li>`;
   }
-  const icon = prizeIconHtml(entry, "gachaLogIcon");
+  const icon = prizeIconHtml(entry, iconClassForPrize(entry, "gachaLogIcon"));
   if (entry.big) {
     return `
       <li class="gachaLogEntry gachaLogBigPrize">
@@ -788,7 +799,7 @@ function renderPrizePool(pool, target) {
       .map(prize => `
         <tr class="${target?.id === prize.id ? "active" : ""}">
           <td>${escapeHtml(prize.tier)}</td>
-          <td><span class="gachaPrizeNameCell">${prizeIconHtml(prize)}<span>${escapeHtml(prize.name)}${state.showIds ? ` <small>${escapeHtml(prize.id)}</small>` : ""}</span></span></td>
+          <td><span class="gachaPrizeNameCell">${prizeIconHtml(prize, iconClassForPrize(prize, "gachaPrizeIcon"))}<span>${escapeHtml(prize.name)}${state.showIds ? ` <small>${escapeHtml(prize.id)}</small>` : ""}</span></span></td>
           <td>${formatPct(Number(prize.chance || 0))}</td>
         </tr>
       `).join("");

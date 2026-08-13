@@ -82,6 +82,7 @@ const state = {
   tesseractPromise: null,
   tesseractFailed: false,
   pendingCalibration: null,
+  pendingMesoCandidate: null,
 };
 
 const el = {
@@ -230,6 +231,240 @@ function getAbsoluteExp(snapshot) {
   return (cumulativeMap.get(Number(snapshot.level)) || 0) + Number(snapshot.exp || 0);
 }
 
+function numericCandidate(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function sanitizeExpCandidate(value, expToNext = 0) {
+  const number = numericCandidate(value);
+  if (number === null) return null;
+  const exp = Math.round(number);
+  if (exp < 0) return null;
+  if (expToNext && exp > expToNext) return null;
+  return exp;
+}
+
+function sanitizePercentCandidate(value) {
+  const number = numericCandidate(value);
+  if (number === null || number < 0 || number > 100) return null;
+  return Math.round(number * 100) / 100;
+}
+
+function normalizeCandidates(candidates, sanitizer) {
+  const seen = new Set();
+  const rows = [];
+  for (const [index, candidate] of candidates.entries()) {
+    const rawValue = candidate && typeof candidate === "object" && "value" in candidate
+      ? candidate.value
+      : candidate;
+    const value = sanitizer(rawValue);
+    if (value === null || value === undefined) continue;
+    const key = String(value);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rows.push({
+      value,
+      source: candidate?.source || "",
+      priority: Number.isFinite(candidate?.priority) ? candidate.priority : index,
+    });
+  }
+  return rows;
+}
+
+function percentFromExp(exp, expToNext) {
+  if (!expToNext) return null;
+  return Math.round((Number(exp) / expToNext) * 10000) / 100;
+}
+
+function expFromPercent(percent, expToNext) {
+  if (!expToNext) return null;
+  return Math.floor(expToNext * Number(percent) / 100);
+}
+
+function expPercentTolerance(expToNext) {
+  if (!expToNext) return 0.12;
+  const expFloor = Math.max(40, Math.ceil(expToNext * 0.0002));
+  return Math.max(0.12, Math.round((expFloor / expToNext) * 10000) / 100);
+}
+
+function resolveExpPercent(level, expCandidates = [], percentCandidates = []) {
+  const expToNext = getExpToNext(level);
+  const exps = normalizeCandidates(expCandidates, value => sanitizeExpCandidate(value, expToNext));
+  const percents = normalizeCandidates(percentCandidates, sanitizePercentCandidate);
+  const fallbackExp = exps[0]?.value ?? null;
+  const fallbackPercent = percents[0]?.value ?? null;
+
+  if (!level) {
+    return { ok: false, reason: "missing-level", exp: fallbackExp, percent: fallbackPercent };
+  }
+  if (!expToNext) {
+    return {
+      ok: fallbackExp !== null,
+      reason: fallbackExp !== null ? "" : "missing-exp",
+      exp: fallbackExp,
+      percent: fallbackPercent,
+    };
+  }
+
+  if (exps.length && percents.length) {
+    const tolerance = expPercentTolerance(expToNext);
+    const pairs = [];
+    for (const expRow of exps) {
+      const expectedPercent = percentFromExp(expRow.value, expToNext);
+      for (const percentRow of percents) {
+        const delta = Math.abs(expectedPercent - percentRow.value);
+        pairs.push({
+          exp: expRow.value,
+          percent: expectedPercent,
+          readPercent: percentRow.value,
+          delta,
+          priority: expRow.priority + percentRow.priority,
+          expSource: expRow.source,
+          percentSource: percentRow.source,
+        });
+      }
+    }
+    pairs.sort((a, b) => a.delta - b.delta || a.priority - b.priority);
+    const best = pairs[0];
+    if (best && best.delta <= tolerance) {
+      return { ok: true, ...best, tolerance };
+    }
+    const trustedExp = exps.find(row => row.source === "EXP 圖樣");
+    if (trustedExp) {
+      return {
+        ok: true,
+        exp: trustedExp.value,
+        percent: percentFromExp(trustedExp.value, expToNext),
+        expSource: trustedExp.source,
+        ignoredPercent: fallbackPercent,
+        reason: "percent-overridden",
+      };
+    }
+    return {
+      ok: false,
+      reason: "mismatch",
+      exp: fallbackExp,
+      percent: fallbackPercent,
+      expectedPercent: fallbackExp !== null ? percentFromExp(fallbackExp, expToNext) : null,
+      expectedExp: fallbackPercent !== null ? expFromPercent(fallbackPercent, expToNext) : null,
+      tolerance,
+    };
+  }
+
+  if (exps.length) {
+    return {
+      ok: true,
+      exp: exps[0].value,
+      percent: percentFromExp(exps[0].value, expToNext),
+      expSource: exps[0].source,
+    };
+  }
+  if (percents.length) {
+    const exp = expFromPercent(percents[0].value, expToNext);
+    return {
+      ok: true,
+      exp,
+      percent: percentFromExp(exp, expToNext),
+      percentSource: percents[0].source,
+    };
+  }
+  return { ok: false, reason: "missing-exp", exp: null, percent: null };
+}
+
+function formatExpConsistencyStatus(result) {
+  if (result?.reason !== "mismatch") return "";
+  const expText = result.exp === null || result.exp === undefined ? "未讀到" : formatNumber(result.exp);
+  const readPercent = result.percent === null || result.percent === undefined ? "未讀到" : formatPercent(result.percent);
+  const expectedPercent = result.expectedPercent === null || result.expectedPercent === undefined ? "未知" : formatPercent(result.expectedPercent);
+  return `EXP 與百分比不一致，已略過這筆紀錄：EXP ${expText} 對應 ${expectedPercent}，但讀到 ${readPercent}。`;
+}
+
+function latestKnownMeso() {
+  for (let index = state.snapshots.length - 1; index >= 0; index -= 1) {
+    const meso = state.snapshots[index]?.meso;
+    if (Number.isFinite(Number(meso))) return Number(meso);
+  }
+  if (Number.isFinite(Number(state.latest?.meso))) return Number(state.latest.meso);
+  return null;
+}
+
+function normalizeMesoCandidate(value) {
+  const number = parseNumber(value);
+  if (number === null || number < 0) return null;
+  return Math.round(number);
+}
+
+function normalizeMesoTextCandidates(text) {
+  const normalized = normalizeOcrText(text);
+  const compact = normalized.replace(/\s+/g, "");
+  const candidates = [];
+  const seen = new Set();
+  const add = (value, confidence = 0.5, source = "OCR 楓幣") => {
+    const meso = normalizeMesoCandidate(value);
+    if (meso === null || seen.has(meso)) return;
+    seen.add(meso);
+    candidates.push({ value: meso, confidence, source });
+  };
+
+  for (const match of compact.matchAll(/[0-9]{1,3}(?:,[0-9]{3})+/g)) {
+    add(match[0], 0.92, "OCR 逗號楓幣");
+    const withoutComma = match[0].replace(/,/g, "");
+    add(withoutComma, 0.84, "OCR 逗號楓幣");
+  }
+  for (const match of compact.matchAll(/[0-9]{4,12}/g)) {
+    add(match[0], 0.55, "OCR 楓幣");
+  }
+  return candidates;
+}
+
+function mesoDeltaLimit(previous, minutes = null) {
+  const base = Math.max(50000, Math.round((previous || 0) * 0.35));
+  if (!Number.isFinite(minutes) || minutes <= 0) return base;
+  return Math.max(base, Math.round(minutes * 1200000));
+}
+
+function resolveMesoValue(candidates, previous = latestKnownMeso()) {
+  const rows = [];
+  const seen = new Set();
+  for (const candidate of candidates) {
+    const value = normalizeMesoCandidate(candidate?.value);
+    if (value === null || seen.has(value)) continue;
+    seen.add(value);
+    rows.push({
+      value,
+      source: candidate?.source || "",
+      confidence: Number.isFinite(candidate?.confidence) ? candidate.confidence : 0.5,
+    });
+  }
+  if (!rows.length) return { value: null, reason: "missing" };
+  if (previous === null || previous === undefined) {
+    rows.sort((a, b) => b.confidence - a.confidence || String(b.value).length - String(a.value).length);
+    return { value: rows[0].value, reason: "", source: rows[0].source };
+  }
+
+  const maxIncrease = mesoDeltaLimit(previous);
+  const accepted = rows
+    .map(row => ({
+      ...row,
+      delta: row.value - previous,
+      distance: Math.abs(row.value - previous),
+    }))
+    .filter(row => row.delta >= 0 && row.delta <= maxIncrease);
+  if (accepted.length) {
+    accepted.sort((a, b) => a.distance - b.distance || b.confidence - a.confidence);
+    return { value: accepted[0].value, reason: "", source: accepted[0].source };
+  }
+
+  rows.sort((a, b) => Math.abs(a.value - previous) - Math.abs(b.value - previous));
+  return {
+    value: null,
+    reason: "outlier",
+    rejected: rows[0]?.value ?? null,
+    previous,
+  };
+}
+
 function buildRowsWithCumulative() {
   let running = 0;
   return levelRows.map(row => {
@@ -265,6 +500,7 @@ function parseDetectedText(text) {
     exp: null,
     percent: null,
     meso: null,
+    mesoText: "",
     rawText: normalized,
   };
 
@@ -289,7 +525,10 @@ function parseDetectedText(text) {
   }
 
   const mesoMatch = compact.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})楓幣/) || compact.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})/);
-  if (mesoMatch) result.meso = parseNumber(mesoMatch[1]);
+  if (mesoMatch) {
+    result.mesoText = mesoMatch[1];
+    result.meso = parseNumber(mesoMatch[1]);
+  }
   return result;
 }
 
@@ -580,6 +819,31 @@ function levelDigitInkPixel(r, g, b) {
 
 function mesoInkPixel(r, g, b) {
   return (r + g + b) / 3 < 80;
+}
+
+function mesoOcrCanvas(canvas) {
+  if (!canvas) return null;
+  const output = document.createElement("canvas");
+  output.width = canvas.width;
+  output.height = canvas.height;
+  const outputCtx = output.getContext("2d", { willReadFrequently: true });
+  outputCtx.drawImage(canvas, 0, 0);
+  const image = outputCtx.getImageData(0, 0, output.width, output.height);
+  for (let index = 0; index < image.data.length; index += 4) {
+    const r = image.data[index];
+    const g = image.data[index + 1];
+    const b = image.data[index + 2];
+    const brightness = (r + g + b) / 3;
+    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+    const ink = brightness < 145 && saturation < 80;
+    const value = ink ? 0 : 255;
+    image.data[index] = value;
+    image.data[index + 1] = value;
+    image.data[index + 2] = value;
+    image.data[index + 3] = 255;
+  }
+  outputCtx.putImageData(image, 0, 0);
+  return output;
 }
 
 function imagePixel(image, x, y) {
@@ -1082,6 +1346,25 @@ async function detectTextFromCanvas(canvas) {
   }
 }
 
+async function detectMesoText(canvas) {
+  const tesseract = await ensureTesseract();
+  if (!tesseract) return { text: "", supported: false };
+  try {
+    const result = await tesseract.recognize(canvas, "eng", {
+      logger(message) {
+        if (message?.status === "recognizing text" && typeof message.progress === "number") {
+          setStatus(`楓幣 OCR 辨識中 ${Math.round(message.progress * 100)}%`);
+        }
+      },
+      tessedit_char_whitelist: "0123456789,",
+      tessedit_pageseg_mode: "7",
+    });
+    return { text: result?.data?.text || "", supported: true };
+  } catch (_error) {
+    return { text: "", supported: false };
+  }
+}
+
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${src}"]`);
@@ -1126,14 +1409,28 @@ function snapshotFromFields() {
   const resolvedExp = exp ?? pending.exp ?? null;
   const resolvedPercent = percent ?? pending.percent ?? null;
   const resolvedMeso = meso ?? pending.meso ?? null;
-  if (!resolvedLevel || resolvedLevel < 1 || resolvedLevel > 200 || resolvedExp === null) return null;
-  const expToNext = getExpToNext(resolvedLevel);
-  const normalizedExp = Math.max(0, Math.min(expToNext || resolvedExp, resolvedExp));
+  if (!resolvedLevel || resolvedLevel < 1 || resolvedLevel > 200 || (resolvedExp === null && resolvedPercent === null)) return null;
+  const expResult = resolveExpPercent(
+    resolvedLevel,
+    [{ value: resolvedExp, source: "校正 EXP", priority: 0 }],
+    [{ value: resolvedPercent, source: "校正 EXP%", priority: 0 }],
+  );
+  if (!expResult.ok) {
+    return {
+      invalid: true,
+      level: resolvedLevel,
+      exp: expResult.exp ?? resolvedExp,
+      percent: expResult.percent ?? resolvedPercent,
+      meso: resolvedMeso,
+      reason: expResult.reason,
+      status: formatExpConsistencyStatus(expResult),
+    };
+  }
   return {
     time: Date.now(),
     level: resolvedLevel,
-    exp: normalizedExp,
-    percent: resolvedPercent === null && expToNext ? (normalizedExp / expToNext) * 100 : resolvedPercent,
+    exp: expResult.exp,
+    percent: expResult.percent,
     meso: resolvedMeso,
     rawText: "手動校正",
   };
@@ -1152,6 +1449,21 @@ function clearCalibrationFields() {
 
 function addSnapshot(snapshot) {
   if (!snapshot) return false;
+  if (snapshot.invalid) {
+    setStatus(snapshot.status || "EXP 與百分比不一致，已略過這筆紀錄。");
+    return false;
+  }
+  const expResult = resolveExpPercent(
+    snapshot.level,
+    [{ value: snapshot.exp, source: "紀錄 EXP", priority: 0 }],
+    [{ value: snapshot.percent, source: "紀錄 EXP%", priority: 0 }],
+  );
+  if (!expResult.ok) {
+    setStatus(formatExpConsistencyStatus(expResult) || "EXP 紀錄不完整，已略過這筆資料。");
+    return false;
+  }
+  snapshot.exp = expResult.exp;
+  snapshot.percent = expResult.percent;
   state.snapshots.push(snapshot);
   state.latest = snapshot;
   render();
@@ -1221,10 +1533,8 @@ async function captureFrame(addToTimeline = true) {
 
   const lvRawCanvas = cropRegionCanvas(sourceCanvas, lvRegion, 8);
   const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
-  const mesoRawCanvas = cropRegionCanvas(sourceCanvas, mesoRegion, 8);
   const templateLevel = readLevelFromCanvas(lvRawCanvas);
   const templateExp = readExpFromCanvas(expRawCanvas);
-  const templateMeso = readMesoFromCanvas(mesoRawCanvas);
   const fallback = snapshotFromFields();
   const fieldLevel = parseNumber(el.manualLevel?.value);
   const levelWasEdited = fieldLevel !== null && fieldLevel !== undefined;
@@ -1233,25 +1543,36 @@ async function captureFrame(addToTimeline = true) {
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
     levelWasEdited || templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
     templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
-    templateMeso.meso !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.mesoCrop),
+    detectMesoText(mesoOcrCanvas(el.mesoCrop)),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
   const level = levelWasEdited ? fieldLevel : (templateLevel.level || parsedLevel || parsedExp.level || fieldLevel || fallback?.level || null);
-  let exp = templateExp.exp ?? parsedExp.exp;
   const expToNext = getExpToNext(level);
-  let percent = exp !== null && exp !== undefined && expToNext
-    ? Math.round((Number(exp) / expToNext) * 10000) / 100
-    : templateExp.percent ?? parsedExp.percent ?? fallback?.percent ?? null;
-  if ((exp === null || exp === undefined) && percent !== null && expToNext) {
-    exp = Math.floor(expToNext * percent / 100);
-    percent = Math.round((Number(exp) / expToNext) * 10000) / 100;
-  }
-  if ((exp === null || exp === undefined) && fallback) exp = fallback.exp;
-  const meso = templateMeso.meso ?? parsedMeso.meso ?? fallback?.meso ?? null;
+  const expResult = resolveExpPercent(
+    level,
+    [
+      { value: templateExp.exp, source: "EXP 圖樣", priority: 0 },
+      { value: parsedExp.exp, source: "OCR EXP", priority: 1 },
+      { value: fallback?.exp, source: "校正 EXP", priority: 2 },
+    ],
+    [
+      { value: templateExp.percent, source: "EXP% 圖樣", priority: 0 },
+      { value: parsedExp.percent, source: "OCR EXP%", priority: 1 },
+      { value: fallback?.percent, source: "校正 EXP%", priority: 2 },
+    ],
+  );
+  const exp = expResult.exp;
+  const percent = expResult.percent;
+  const mesoResult = resolveMesoValue([
+    ...normalizeMesoTextCandidates(mesoDetection.text),
+    { value: parsedMeso.meso, source: "OCR 楓幣", confidence: parsedMeso.mesoText?.includes(",") ? 0.9 : 0.55 },
+    { value: fallback?.meso, source: "校正楓幣", confidence: 1 },
+  ]);
+  const meso = mesoResult.value;
 
-  const snapshot = level && exp !== null && exp !== undefined ? {
+  const snapshot = level && expResult.ok ? {
     time: Date.now(),
     level,
     exp: Math.max(0, Math.min(expToNext || exp, exp)),
@@ -1265,7 +1586,7 @@ async function captureFrame(addToTimeline = true) {
       level,
       exp,
       percent,
-      meso,
+      meso: meso ?? mesoResult.rejected ?? null,
     };
   } else {
     state.pendingCalibration = null;
@@ -1273,6 +1594,8 @@ async function captureFrame(addToTimeline = true) {
 
   if (!state.ocrAvailable && state.tesseractFailed) {
     setStatus("OCR 無法載入；請用校正欄加入紀錄。");
+  } else if (!snapshot && expResult.reason === "mismatch") {
+    setStatus(formatExpConsistencyStatus(expResult));
   } else if (!snapshot) {
     if (exp !== null && exp !== undefined) {
       setStatus(`已讀取 EXP ${formatNumber(exp)}${percent !== null && percent !== undefined ? ` · ${formatPercent(percent)}` : ""}，請在校正欄補上等級後再加入紀錄。`);
@@ -1281,7 +1604,8 @@ async function captureFrame(addToTimeline = true) {
     }
   } else {
     const mesoText = snapshot.meso === null || snapshot.meso === undefined ? "楓幣未讀取" : `楓幣 ${formatNumber(snapshot.meso)}`;
-    setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}`);
+    const mesoNote = mesoResult.reason === "outlier" ? " · 楓幣讀值離群已略過" : "";
+    setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoNote}`);
   }
   if (snapshot && addToTimeline) {
     addSnapshot(snapshot);
@@ -1631,6 +1955,10 @@ function initialize() {
     const snapshot = snapshotFromFields();
     if (!snapshot) {
       setStatus("請至少填入等級與目前 EXP。");
+      return;
+    }
+    if (snapshot.invalid) {
+      setStatus(snapshot.status || "EXP 與百分比不一致，已略過這筆紀錄。");
       return;
     }
     addSnapshot(snapshot);
