@@ -4,6 +4,7 @@ const COOKIE_DAYS = 180;
 const CAPTURE_INTERVAL_MS = 10000;
 const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
+const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
 const OCR_REGION_PRESETS = {
   "1366x768": {
     lv: { x: 0.211973, y: 0.96, width: 0.051542, height: 0.038541 },
@@ -83,6 +84,7 @@ const state = {
   tesseractFailed: false,
   pendingCalibration: null,
   pendingMesoCandidate: null,
+  lastReportFilename: "",
 };
 
 const el = {
@@ -93,8 +95,6 @@ const el = {
   video: document.getElementById("captureVideo"),
   share: document.getElementById("shareScreenButton"),
   start: document.getElementById("startAnalysisButton"),
-  captureOnce: document.getElementById("captureOnceButton"),
-  stop: document.getElementById("stopAnalysisButton"),
   reset: document.getElementById("resetSnapshotsButton"),
   status: document.getElementById("ocrStatus"),
   ocrResolution: document.getElementById("ocrResolutionSelect"),
@@ -102,11 +102,9 @@ const el = {
   lvCrop: document.getElementById("lvCropCanvas"),
   expCrop: document.getElementById("expCropCanvas"),
   mesoCrop: document.getElementById("mesoCropCanvas"),
-  manualLevel: document.getElementById("manualLevel"),
-  manualExp: document.getElementById("manualExp"),
-  manualPercent: document.getElementById("manualPercent"),
-  manualMeso: document.getElementById("manualMeso"),
-  addManual: document.getElementById("addManualSnapshotButton"),
+  exportReport: document.getElementById("exportReportDatasetButton"),
+  emailReport: document.getElementById("emailReportDatasetButton"),
+  reportStatus: document.getElementById("reportDatasetStatus"),
 };
 
 const levelMap = new Map(levelRows.map(row => [Number(row.level), Number(row.expToNextLevel || 0)]));
@@ -197,6 +195,7 @@ function formatRate(value) {
 }
 
 function formatMetricNumber(value) {
+  if (typeof value === "string") return value;
   if (!Number.isFinite(value)) return "等待資料";
   return formatNumber(Math.max(0, value));
 }
@@ -220,6 +219,149 @@ function formatDuration(minutes) {
 
 function setStatus(message) {
   if (el.status) el.status.textContent = message || "";
+}
+
+function setReportStatus(message) {
+  if (el.reportStatus) el.reportStatus.textContent = message || "";
+}
+
+function cloneForReport(value) {
+  try {
+    return JSON.parse(JSON.stringify(value ?? null));
+  } catch (_error) {
+    return null;
+  }
+}
+
+function canvasDataUrl(canvas) {
+  try {
+    if (!canvas || !canvas.width || !canvas.height) return "";
+    return canvas.toDataURL("image/png");
+  } catch (_error) {
+    return "";
+  }
+}
+
+function canvasReport(canvas) {
+  return {
+    width: Number(canvas?.width || 0),
+    height: Number(canvas?.height || 0),
+    imagePng: canvasDataUrl(canvas),
+  };
+}
+
+function currentPresetReport() {
+  const width = Number(el.video?.videoWidth || 0);
+  const height = Number(el.video?.videoHeight || 0);
+  const preset = width && height ? selectedRegionPreset(width, height) : null;
+  return {
+    selected: state.ocrResolutionKey,
+    videoWidth: width,
+    videoHeight: height,
+    resolved: preset ? {
+      key: preset.key,
+      exact: Boolean(preset.exact),
+      adjusted: Boolean(preset.adjusted),
+      forced: Boolean(preset.forced),
+      frame: cloneForReport(preset.frame),
+      regions: cloneForReport(preset.regions),
+    } : null,
+  };
+}
+
+function buildReportDataset() {
+  const meta = db.metadata || {};
+  const screenInfo = window.screen || {};
+  return {
+    schema: 1,
+    type: "maple-memory-combat-analysis-report",
+    createdAt: new Date().toISOString(),
+    page: "combat-analysis",
+    site: {
+      gameVersion: meta.gameVersion || "",
+      generatedAt: meta.generatedAt || "",
+      generatedAtText: meta.generatedAtText || "",
+    },
+    browser: {
+      userAgent: navigator.userAgent || "",
+      language: navigator.language || "",
+      languages: cloneForReport(navigator.languages || []),
+      viewport: { width: window.innerWidth || 0, height: window.innerHeight || 0 },
+      screen: {
+        width: screenInfo.width || 0,
+        height: screenInfo.height || 0,
+        availWidth: screenInfo.availWidth || 0,
+        availHeight: screenInfo.availHeight || 0,
+        devicePixelRatio: window.devicePixelRatio || 1,
+      },
+    },
+    capture: {
+      hasActiveStream: Boolean(state.stream),
+      intervalMs: CAPTURE_INTERVAL_MS,
+      preset: currentPresetReport(),
+    },
+    recognition: {
+      nativeTextDetector: typeof window.TextDetector === "function",
+      tesseractLoaded: Boolean(window.Tesseract),
+      tesseractFailed: Boolean(state.tesseractFailed),
+      pendingCalibration: cloneForReport(state.pendingCalibration),
+      pendingMesoCandidate: cloneForReport(state.pendingMesoCandidate),
+    },
+    latest: cloneForReport(state.latest),
+    snapshots: cloneForReport(state.snapshots),
+    stats: cloneForReport(computeStats()),
+    crops: {
+      level: canvasReport(el.lvCrop),
+      exp: canvasReport(el.expCrop),
+      meso: canvasReport(el.mesoCrop),
+    },
+    privacy: {
+      containsFullScreenshot: false,
+      containsScreenRecording: false,
+      containsCroppedOcrImages: true,
+    },
+  };
+}
+
+function reportFilename() {
+  const stamp = new Date().toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "Z");
+  return `maple-combat-analysis-report-${stamp}.json`;
+}
+
+function downloadReportDataset(dataset, filename) {
+  const blob = new Blob([JSON.stringify(dataset, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportReportDataset() {
+  const dataset = buildReportDataset();
+  const filename = reportFilename();
+  downloadReportDataset(dataset, filename);
+  state.lastReportFilename = filename;
+  setReportStatus(`已下載 ${filename}`);
+  return filename;
+}
+
+function emailReportDataset() {
+  const filename = state.lastReportFilename || exportReportDataset();
+  const subject = "楓憶MapleMemory 戰鬥分析錯誤回報";
+  const body = [
+    "我已在戰鬥分析頁打包回報資料。",
+    `請查看附件：${filename}`,
+    "",
+    "問題描述：",
+  ].join("\\n");
+  window.location.href = `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  setReportStatus(`已開啟信件草稿，請附上 ${filename}`);
 }
 
 function getExpToNext(level) {
@@ -1398,55 +1540,6 @@ async function ensureTesseract() {
   return state.tesseractPromise;
 }
 
-function snapshotFromFields() {
-  const level = parseNumber(el.manualLevel?.value);
-  const exp = parseNumber(el.manualExp?.value);
-  const percent = parseNumber(el.manualPercent?.value);
-  const meso = parseNumber(el.manualMeso?.value);
-  const hasManualValue = [level, exp, percent, meso].some(value => value !== null && value !== undefined);
-  const pending = hasManualValue ? state.pendingCalibration || {} : {};
-  const resolvedLevel = level ?? pending.level ?? null;
-  const resolvedExp = exp ?? pending.exp ?? null;
-  const resolvedPercent = percent ?? pending.percent ?? null;
-  const resolvedMeso = meso ?? pending.meso ?? null;
-  if (!resolvedLevel || resolvedLevel < 1 || resolvedLevel > 200 || (resolvedExp === null && resolvedPercent === null)) return null;
-  const expResult = resolveExpPercent(
-    resolvedLevel,
-    [{ value: resolvedExp, source: "校正 EXP", priority: 0 }],
-    [{ value: resolvedPercent, source: "校正 EXP%", priority: 0 }],
-  );
-  if (!expResult.ok) {
-    return {
-      invalid: true,
-      level: resolvedLevel,
-      exp: expResult.exp ?? resolvedExp,
-      percent: expResult.percent ?? resolvedPercent,
-      meso: resolvedMeso,
-      reason: expResult.reason,
-      status: formatExpConsistencyStatus(expResult),
-    };
-  }
-  return {
-    time: Date.now(),
-    level: resolvedLevel,
-    exp: expResult.exp,
-    percent: expResult.percent,
-    meso: resolvedMeso,
-    rawText: "手動校正",
-  };
-}
-
-function hasCalibrationFieldValues() {
-  return [el.manualLevel, el.manualExp, el.manualPercent, el.manualMeso]
-    .some(input => String(input?.value || "").trim());
-}
-
-function clearCalibrationFields() {
-  for (const input of [el.manualLevel, el.manualExp, el.manualPercent, el.manualMeso]) {
-    if (input) input.value = "";
-  }
-}
-
 function addSnapshot(snapshot) {
   if (!snapshot) return false;
   if (snapshot.invalid) {
@@ -1467,7 +1560,28 @@ function addSnapshot(snapshot) {
   state.snapshots.push(snapshot);
   state.latest = snapshot;
   render();
+  scrollHistoryToLatest();
   return true;
+}
+
+function scrollHistoryToLatest() {
+  window.requestAnimationFrame(() => {
+    const wrap = document.getElementById("snapshotHistoryWrap");
+    if (wrap) wrap.scrollTop = 0;
+  });
+}
+
+function analysisIsRunning() {
+  return Boolean(state.timer);
+}
+
+function updateAnalysisToggleButton() {
+  if (!el.start) return;
+  const running = analysisIsRunning();
+  el.start.textContent = running ? "停止分析" : "開始分析";
+  el.start.setAttribute("aria-pressed", running ? "true" : "false");
+  el.start.classList.toggle("combatButton", !running);
+  el.start.classList.toggle("combatButtonDanger", running);
 }
 
 async function ensureScreenShare() {
@@ -1511,6 +1625,7 @@ function stopAnalysis() {
   }
   if (el.video) el.video.srcObject = null;
   render();
+  updateAnalysisToggleButton();
   setStatus("分析已停止。");
 }
 
@@ -1535,32 +1650,26 @@ async function captureFrame(addToTimeline = true) {
   const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
   const templateLevel = readLevelFromCanvas(lvRawCanvas);
   const templateExp = readExpFromCanvas(expRawCanvas);
-  const fallback = snapshotFromFields();
-  const fieldLevel = parseNumber(el.manualLevel?.value);
-  const levelWasEdited = fieldLevel !== null && fieldLevel !== undefined;
-  const hadManualCalibration = hasCalibrationFieldValues();
 
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
-    levelWasEdited || templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
+    templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
     templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
     detectMesoText(mesoOcrCanvas(el.mesoCrop)),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
-  const level = levelWasEdited ? fieldLevel : (templateLevel.level || parsedLevel || parsedExp.level || fieldLevel || fallback?.level || null);
+  const level = templateLevel.level || parsedLevel || parsedExp.level || null;
   const expToNext = getExpToNext(level);
   const expResult = resolveExpPercent(
     level,
     [
       { value: templateExp.exp, source: "EXP 圖樣", priority: 0 },
       { value: parsedExp.exp, source: "OCR EXP", priority: 1 },
-      { value: fallback?.exp, source: "校正 EXP", priority: 2 },
     ],
     [
       { value: templateExp.percent, source: "EXP% 圖樣", priority: 0 },
       { value: parsedExp.percent, source: "OCR EXP%", priority: 1 },
-      { value: fallback?.percent, source: "校正 EXP%", priority: 2 },
     ],
   );
   const exp = expResult.exp;
@@ -1568,7 +1677,6 @@ async function captureFrame(addToTimeline = true) {
   const mesoResult = resolveMesoValue([
     ...normalizeMesoTextCandidates(mesoDetection.text),
     { value: parsedMeso.meso, source: "OCR 楓幣", confidence: parsedMeso.mesoText?.includes(",") ? 0.9 : 0.55 },
-    { value: fallback?.meso, source: "校正楓幣", confidence: 1 },
   ]);
   const meso = mesoResult.value;
 
@@ -1593,12 +1701,12 @@ async function captureFrame(addToTimeline = true) {
   }
 
   if (!state.ocrAvailable && state.tesseractFailed) {
-    setStatus("OCR 無法載入；請用校正欄加入紀錄。");
+    setStatus("OCR 無法載入；請稍後再試，或打包回報資料協助檢查。");
   } else if (!snapshot && expResult.reason === "mismatch") {
     setStatus(formatExpConsistencyStatus(expResult));
   } else if (!snapshot) {
     if (exp !== null && exp !== undefined) {
-      setStatus(`已讀取 EXP ${formatNumber(exp)}${percent !== null && percent !== undefined ? ` · ${formatPercent(percent)}` : ""}，請在校正欄補上等級後再加入紀錄。`);
+      setStatus(`已讀取 EXP ${formatNumber(exp)}${percent !== null && percent !== undefined ? ` · ${formatPercent(percent)}` : ""}，但尚未辨識到等級，請確認 LV 區塊或解析度設定。`);
     } else {
       setStatus("尚未辨識到 EXP 數值，請確認分享的是遊戲視窗與解析度設定。");
     }
@@ -1609,17 +1717,16 @@ async function captureFrame(addToTimeline = true) {
   }
   if (snapshot && addToTimeline) {
     addSnapshot(snapshot);
-    if (hadManualCalibration) clearCalibrationFields();
   }
   else if (snapshot) {
     state.latest = snapshot;
-    if (hadManualCalibration) clearCalibrationFields();
     render();
   }
   return snapshot;
 }
 
 async function startAnalysis() {
+  if (state.timer) return;
   const ready = await ensureScreenShare();
   if (!ready) return;
   await captureFrame(true);
@@ -1628,6 +1735,15 @@ async function startAnalysis() {
     captureFrame(true);
   }, CAPTURE_INTERVAL_MS);
   render();
+  updateAnalysisToggleButton();
+}
+
+async function toggleAnalysis() {
+  if (analysisIsRunning()) {
+    stopAnalysis();
+    return;
+  }
+  await startAnalysis();
 }
 
 function resetSnapshots() {
@@ -1743,6 +1859,20 @@ function sumSegments(segments, field, sinceTime = null) {
   };
 }
 
+function cumulativeSeries(segments, field) {
+  const rows = [...segments]
+    .filter(segment => segment?.from?.time && segment?.to?.time)
+    .sort((a, b) => a.to.time - b.to.time);
+  if (!rows.length) return [];
+  let total = 0;
+  const series = [{ time: rows[0].from.time, value: 0 }];
+  for (const segment of rows) {
+    total += Math.max(0, Number(segment[field] || 0));
+    series.push({ time: segment.to.time, value: total });
+  }
+  return series;
+}
+
 function computeStats() {
   const snapshots = state.snapshots.filter(row => row.level && row.exp !== null && row.exp !== undefined);
   if (snapshots.length < 2) return null;
@@ -1777,34 +1907,90 @@ function computeStats() {
     ignoredMesoSegments,
     acceptedExpSegments: expSegments.length,
     acceptedMesoSegments: mesoSegments.length,
+    expSeries: cumulativeSeries(expSegments, "expDelta"),
+    mesoSeries: cumulativeSeries(mesoSegments, "mesoDelta"),
     etaMinutes: remainingExp !== null && expPerMin > 0 ? remainingExp / expPerMin : null,
   };
 }
 
-function renderMetricCard(title, expValue, mesoValue = null, expSuffix = "EXP") {
+function renderAreaSparkline(points, kind = "exp") {
+  const rows = (points || [])
+    .filter(row => Number.isFinite(Number(row?.time)) && Number.isFinite(Number(row?.value)))
+    .map(row => ({ time: Number(row.time), value: Math.max(0, Number(row.value)) }));
+  if (rows.length < 2) return "";
+  const minTime = rows[0].time;
+  const maxTime = rows[rows.length - 1].time;
+  const maxValue = Math.max(...rows.map(row => row.value), 1);
+  const width = 120;
+  const height = 56;
+  const padTop = 7;
+  const padBottom = 5;
+  const usableHeight = height - padTop - padBottom;
+  const pointsText = rows.map(row => {
+    const x = maxTime === minTime ? 0 : ((row.time - minTime) / (maxTime - minTime)) * width;
+    const y = height - padBottom - (row.value / maxValue) * usableHeight;
+    return `${x.toFixed(2)},${y.toFixed(2)}`;
+  });
+  const area = `M0,${height} L${pointsText.join(" L")} L${width},${height} Z`;
+  const line = `M${pointsText.join(" L")}`;
   return `
-    <div class="combatMetricCard">
-      <strong>${formatMetricNumber(expValue)}</strong>
-      <span>${title} ${expSuffix}</span>
-      <small>${mesoValue === null || mesoValue === undefined ? "楓幣等待資料" : `${formatMetricNumber(mesoValue)} 楓幣`}</small>
+    <svg class="combatMetricSparkline ${kind}Sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+      <path d="${area}" fill="currentColor" opacity="0.18"></path>
+      <path d="${line}" fill="none" stroke="currentColor" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+    </svg>
+  `;
+}
+
+function renderMetricCard({ title, value, unit, detail, kind = "exp", series = [] }) {
+  return `
+    <div class="combatMetricCard ${kind}Metric">
+      ${renderAreaSparkline(series, kind)}
+      <div class="combatMetricContent">
+        <strong>${formatMetricNumber(value)}</strong>
+        <span>${escapeHtml(title)}</span>
+        <small>${escapeHtml(unit || detail ? [unit, detail].filter(Boolean).join(" · ") : "")}</small>
+      </div>
     </div>
+  `;
+}
+
+function renderMetricGroup(title, subtitle, kind, cards) {
+  return `
+    <section class="combatMetricGroup ${kind}MetricGroup">
+      <div class="combatMetricGroupHeader">
+        <h3>${escapeHtml(title)}</h3>
+        <span>${escapeHtml(subtitle || "")}</span>
+      </div>
+      <div class="combatMetricGroupGrid">
+        ${cards.join("")}
+      </div>
+    </section>
   `;
 }
 
 function renderSummaryCards(stats) {
   const expPerMin = stats?.expPerMin ?? 0;
   const mesoPerMin = stats?.mesoPerMin ?? null;
+  const expSeries = stats?.expSeries || [];
+  const mesoSeries = stats?.mesoSeries || [];
+  const expCards = [
+    renderMetricCard({ title: "累計每分鐘", value: expPerMin, unit: "EXP / 分", detail: stats ? `${stats.acceptedExpSegments} 段有效` : "等待資料", kind: "exp", series: expSeries }),
+    renderMetricCard({ title: "累計10分鐘", value: stats?.recentExpDelta ?? 0, unit: "EXP", detail: "最近 10 分鐘實得", kind: "exp", series: expSeries }),
+    renderMetricCard({ title: "總累計", value: stats?.expDelta ?? 0, unit: "EXP", detail: stats ? `排除 ${stats.ignoredExpSegments} 段` : "等待資料", kind: "exp", series: expSeries }),
+    renderMetricCard({ title: "預估10分鐘", value: stats?.forecast10Exp ?? 0, unit: "EXP", detail: "依累計均速", kind: "exp", series: expSeries }),
+    renderMetricCard({ title: "預估30分鐘", value: stats?.forecast30Exp ?? 0, unit: "EXP", detail: "依累計均速", kind: "exp", series: expSeries }),
+    renderMetricCard({ title: "預估升等", value: stats ? formatDuration(stats.etaMinutes) : "等待資料", unit: "", detail: stats?.remainingExp !== null && stats?.remainingExp !== undefined ? `剩餘 ${formatNumber(stats.remainingExp)} EXP` : "需要等級與 EXP", kind: "exp", series: expSeries }),
+  ];
+  const mesoCards = [
+    renderMetricCard({ title: "累計每分鐘", value: mesoPerMin, unit: "楓幣 / 分", detail: stats ? `${stats.acceptedMesoSegments} 段有效` : "等待資料", kind: "meso", series: mesoSeries }),
+    renderMetricCard({ title: "累計10分鐘", value: stats?.recentMesoDelta ?? null, unit: "楓幣", detail: "最近 10 分鐘實得", kind: "meso", series: mesoSeries }),
+    renderMetricCard({ title: "總累計", value: stats?.mesoDelta ?? null, unit: "楓幣", detail: stats ? `排除 ${stats.ignoredMesoSegments} 段` : "等待資料", kind: "meso", series: mesoSeries }),
+    renderMetricCard({ title: "預估10分鐘", value: stats?.forecast10Meso ?? null, unit: "楓幣", detail: "依累計均速", kind: "meso", series: mesoSeries }),
+    renderMetricCard({ title: "預估30分鐘", value: stats?.forecast30Meso ?? null, unit: "楓幣", detail: "依累計均速", kind: "meso", series: mesoSeries }),
+  ];
   return `
-    ${renderMetricCard("累計每分鐘", expPerMin, mesoPerMin, "EXP")}
-    ${renderMetricCard("累計10分鐘", stats?.recentExpDelta ?? 0, stats?.recentMesoDelta ?? null, "EXP")}
-    ${renderMetricCard("總累計", stats?.expDelta ?? 0, stats?.mesoDelta ?? null, "EXP")}
-    ${renderMetricCard("預估10分鐘", stats?.forecast10Exp ?? 0, stats?.forecast10Meso ?? null, "EXP")}
-    ${renderMetricCard("預估30分鐘", stats?.forecast30Exp ?? 0, stats?.forecast30Meso ?? null, "EXP")}
-    <div class="combatMetricCard">
-      <strong>${formatDuration(stats?.etaMinutes)}</strong>
-      <span>預估升等所需時間</span>
-      <small>${stats ? `${stats.acceptedExpSegments} 段有效 · 排除 ${stats.ignoredExpSegments} 段` : `${state.snapshots.length} 筆紀錄`}</small>
-    </div>
+    ${renderMetricGroup("EXP 效率", "經驗值", "exp", expCards)}
+    ${renderMetricGroup("楓幣效率", "金錢", "meso", mesoCards)}
   `;
 }
 
@@ -1818,9 +2004,9 @@ function renderCurrentSnapshot(snapshot, stats) {
   return `
     <div class="combatSnapshotGrid">
       <div class="combatSnapshot"><b>Lv.${formatNumber(snapshot.level)}</b><span>目前等級</span></div>
-      <div class="combatSnapshot"><b>${formatNumber(snapshot.exp)}</b><span>目前 EXP ${percent !== null ? `· ${formatPercent(percent)}` : ""}</span></div>
-      <div class="combatSnapshot"><b>${formatNumber(remaining)}</b><span>剩餘 EXP</span></div>
-      <div class="combatSnapshot"><b>${snapshot.meso === null || snapshot.meso === undefined ? "未讀取" : formatNumber(snapshot.meso)}</b><span>目前楓幣</span></div>
+      <div class="combatSnapshot expSnapshot"><b>${formatNumber(snapshot.exp)}</b><span>目前 EXP ${percent !== null ? `· ${formatPercent(percent)}` : ""}</span></div>
+      <div class="combatSnapshot expSnapshot"><b>${formatNumber(remaining)}</b><span>剩餘 EXP</span></div>
+      <div class="combatSnapshot mesoSnapshot"><b>${snapshot.meso === null || snapshot.meso === undefined ? "未讀取" : formatNumber(snapshot.meso)}</b><span>目前楓幣</span></div>
     </div>
     <p class="combatHint">${stats ? `已分析 ${stats.elapsedMinutes.toFixed(1)} 分鐘，累積 ${formatNumber(stats.expDelta)} EXP；已排除 ${stats.ignoredExpSegments} 段可能誤判的 EXP 區間。` : "至少需要兩筆紀錄才會開始估算效率。"}</p>
   `;
@@ -1830,8 +2016,9 @@ function renderHistory() {
   if (!state.snapshots.length) {
     return `<p class="combatEmpty">尚未有紀錄。</p>`;
   }
+  const rows = [...state.snapshots].sort((a, b) => Number(b.time || 0) - Number(a.time || 0));
   return `
-    <div class="combatTableWrap">
+    <div class="combatTableWrap combatHistoryWrap" id="snapshotHistoryWrap">
       <table class="combatTable" id="snapshotTable">
         <thead>
           <tr>
@@ -1843,7 +2030,7 @@ function renderHistory() {
           </tr>
         </thead>
         <tbody>
-          ${state.snapshots.map(row => `
+          ${rows.map(row => `
             <tr>
               <td>${new Date(row.time).toLocaleTimeString("zh-TW", { hour12: false })}</td>
               <td>Lv.${formatNumber(row.level)}</td>
@@ -1939,9 +2126,7 @@ function initialize() {
     setTheme(state.theme === "dark" ? "light" : "dark");
   });
   el.share?.addEventListener("click", ensureScreenShare);
-  el.start?.addEventListener("click", startAnalysis);
-  el.captureOnce?.addEventListener("click", () => captureFrame(true));
-  el.stop?.addEventListener("click", stopAnalysis);
+  el.start?.addEventListener("click", toggleAnalysis);
   el.reset?.addEventListener("click", resetSnapshots);
   if (el.ocrResolution) {
     el.ocrResolution.value = state.ocrResolutionKey;
@@ -1951,30 +2136,12 @@ function initialize() {
       updateRegionPresetStatus();
     });
   }
-  el.addManual?.addEventListener("click", () => {
-    const snapshot = snapshotFromFields();
-    if (!snapshot) {
-      setStatus("請至少填入等級與目前 EXP。");
-      return;
-    }
-    if (snapshot.invalid) {
-      setStatus(snapshot.status || "EXP 與百分比不一致，已略過這筆紀錄。");
-      return;
-    }
-    addSnapshot(snapshot);
-    state.pendingCalibration = null;
-    clearCalibrationFields();
-    setStatus("已加入校正紀錄。");
-  });
-  for (const input of [el.manualExp, el.manualMeso]) {
-    input?.addEventListener("blur", () => {
-      const number = parseNumber(input.value);
-      if (number !== null) input.value = formatNumber(number);
-    });
-  }
+  el.exportReport?.addEventListener("click", exportReportDataset);
+  el.emailReport?.addEventListener("click", emailReportDataset);
   el.video?.addEventListener("loadedmetadata", () => updateRegionPresetStatus());
   updateRegionPresetStatus();
   render();
+  updateAnalysisToggleButton();
   setStatus(state.ocrAvailable ? "可使用瀏覽器原生 OCR。" : "會在需要時載入前端 OCR 元件。");
 }
 

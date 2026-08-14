@@ -28,7 +28,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260813194432" />
+  <link rel="stylesheet" href="./styles.css?v=20260814172622" />
   <style>
     .combatAnalysisPage {
       min-height: calc(100vh - var(--header-height, 124px));
@@ -219,12 +219,45 @@
     }
     .combatSummaryGrid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(110px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
       padding: 14px;
       border-bottom: 1px solid var(--line);
     }
+    .combatMetricGroup {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--control-soft);
+    }
+    .combatMetricGroupHeader {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px 0;
+    }
+    .combatMetricGroupHeader h3 {
+      margin: 0;
+      color: var(--plain-text);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .combatMetricGroupHeader span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .combatMetricGroupGrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 12px;
+    }
     .combatMetricCard {
+      position: relative;
+      overflow: hidden;
       min-height: 80px;
       border: 1px solid var(--gold-border);
       border-radius: 8px;
@@ -233,7 +266,32 @@
       display: grid;
       align-content: center;
       gap: 3px;
-      text-align: center;
+      text-align: left;
+    }
+    .combatMetricCard.expMetric {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+    .combatMetricCard.mesoMetric {
+      border-color: var(--gold-border);
+      background: var(--gold-bg);
+    }
+    .combatMetricContent {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 3px;
+    }
+    .combatMetricSparkline {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 78%;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
     }
     .combatMetricCard strong {
       color: var(--plain-text);
@@ -242,9 +300,15 @@
       white-space: nowrap;
     }
     .combatMetricCard span {
-      color: var(--meso-text);
+      color: var(--muted);
       font-size: 12px;
       font-weight: 950;
+    }
+    .combatMetricCard.expMetric span {
+      color: var(--green-text);
+    }
+    .combatMetricCard.mesoMetric span {
+      color: var(--meso-text);
     }
     .combatMetricCard small {
       color: var(--muted);
@@ -285,6 +349,16 @@
       grid-template-columns: repeat(4, minmax(110px, 1fr));
       gap: 10px;
     }
+    .combatSnapshot.expSnapshot {
+      border-style: solid;
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+    .combatSnapshot.mesoSnapshot {
+      border-style: solid;
+      border-color: var(--gold-border);
+      background: var(--gold-bg);
+    }
     .combatSnapshot {
       border: 1px dashed var(--soft-line);
       border-radius: 8px;
@@ -307,6 +381,9 @@
       overflow: auto;
       max-height: 360px;
       border-top: 1px solid var(--line);
+    }
+    .combatHistoryWrap {
+      scroll-behavior: smooth;
     }
     .combatTable,
     .levelExpTable {
@@ -388,6 +465,9 @@
       }
       .combatSummaryGrid,
       .combatSnapshotGrid {
+        grid-template-columns: 1fr;
+      }
+      .combatMetricGroupGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .combatActionGrid,
@@ -398,6 +478,11 @@
       .combatMetricCard strong,
       .combatSnapshot b {
         font-size: 19px;
+      }
+    }
+    @media (max-width: 520px) {
+      .combatMetricGroupGrid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -455,8 +540,6 @@
           <div class="combatActionGrid">
             <button class="combatButton" type="button" id="shareScreenButton">分享螢幕</button>
             <button class="combatButton" type="button" id="startAnalysisButton">開始分析</button>
-            <button class="combatButtonSecondary" type="button" id="captureOnceButton">擷取一次</button>
-            <button class="combatButtonDanger" type="button" id="stopAnalysisButton">停止</button>
           </div>
           <button class="combatButtonSecondary" type="button" id="resetSnapshotsButton">重設紀錄</button>
           <div class="combatStatus" id="ocrStatus"></div>
@@ -494,14 +577,14 @@
         </section>
 
         <section class="combatSection">
-          <h3>校正數值</h3>
-          <div class="combatFormGrid">
-            <label class="combatField">等級<input id="manualLevel" type="number" min="1" max="200" inputmode="numeric" /></label>
-            <label class="combatField">EXP<input id="manualExp" type="text" inputmode="numeric" /></label>
-            <label class="combatField">EXP %<input id="manualPercent" type="text" inputmode="decimal" /></label>
-            <label class="combatField">楓幣<input id="manualMeso" type="text" inputmode="numeric" /></label>
+          <h3>錯誤回報</h3>
+          <div class="combatActionGrid">
+            <button class="combatButtonSecondary" type="button" id="exportReportDatasetButton">打包回報資料</button>
+            <button class="combatButtonSecondary" type="button" id="emailReportDatasetButton">寄給 GitHub mail</button>
           </div>
-          <button class="combatButton" type="button" id="addManualSnapshotButton">校正並加入</button>
+          <div class="combatStatus" id="reportDatasetStatus"></div>
+          <p class="combatHint">回報包只包含目前辨識紀錄、解析度設定與最近一次 LV / EXP / 楓幣裁切圖，不包含完整螢幕截圖。</p>
+          <p class="combatHint">寄信時會先下載 JSON 檔並打開信件草稿；請把剛下載的檔案附上。</p>
         </section>
       </aside>
 
@@ -509,7 +592,7 @@
     </div>
   </main>
 
-  <script src="./combat-analysis-data.js?v=20260813194432"></script>
-  <script src="./combat-analysis.js?v=20260813194432"></script>
+  <script src="./combat-analysis-data.js?v=20260814172622"></script>
+  <script src="./combat-analysis.js?v=20260814172622"></script>
 </body>
 </html>

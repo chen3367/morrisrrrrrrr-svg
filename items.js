@@ -575,6 +575,8 @@ function sourceRows(item) {
     questRewards: item.sources?.questRewards || [],
     shops: shopSourceRows(item),
     crafts: craftSourceRows(item),
+    boxSources: item.sources?.boxSources || [],
+    boxChoices: item.sources?.boxChoices || [],
   };
 }
 
@@ -593,6 +595,8 @@ function sourceCounts(item) {
     questRewards: rows.questRewards.length,
     shops: rows.shops.length,
     crafts: rows.crafts.length,
+    boxSources: rows.boxSources.length,
+    boxChoices: rows.boxChoices.length,
   };
 }
 
@@ -603,6 +607,8 @@ function sourceSummary(item) {
   if (counts.questRewards) parts.push(`任務 ${formatNumber(counts.questRewards)}`);
   if (counts.shops) parts.push(`購買 ${formatNumber(counts.shops)}`);
   if (counts.crafts) parts.push(`合成 ${formatNumber(counts.crafts)}`);
+  if (counts.boxSources) parts.push(`箱子 ${formatNumber(counts.boxSources)}`);
+  if (counts.boxChoices) parts.push(`可選 ${formatNumber(counts.boxChoices)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
 }
 
@@ -655,6 +661,24 @@ function searchableText(item) {
     ...(row.outputs || []).flatMap(item => [item.id, item.name]),
     ...(row.npcs || []).flatMap(npc => [npc.id, npc.name, npc.locationText]),
   ]);
+  const boxSourceText = sources.boxSources.flatMap(row => [
+    row.boxId,
+    row.boxName,
+    row.dialogText,
+    row.npcName,
+    row.choiceLabel,
+    row.item?.id,
+    row.item?.name,
+  ]);
+  const boxChoiceText = sources.boxChoices.flatMap(row => [
+    row.boxId,
+    row.boxName,
+    row.dialogText,
+    row.npcName,
+    row.choiceLabel,
+    row.item?.id,
+    row.item?.name,
+  ]);
   return [
     item.id,
     ...(item.mergedIds || []),
@@ -669,6 +693,8 @@ function searchableText(item) {
     ...craftText,
     ...questRequirementText,
     ...craftRequirementText,
+    ...boxSourceText,
+    ...boxChoiceText,
   ].map(norm).join(" ");
 }
 
@@ -1010,7 +1036,7 @@ function renderList() {
 
 function totalSources(item) {
   const counts = sourceCounts(item);
-  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts;
+  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices;
 }
 
 function selectedItem() {
@@ -1035,7 +1061,7 @@ function renderDetail() {
         <p>${escapeHtml(itemTypeText(item))}${idMeta(item)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
       </div>
       <div class="heroCounters">
-        <div class="heroCounter"><strong>${formatNumber(totalSources(item))}</strong><span>來源</span></div>
+        <div class="heroCounter"><strong>${formatNumber(totalSources(item))}</strong><span>${counts.boxChoices ? "來源/內容" : "來源"}</span></div>
         <div class="heroCounter"><strong>${escapeHtml(item.subcategory || item.kind)}</strong><span>細類</span></div>
       </div>
     </section>
@@ -1045,6 +1071,8 @@ function renderDetail() {
         <div class="statCell"><span>任務獲取</span><strong>${formatNumber(counts.questRewards)}</strong></div>
         <div class="statCell"><span>商人購買</span><strong>${formatNumber(counts.shops)}</strong></div>
         <div class="statCell"><span>合成取得</span><strong>${formatNumber(counts.crafts)}</strong></div>
+        ${counts.boxSources ? `<div class="statCell"><span>箱子取得</span><strong>${formatNumber(counts.boxSources)}</strong></div>` : ""}
+        ${counts.boxChoices ? `<div class="statCell"><span>開箱內容</span><strong>${formatNumber(counts.boxChoices)}</strong></div>` : ""}
       </div>
     </section>
     ${renderEquipmentStats(item)}
@@ -1053,6 +1081,8 @@ function renderDetail() {
     ${renderQuestSources(item)}
     ${renderShopSources(item)}
     ${renderCraftSources(item)}
+    ${renderBoxSources(item)}
+    ${renderBoxChoiceSources(item)}
     ${renderQuestRequirementSources(item)}
     ${renderCraftRequirementSources(item)}
     ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length || craftRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出需求用途" : "目前資料集中沒有取得途徑"}</div>`}
@@ -1319,6 +1349,53 @@ function renderCraftSources(item) {
     sourceBlock("NPC 對話合成配方", npcRows, renderRow),
     sourceBlock("0轉技能「強化合成」特殊配方", makerRows, renderRow),
   ].join("");
+}
+
+function renderBoxSources(item) {
+  const rows = sourceRows(item).boxSources;
+  return sourceBlock("箱子取得", rows, row => {
+    const itemName = row.item?.name || item.name || "道具";
+    const meta = [];
+    if (row.npcName) meta.push(row.npcName);
+    if (row.dialogText) meta.push(row.dialogText);
+    if (row.choiceLabel && row.choiceLabel !== itemName) meta.push(`選項：${row.choiceLabel}`);
+    if (state.showIds) meta.push(`ID ${row.boxId}`);
+    return `
+      <a class="sourceRow sourceLinkRow" href="${itemUrl(row.boxId)}">
+        ${assetImage(row.boxImage, row.boxName, String(row.boxName || "?").slice(0, 1), "sourceMonsterImage")}
+        <div>
+          <strong>${escapeHtml(row.boxName || "箱子")}</strong>
+          <span>${escapeHtml(row.sourceLabel || "開啟後可選擇")}</span>
+          <p>${escapeHtml(meta.join(" · "))}</p>
+        </div>
+        <small>箱子</small>
+      </a>
+    `;
+  });
+}
+
+function renderBoxChoiceSources(item) {
+  const rows = sourceRows(item).boxChoices;
+  return sourceBlock("開啟後可選擇", rows, row => {
+    const reward = row.item || {};
+    const name = reward.name || row.choiceLabel || `道具 ${reward.id || ""}`;
+    const meta = [];
+    if (row.choiceLabel && row.choiceLabel !== name) meta.push(`對話顯示：${row.choiceLabel}`);
+    if (row.npcName) meta.push(row.npcName);
+    if (state.showIds && reward.id) meta.push(`ID ${reward.id}`);
+    return `
+      <a class="sourceRow sourceLinkRow" href="${itemUrl(reward.id)}">
+        ${assetImage(reward.image, name, String(name || "?").slice(0, 1), "sourceMonsterImage")}
+        <div>
+          <strong>${escapeHtml(name)}</strong>
+          <span>${escapeHtml(row.sourceLabel || "開啟後可選擇")}${row.order ? ` · 第 ${formatNumber(row.order)} 項` : ""}</span>
+          ${row.dialogText ? `<p>${escapeHtml(row.dialogText)}</p>` : ""}
+          ${meta.length ? `<p>${escapeHtml(meta.join(" · "))}</p>` : ""}
+        </div>
+        <small>${formatNumber(reward.count || 1)} 個</small>
+      </a>
+    `;
+  });
 }
 
 function renderQuestRequirementSources(item) {
