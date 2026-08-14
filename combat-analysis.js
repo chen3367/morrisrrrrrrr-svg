@@ -1,9 +1,13 @@
 const db = window.MS_COMBAT_ANALYSIS_DB || {};
+const mapDb = window.MS_MAP_DB || {};
 const levelRows = Array.isArray(db.levels) ? db.levels : [];
+const mapRows = Array.isArray(mapDb.maps) ? mapDb.maps : [];
 const COOKIE_DAYS = 180;
 const CAPTURE_INTERVAL_MS = 10000;
 const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
+const SHARE_JOB_COOKIE = "ms_combat_share_job";
+const SHARE_MAP_COOKIE = "ms_combat_share_map";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
 const OCR_REGION_PRESETS = {
   "1366x768": {
@@ -26,6 +30,11 @@ const OCR_REGION_PRESETS = {
     exp: { x: 0.526452, y: 0.958579, width: 0.086042, height: 0.015653 },
     meso: { x: 0.857949, y: 0.39307, width: 0.103671, height: 0.032763 },
   },
+  "2732x1536": {
+    lv: { x: 0.227149, y: 0.959786, width: 0.052363, height: 0.039222 },
+    exp: { x: 0.526452, y: 0.958579, width: 0.086042, height: 0.015653 },
+    meso: { x: 0.857949, y: 0.369792, width: 0.103671, height: 0.032763 },
+  },
   "3840x2160": {
     lv: { x: 0.304671, y: 0.970209, width: 0.038418, height: 0.029791 },
     exp: { x: 0.518695, y: 0.971186, width: 0.060811, height: 0.011738 },
@@ -43,6 +52,13 @@ const OCR_DIGIT_TEMPLATES = {
   "7": ["111111111111111111111111111111111111000000000011000000000011000000000011000000000011000000000011000000000011000000000011000000011100000000011100000000011100000001100000000001100000000001100000000001100000000001100000"],
   "8": ["000011111100001110001110011100000011011100000011011100000011011100000011011110000010001111001110000011111100001110111110011100001111110000000011110000000011110000000011110000000011011100000011011110011110001111111100","000111111000000111111000000111111000111000000111111000000111111000000111111000000111111000000111000111111000000111111000111000000111111000000111111000000111111000000111111000000111000111111000000111111000000111111000","001111111000001111111000001000000100111000000100111000000100001000000100001000000100001110000100001111111000001111111000111000011100110000000111110000000111110000000111110000000111111000000100001111111000001111111000","001111111100001111111100001111111100110000000011110000000011110000000011110000000011110000000011001111111100001111111100110000000011110000000011110000000011110000000011110000000011001111111100001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011001110000000001110000000001111111100001111111100110000011111110000011111110000000011110000000011110000000011110000000011001111111100001111111100","001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100110000000011110000000011110000000011110000000011110000000011110000000011001111111100001111111100"],
   "9": ["001111100000001111100000110000011100110000011100110000000011110000000011110000000011110000000011110000011111110000011111000000000011000000000011000000000011000000000011000000011100000000011100111111100000111111100000","001111111000001111111000111000011100110000000100110000000100110000000100110000000100110000000111111000011111111000011111000111100100000000000100000000000100000000000100000000000100110000011100001111100000001111100000","001111111100011110011110011100001110110000000011110000000011110000000011110000000011110000000011011100001111011111110011000011100011000000000011000000000011000000001110000000001110010000011110011111111100001111110000"],
+};
+const OCR_MESO_DIGIT_TEMPLATES = {
+  "0": ["111111111111000000000000000000000000001111111100111110011111111110011111110000000011110000000011110000000011110000000011110000000011111110011111001111111100000000000000000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000001111111000011100001110011000001110111000000110111000000111111000000111111000000110011000001110011100001110000111111000000000000000000000000000000000000000111111111111","000000000000000000000000000000000000000000000000000000000000000000000000001111111000011000001110111000000111111000000111111000000110001111111100000000000000000000000000111111111111000000000000000000000000111111111111","111111111111000000000000000000000000000000000000001111111100001111111100111110011111110000000011110000000011110000000011110000000011110000000011110000000011110000000011110000000011111110011111001111111100001111111100","111111111111000000000000000000000000111110011111110000000011110000000011110000000011110000000011110000000011001111111100000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000111111111111000000000000000001100000011100001110111000000110111000000111111000000110011100001110000000000000000000000000111111111111000000000000000000000000000000000000","111111111111000000000000000000000000000000000000000000000000111111111111000000000000000001100000011100001110111000000110111000000111111000000110011000001110000111111000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000000000000000111111111111000000000000000001100000011111111100011000001110111000000110111000000111111000000110011000001110000111111000000000000000000000000000111111111111"],
+  "1": ["111111111111000000000000000000000000001111100000111111100000111111100000000001100000000001100000000001100000000001100000000001100000000001111100111111111111000000000000000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000000011111111001111111111000000111111000000111111000000111111000000111111000000111111000000111111000000111111111111111111000000000000000000000000000000000000111111111111","000000000000000000000000000000000000000000000000000000000000000000000000000111110000000011110000000011110000000011110000000011110000111111111111000000000000000000000000111111111111000000000000000000000000111111111111","111111111111000000000000000000000000000000000000111111111111000000000000000000000000011111110000000011110000000011110000000011110000000011110000000000000000000000000000111111111111000000000000000000000000000000000000","111111111111000000000000000000000000111111100000000001100000000001100000000001100000000001100000000001100000111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000000000000000111111111111000000000000000000000000111111111111000001111111000001111111000001111111000001111111000001111111111111111111000000000000000000000000111111111111"],
+  "3": ["111111111111000000000000000000000000111111111100110000011111110000011111000000011111000000011111001111111100000000011111000000000011110000011111111111111100000000000000000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000011111111100010000001111000000001111000000001110000011111100000011111110000000001111000000001111110000001111011111111100000000000000000000000000000000000000111111111111","000000000000000000000000000000000000000000000000000000000000000000000000011111111100000000001111000001111110000011111110000000000011111111111110000000000000000000000000111111111111000000000000000000000000111111111111","111111111111000000000000000000000000000000000000111111111100111111111100110000011111000000011111000000011111000000011111001111111100001111111100000000011111000000000011000000000011110000011111111111111100111111111100","111111111111000000000000000000000000110000011111000000011111000000011111001111111100000000011111000000000011111111111100000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000111111111111000000000000000001100000010000001111000000001110000011111100000000001111110000001111000000000000000000000000111111111111000000000000000000000000000000000000","111111111111000000000000000000000000000000000000000000000000111111111111000000000000000011100000111111111110000000001111000000001110000111111110000000001111000000001111111111111000000000000000000000000000111111111111"],
+  "4": ["111111111111000000000000000000000000000000111100000000111100000000111100000011111100000011001100001100001100111111111111111111111111000000001100000000001100000000000000000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000000000111100000001111100000011111100000111011100001100011100011100011100111111111111000000011100000000011100000000011100000000000000000000000000000000000000111111111111","000000000000000000000000000000000000000000000000000000000000000000000000000001111100000111111100001100011100111000011100111111111111000000011100000000000000000000000000111111111111000000000000000000000000111111111111","111111111111000000000000000000000000000000000000000000111100000000111100000000111100000011111100000011111100000011001100001100001100001100001100111111111111111111111111111111111111000000001100000000001100000000001100","111111111111000000000000000000000000000000111100000011111100000011001100001100001100111111111111111111111111000000001100000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000111111111111000000000000000000000000000011111100001110011100011000011100111111111111000000011100000000000000000000000000111111111111000000000000000000000000000000000000","111111111111000000000000000000000000000000000000000000000000111111111111000000000000000000000000000001111100000111111100001110011100111000011100111111111111000000011100000000011100000000000000000000000000111111111111"],
+  "9": ["111111111111000000000000000000000000000011111100001100001111001100001111111100000011111100000011001111001111000011110011000000000011000000001111001111111100000000000000000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000001111111100111100001110111100001111110000000011111100001111011111111111000000000011000000001111010000011110011111110000000000000000000000000000000000000000111111111111","000000000000000000000000000000000000000000000000000000000000000000000000001111111100111100001111111100000011011111111111000000001111111111111100000000000000000000000000111111111111000000000000000000000000111111111111","111111111111000000000000000000000000000000000000111111111111000000000000000001100000111100001110110000000011111100001111000000000011010000011110000000000000000000000000111111111111000000000000000000000000000000000000","111111111111000000000000000000000000000000000000000011111100000011111100001100001111111100000011111100000011111100000011001111001111001111001111000011110011000000000011000000000011000000001111001111111100001111111100","111111111111000000000000000000000000001100001111111100000011111100000011001111001111000011110011000000000011001111111100000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111","111111111111000000000000000000000000000000000000000000000000111111111111000000000000000001100000011111111110111100001111110000000011011111111111000000000011000000001111011111110000000000000000000000000000111111111111"],
 };
 const OCR_EXP_DIGIT_TEMPLATES = {
   "0": [{ width: 5, height: 7, bits: "01110100011000110001100011000101110" }],
@@ -72,6 +88,9 @@ const OCR_LEVEL_DIGIT_TEMPLATES = {
   "9": [{ width: 7, height: 7, bits: "0111110110001111000110111111000001111000110111110" }],
 };
 
+window.OCR_DIGIT_TEMPLATES = OCR_DIGIT_TEMPLATES;
+window.OCR_MESO_DIGIT_TEMPLATES = OCR_MESO_DIGIT_TEMPLATES;
+
 const state = {
   theme: initialTheme(),
   ocrResolutionKey: initialOcrResolutionKey(),
@@ -85,6 +104,9 @@ const state = {
   pendingCalibration: null,
   pendingMesoCandidate: null,
   lastReportFilename: "",
+  shareJob: readCookie(SHARE_JOB_COOKIE),
+  shareMapName: readCookie(SHARE_MAP_COOKIE),
+  shareImageReady: false,
 };
 
 const el = {
@@ -102,6 +124,13 @@ const el = {
   lvCrop: document.getElementById("lvCropCanvas"),
   expCrop: document.getElementById("expCropCanvas"),
   mesoCrop: document.getElementById("mesoCropCanvas"),
+  mapCrop: document.getElementById("mapCropCanvas"),
+  shareJob: document.getElementById("shareJobSelect"),
+  shareMap: document.getElementById("shareMapInput"),
+  generateShare: document.getElementById("generateShareImageButton"),
+  downloadShare: document.getElementById("downloadShareImageButton"),
+  shareCanvas: document.getElementById("shareImageCanvas"),
+  shareStatus: document.getElementById("shareImageStatus"),
   exportReport: document.getElementById("exportReportDatasetButton"),
   emailReport: document.getElementById("emailReportDatasetButton"),
   reportStatus: document.getElementById("reportDatasetStatus"),
@@ -225,6 +254,10 @@ function setReportStatus(message) {
   if (el.reportStatus) el.reportStatus.textContent = message || "";
 }
 
+function setShareStatus(message) {
+  if (el.shareStatus) el.shareStatus.textContent = message || "";
+}
+
 function cloneForReport(value) {
   try {
     return JSON.parse(JSON.stringify(value ?? null));
@@ -310,10 +343,16 @@ function buildReportDataset() {
     latest: cloneForReport(state.latest),
     snapshots: cloneForReport(state.snapshots),
     stats: cloneForReport(computeStats()),
+    share: {
+      job: state.shareJob || "",
+      mapName: state.shareMapName || "",
+      hasShareImage: Boolean(state.shareImageReady),
+    },
     crops: {
       level: canvasReport(el.lvCrop),
       exp: canvasReport(el.expCrop),
       meso: canvasReport(el.mesoCrop),
+      map: canvasReport(el.mapCrop),
     },
     privacy: {
       containsFullScreenshot: false,
@@ -531,6 +570,33 @@ function latestKnownMeso() {
   return null;
 }
 
+function latestKnownExpSnapshot() {
+  for (let index = state.snapshots.length - 1; index >= 0; index -= 1) {
+    const snapshot = state.snapshots[index];
+    if (
+      Number.isFinite(Number(snapshot?.level))
+      && Number.isFinite(Number(snapshot?.exp))
+    ) {
+      return {
+        level: Number(snapshot.level),
+        exp: Number(snapshot.exp),
+      };
+    }
+  }
+  return null;
+}
+
+function expMovesBackward(snapshot) {
+  const previous = latestKnownExpSnapshot();
+  if (!previous) return false;
+  const level = Number(snapshot?.level);
+  const exp = Number(snapshot?.exp);
+  if (!Number.isFinite(level) || !Number.isFinite(exp)) return false;
+  if (level < previous.level) return true;
+  if (level === previous.level && exp < previous.exp) return true;
+  return false;
+}
+
 function normalizeMesoCandidate(value) {
   const number = parseNumber(value);
   if (number === null || number < 0) return null;
@@ -566,6 +632,10 @@ function mesoDeltaLimit(previous, minutes = null) {
   return Math.max(base, Math.round(minutes * 1200000));
 }
 
+function mesoDecreaseLimit(previous) {
+  return Math.max(50000, Math.round((previous || 0) * 0.08));
+}
+
 function resolveMesoValue(candidates, previous = latestKnownMeso()) {
   const rows = [];
   const seen = new Set();
@@ -586,13 +656,14 @@ function resolveMesoValue(candidates, previous = latestKnownMeso()) {
   }
 
   const maxIncrease = mesoDeltaLimit(previous);
+  const maxDecrease = mesoDecreaseLimit(previous);
   const accepted = rows
     .map(row => ({
       ...row,
       delta: row.value - previous,
       distance: Math.abs(row.value - previous),
     }))
-    .filter(row => row.delta >= 0 && row.delta <= maxIncrease);
+    .filter(row => row.delta >= -maxDecrease && row.delta <= maxIncrease);
   if (accepted.length) {
     accepted.sort((a, b) => a.distance - b.distance || b.confidence - a.confidence);
     return { value: accepted[0].value, reason: "", source: accepted[0].source };
@@ -632,6 +703,101 @@ function normalizeOcrText(text) {
     .replace(/[］]/g, "]")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function normalizeMapSearchText(text) {
+  return normalizeOcrText(text)
+    .replace(/小地圖|地圖|MINI\s*MAP|MAP/gi, "")
+    .replace(/[^\u3400-\u9fff\wⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g, "")
+    .toLowerCase();
+}
+
+function lcsLength(a, b) {
+  const left = Array.from(a || "");
+  const right = Array.from(b || "");
+  if (!left.length || !right.length) return 0;
+  const previous = new Array(right.length + 1).fill(0);
+  const current = new Array(right.length + 1).fill(0);
+  for (let i = 1; i <= left.length; i += 1) {
+    for (let j = 1; j <= right.length; j += 1) {
+      current[j] = left[i - 1] === right[j - 1]
+        ? previous[j - 1] + 1
+        : Math.max(previous[j], current[j - 1]);
+    }
+    for (let j = 0; j <= right.length; j += 1) previous[j] = current[j];
+  }
+  return previous[right.length];
+}
+
+function overlapRatio(a, b) {
+  const source = Array.from(new Set(Array.from(a || ""))).filter(Boolean);
+  if (!source.length) return 0;
+  const target = new Set(Array.from(b || ""));
+  return source.filter(char => target.has(char)).length / source.length;
+}
+
+function mapMatchScore(query, map) {
+  const compact = normalizeMapSearchText(query);
+  if (!compact) return 0;
+  const id = String(map?.id || "");
+  if (id && compact === id) return 1000;
+  const name = normalizeMapSearchText(map?.name || "");
+  const label = normalizeMapSearchText(map?.label || "");
+  const street = normalizeMapSearchText(map?.street || "");
+  const region = normalizeMapSearchText(map?.regionName || "");
+  if (name && compact === name) return 950;
+  if (label && compact === label) return 930;
+  if (name && compact.includes(name)) return 860 + Math.min(40, name.length);
+  if (name && name.includes(compact) && compact.length >= 2) return 740 + compact.length;
+  if (label && compact.includes(label)) return 700;
+  if (street && compact.includes(street) && name && compact.includes(name)) return 690;
+  const nameLcs = name ? lcsLength(compact, name) / Math.max(compact.length, name.length, 1) : 0;
+  const labelLcs = label ? lcsLength(compact, label) / Math.max(compact.length, label.length, 1) : 0;
+  const overlap = Math.max(overlapRatio(name, compact), overlapRatio(compact, name));
+  const regionBonus = region && compact.includes(region) ? 25 : 0;
+  return Math.max(nameLcs * 100, labelLcs * 75, overlap * 70) + regionBonus;
+}
+
+function resolveMapFromText(text) {
+  const query = normalizeMapSearchText(text);
+  if (!query || !mapRows.length) return null;
+  const candidates = mapRows
+    .map(map => ({ map, score: mapMatchScore(query, map) }))
+    .filter(row => row.score >= 46)
+    .sort((a, b) => b.score - a.score || String(a.map.name || "").localeCompare(String(b.map.name || ""), "zh-Hant"));
+  return candidates[0] || null;
+}
+
+function mapDisplayName(map) {
+  if (!map) return "";
+  return [map.regionName, map.name].filter(Boolean).join(" / ");
+}
+
+function representativeMonsterForMap(map) {
+  const groups = new Map();
+  for (const spawn of map?.monsterSpawns || []) {
+    const id = spawn?.monsterId;
+    if (!id) continue;
+    const key = String(id);
+    const current = groups.get(key) || {
+      id: key,
+      name: spawn.name || `怪物 ${key}`,
+      level: Number(spawn.level || 0),
+      image: spawn.image || "",
+      count: 0,
+      weightedCount: 0,
+    };
+    const hasPosition = Number.isFinite(Number(spawn.x)) && Number.isFinite(Number(spawn.y));
+    current.count += 1;
+    current.weightedCount += hasPosition ? 1 : 0.25;
+    if (!current.image && spawn.image) current.image = spawn.image;
+    current.level = Math.max(current.level, Number(spawn.level || 0));
+    groups.set(key, current);
+  }
+  const rows = [...groups.values()]
+    .filter(row => row.name && !/^怪物\s*\d+$/.test(row.name))
+    .sort((a, b) => b.weightedCount - a.weightedCount || b.count - a.count || b.level - a.level || Number(a.id) - Number(b.id));
+  return rows[0] || null;
 }
 
 function parseDetectedText(text) {
@@ -861,6 +1027,148 @@ function rectFor(type, width, height) {
   return { x: 0, y: 0, width, height };
 }
 
+function mapNameRegion(width, height) {
+  const preset = selectedRegionPreset(width, height);
+  const frame = preset?.frame || defaultFrame(width, height);
+  const baseWidth = Math.min(frame.width, Math.max(180, Math.round(frame.width * 0.18)));
+  const baseHeight = Math.min(frame.height, Math.max(70, Math.round(frame.height * 0.13)));
+  return {
+    x: clamp(frame.x, 0, Math.max(0, width - baseWidth)),
+    y: clamp(frame.y, 0, Math.max(0, height - baseHeight)),
+    width: baseWidth,
+    height: baseHeight,
+  };
+}
+
+function mesoCornerCandidateRects(width, height) {
+  const preset = selectedRegionPreset(width, height);
+  const region = preset?.regions?.meso;
+  if (!region) return [];
+  const frame = preset.frame || defaultFrame(width, height);
+  const base = regionToRect(region, width, height, frame);
+  const mesoTopOffset = Math.max(0, base.y - frame.y);
+  const mesoLeftOffset = Math.max(2, Math.round(base.height * 0.16));
+  const inventoryWidth = Math.min(frame.width, Math.max(base.width, Math.round(base.width * 1.38)));
+  const inventoryHeight = Math.min(frame.height, Math.max(base.height, Math.round(mesoTopOffset + base.height * 2.35)));
+  const topY = frame.y + mesoTopOffset;
+  const bottomY = frame.y + frame.height - inventoryHeight + mesoTopOffset;
+  const leftX = frame.x + mesoLeftOffset;
+  const rightX = frame.x + frame.width - inventoryWidth + mesoLeftOffset;
+  const makeRect = (x, y) => ({
+    x: clamp(Math.round(x), 0, Math.max(0, width - base.width)),
+    y: clamp(Math.round(y), 0, Math.max(0, height - base.height)),
+    width: base.width,
+    height: base.height,
+  });
+  const bottomOffsets = [0, Math.round(base.height * 0.45), Math.round(base.height * 0.9)];
+  const bottomCandidates = [];
+  for (const offset of bottomOffsets) {
+    bottomCandidates.push({ key: `bottom-left-${offset}`, label: "左下", region: makeRect(leftX, bottomY + offset) });
+    bottomCandidates.push({ key: `bottom-right-${offset}`, label: "右下", region: makeRect(rightX, bottomY + offset) });
+  }
+  return [
+    { key: "top-left", label: "左上", region: makeRect(leftX, topY) },
+    { key: "top-right", label: "右上", region: makeRect(rightX, topY) },
+    ...bottomCandidates,
+  ];
+}
+
+function regionImageData(sourceCanvas, region) {
+  const ctx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  return ctx.getImageData(region.x, region.y, region.width, region.height);
+}
+
+function mesoRegionVisualScore(sourceCanvas, region) {
+  const image = regionImageData(sourceCanvas, region);
+  let gold = 0;
+  let whiteField = 0;
+  let darkDigits = 0;
+  let blueChrome = 0;
+  let leftTotal = 0;
+  let fieldTotal = 0;
+  let total = image.width * image.height;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = (y * image.width + x) * 4;
+      const r = image.data[index];
+      const g = image.data[index + 1];
+      const b = image.data[index + 2];
+      const brightness = (r + g + b) / 3;
+      const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+      const nx = x / Math.max(1, image.width);
+      const ny = y / Math.max(1, image.height);
+      if (nx < 0.17) {
+        leftTotal += 1;
+        if (r > 170 && g > 110 && g < 230 && b < 110 && saturation > 70) gold += 1;
+      }
+      if (nx > 0.16 && nx < 0.82 && ny > 0.12 && ny < 0.88) {
+        fieldTotal += 1;
+        if (r > 205 && g > 215 && b > 220 && saturation < 70) whiteField += 1;
+        if (brightness < 95 && saturation < 110) darkDigits += 1;
+      }
+      if (b > 125 && g > 100 && r < 170 && saturation > 30) blueChrome += 1;
+    }
+  }
+  const goldRatio = leftTotal ? gold / leftTotal : 0;
+  const whiteRatio = fieldTotal ? whiteField / fieldTotal : 0;
+  const darkRatio = fieldTotal ? darkDigits / fieldTotal : 0;
+  const blueRatio = total ? blueChrome / total : 0;
+  return goldRatio * 2.4
+    + whiteRatio * 1.5
+    + Math.min(1, darkRatio * 14) * 1.8
+    + Math.min(1, blueRatio * 10) * 0.45;
+}
+
+function scoreMesoCornerCandidate(sourceCanvas, candidate) {
+  const visualScore = mesoRegionVisualScore(sourceCanvas, candidate.region);
+  const sampleScale = Math.max(1, typeScale(candidate.region));
+  const rawCanvas = cropRegionCanvas(sourceCanvas, candidate.region, sampleScale);
+  const template = readMesoFromCanvas(mesoOcrCanvas(rawCanvas));
+  const meso = template.meso;
+  const digitBonus = meso === null || meso === undefined
+    ? 0
+    : Math.min(2.4, String(meso).length * 0.32);
+  const score = visualScore + digitBonus;
+  return {
+    ...candidate,
+    meso,
+    visualScore,
+    score,
+    confidence: Math.min(0.98, 0.45 + score / 5),
+  };
+}
+
+function findMesoRegion(sourceCanvas) {
+  const candidates = mesoCornerCandidateRects(sourceCanvas.width, sourceCanvas.height)
+    .map(candidate => scoreMesoCornerCandidate(sourceCanvas, candidate))
+    .sort((a, b) => b.score - a.score);
+  const best = candidates[0] || null;
+  if (!best) return null;
+  const hasReliableShape = best.visualScore >= 1.35;
+  const hasReadableValue = best.meso !== null && best.meso !== undefined && best.score >= 1.8;
+  if (!hasReliableShape && !hasReadableValue) {
+    state.pendingMesoCandidate = {
+      found: false,
+      best: {
+        label: best.label,
+        score: Number(best.score.toFixed(3)),
+        visualScore: Number(best.visualScore.toFixed(3)),
+        meso: best.meso ?? null,
+      },
+    };
+    return null;
+  }
+  state.pendingMesoCandidate = {
+    found: true,
+    label: best.label,
+    score: Number(best.score.toFixed(3)),
+    visualScore: Number(best.visualScore.toFixed(3)),
+    meso: best.meso ?? null,
+    region: { ...best.region },
+  };
+  return best;
+}
+
 function drawRegion(sourceCanvas, region, targetCanvas) {
   const scale = typeScale(region);
   targetCanvas.width = Math.max(1, Math.round(region.width * scale));
@@ -961,6 +1269,12 @@ function levelDigitInkPixel(r, g, b) {
 
 function mesoInkPixel(r, g, b) {
   return (r + g + b) / 3 < 80;
+}
+
+function mesoDigitInkPixel(r, g, b) {
+  const brightness = (r + g + b) / 3;
+  const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+  return brightness < 105 && saturation < 130;
 }
 
 function mesoOcrCanvas(canvas) {
@@ -1093,12 +1407,14 @@ function digitDistance(a, b) {
   return different / a.length;
 }
 
-function classifyDigit(mask) {
+function classifyDigit(mask, templateSets = [OCR_DIGIT_TEMPLATES]) {
   let best = null;
-  for (const [digit, masks] of Object.entries(OCR_DIGIT_TEMPLATES)) {
-    for (const template of masks) {
-      const score = digitDistance(mask, template);
-      if (!best || score < best.score) best = { digit, score };
+  for (const templates of templateSets) {
+    for (const [digit, masks] of Object.entries(templates)) {
+      for (const template of masks) {
+        const score = digitDistance(mask, template);
+        if (!best || score < best.score) best = { digit, score };
+      }
     }
   }
   return best;
@@ -1422,39 +1738,122 @@ function isLikelyMesoIconGroup(group, image) {
 }
 
 function mesoDigitGroupsFromImage(image) {
-  const maxDigitGap = Math.max(28, Math.round(image.height * 0.32));
-  const groups = extractGlyphGroupsFromImage(image, mesoInkPixel, 2, 8)
-    .filter(group => !isLikelyMesoIconGroup(group, image))
-    .sort((a, b) => a.x1 - b.x1);
-  const sequences = [];
-  let current = [];
-  for (const group of groups) {
-    const previous = current[current.length - 1];
-    if (previous && group.x1 - previous.x2 > maxDigitGap) {
-      sequences.push(current);
-      current = [];
+  const xStart = Math.max(0, Math.floor(image.width * 0.14));
+  const xEnd = Math.min(image.width - 1, Math.ceil(image.width * 0.9));
+  const yStart = Math.max(0, Math.floor(image.height * 0.34));
+  const yEnd = Math.min(image.height - 1, Math.ceil(image.height * 0.72));
+  const fieldWidth = xEnd - xStart + 1;
+  const noisyRows = new Set();
+  for (let y = yStart; y <= yEnd; y += 1) {
+    let count = 0;
+    for (let x = xStart; x <= xEnd; x += 1) {
+      const [r, g, b] = imagePixel(image, x, y);
+      if (mesoDigitInkPixel(r, g, b)) count += 1;
     }
-    current.push(group);
+    if (count > fieldWidth * 0.72) noisyRows.add(y);
   }
-  if (current.length) sequences.push(current);
+  const minColumnPixels = Math.max(1, Math.round((yEnd - yStart + 1) * 0.08));
+  const columns = [];
+  for (let x = xStart; x <= xEnd; x += 1) {
+    let count = 0;
+    for (let y = yStart; y <= yEnd; y += 1) {
+      if (noisyRows.has(y)) continue;
+      const [r, g, b] = imagePixel(image, x, y);
+      if (mesoDigitInkPixel(r, g, b)) count += 1;
+    }
+    columns.push(count);
+  }
 
-  const minDigitHeight = Math.max(8, Math.round(image.height * 0.25));
-  const candidates = sequences
-    .map(sequence => sequence.filter(group => group.width > 25 && group.height >= minDigitHeight))
-    .filter(sequence => sequence.length);
-  if (!candidates.length) return [];
-  candidates.sort((a, b) => {
-    if (b.length !== a.length) return b.length - a.length;
-    return a[0].x1 - b[0].x1;
+  const runs = [];
+  let start = null;
+  let gap = 0;
+  for (let index = 0; index < columns.length; index += 1) {
+    if (columns[index] >= minColumnPixels) {
+      if (start === null) start = index;
+      gap = 0;
+    } else if (start !== null) {
+      gap += 1;
+      if (gap >= 2) {
+        runs.push({ x1: xStart + start, x2: xStart + index - gap });
+        start = null;
+        gap = 0;
+      }
+    }
+  }
+  if (start !== null) runs.push({ x1: xStart + start, x2: xStart + columns.length - 1 });
+
+  const minDigitHeight = Math.max(8, Math.round((yEnd - yStart + 1) * 0.42));
+  const minDigitWidth = Math.max(6, Math.round(image.height * 0.08));
+  return runs.map(run => {
+    let minX = run.x2;
+    let minY = yEnd;
+    let maxX = run.x1;
+    let maxY = yStart;
+    let found = false;
+    for (let x = run.x1; x <= run.x2; x += 1) {
+      for (let y = yStart; y <= yEnd; y += 1) {
+        if (noisyRows.has(y)) continue;
+        const [r, g, b] = imagePixel(image, x, y);
+        if (mesoDigitInkPixel(r, g, b)) {
+          found = true;
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    if (!found) return null;
+    return {
+      x1: minX,
+      x2: maxX,
+      minX,
+      minY,
+      maxX,
+      maxY,
+      width: maxX - minX + 1,
+      height: maxY - minY + 1,
+    };
+  })
+    .filter(Boolean)
+    .filter(group => group.width >= minDigitWidth && group.height >= minDigitHeight)
+    .slice(0, 10);
+}
+
+function trimMesoUnitGroups(groups) {
+  if (!groups.length) return groups;
+  const widths = groups.map(group => group.width).sort((a, b) => a - b);
+  const medianWidth = widths[Math.floor(widths.length / 2)] || 1;
+  const unitGap = Math.max(18, medianWidth * 1.3);
+  for (let index = 1; index < groups.length; index += 1) {
+    const gap = groups[index].x1 - groups[index - 1].x2;
+    if (index >= 3 && gap >= unitGap) return groups.slice(0, index);
+  }
+  return groups;
+}
+
+function filterMesoSeparatorGroups(groups) {
+  if (groups.length < 4) return groups;
+  const heights = groups.map(group => group.height).sort((a, b) => a - b);
+  const widths = groups.map(group => group.width).sort((a, b) => a - b);
+  const medianHeight = heights[Math.floor(heights.length / 2)] || 1;
+  const medianWidth = widths[Math.floor(widths.length / 2)] || 1;
+  return groups.filter(group => {
+    const narrowSeparator = groups.length > 8
+      && group.width < Math.max(7, medianWidth * 0.45)
+      && group.height <= medianHeight * 1.05;
+    return !narrowSeparator && group.height >= medianHeight * 0.68;
   });
-  return candidates[0].slice(0, 10);
 }
 
 function readMesoFromCanvas(canvas) {
   if (!canvas) return { meso: null };
   const image = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
-  const groups = mesoDigitGroupsFromImage(image);
-  const digits = groups.map(group => classifyDigit(glyphMaskFromImage(image, group, mesoInkPixel)));
+  const groups = filterMesoSeparatorGroups(trimMesoUnitGroups(mesoDigitGroupsFromImage(image)));
+  const digits = groups.map(group => classifyDigit(
+    glyphMaskFromImage(image, group, mesoInkPixel),
+    [OCR_MESO_DIGIT_TEMPLATES, OCR_DIGIT_TEMPLATES],
+  ));
   if (!digits.length || digits.some(row => !row || row.score > 0.35)) return { meso: null };
   return { meso: Number(digits.map(row => row.digit).join("")) };
 }
@@ -1504,6 +1903,42 @@ async function detectMesoText(canvas) {
     return { text: result?.data?.text || "", supported: true };
   } catch (_error) {
     return { text: "", supported: false };
+  }
+}
+
+async function detectMapText(canvas) {
+  if (!canvas) return { text: "", supported: false };
+  if (state.ocrAvailable) {
+    try {
+      const detector = new window.TextDetector();
+      const detections = await detector.detect(canvas);
+      const text = detections.map(row => row.rawValue || "").join(" ");
+      if (text.trim()) return { text, supported: true };
+    } catch (_error) {
+      state.ocrAvailable = false;
+    }
+  }
+  const tesseract = await ensureTesseract();
+  if (!tesseract) return { text: "", supported: false };
+  try {
+    const result = await tesseract.recognize(canvas, "chi_tra+eng", {
+      logger(message) {
+        if (message?.status === "recognizing text" && typeof message.progress === "number") {
+          setShareStatus(`小地圖 OCR 辨識中 ${Math.round(message.progress * 100)}%`);
+        }
+      },
+      tessedit_pageseg_mode: "6",
+    });
+    return { text: result?.data?.text || "", supported: true };
+  } catch (_error) {
+    try {
+      const fallback = await tesseract.recognize(canvas, "eng", {
+        tessedit_pageseg_mode: "6",
+      });
+      return { text: fallback?.data?.text || "", supported: true };
+    } catch (__error) {
+      return { text: "", supported: false };
+    }
   }
 }
 
@@ -1557,6 +1992,10 @@ function addSnapshot(snapshot) {
   }
   snapshot.exp = expResult.exp;
   snapshot.percent = expResult.percent;
+  if (expMovesBackward(snapshot)) {
+    setStatus("EXP 讀值倒退，已視為 OCR 誤判並略過這筆紀錄。");
+    return false;
+  }
   state.snapshots.push(snapshot);
   state.latest = snapshot;
   render();
@@ -1641,10 +2080,13 @@ async function captureFrame(addToTimeline = true) {
   updateRegionPresetStatus(sourceCanvas.width, sourceCanvas.height);
   const lvRegion = rectFor("lv", sourceCanvas.width, sourceCanvas.height);
   const expRegion = rectFor("exp", sourceCanvas.width, sourceCanvas.height);
-  const mesoRegion = rectFor("meso", sourceCanvas.width, sourceCanvas.height);
+  const mesoCandidate = findMesoRegion(sourceCanvas);
+  const mesoRegion = mesoCandidate?.region || rectFor("meso", sourceCanvas.width, sourceCanvas.height);
+  const currentMapRegion = mapNameRegion(sourceCanvas.width, sourceCanvas.height);
   drawRegion(sourceCanvas, lvRegion, el.lvCrop);
   drawRegion(sourceCanvas, expRegion, el.expCrop);
   drawRegion(sourceCanvas, mesoRegion, el.mesoCrop);
+  if (el.mapCrop) drawRegion(sourceCanvas, currentMapRegion, el.mapCrop);
 
   const lvRawCanvas = cropRegionCanvas(sourceCanvas, lvRegion, 8);
   const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
@@ -1654,7 +2096,7 @@ async function captureFrame(addToTimeline = true) {
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
     templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
     templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
-    detectMesoText(mesoOcrCanvas(el.mesoCrop)),
+    mesoCandidate ? detectMesoText(mesoOcrCanvas(el.mesoCrop)) : Promise.resolve({ text: "" }),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
@@ -1674,10 +2116,14 @@ async function captureFrame(addToTimeline = true) {
   );
   const exp = expResult.exp;
   const percent = expResult.percent;
-  const mesoResult = resolveMesoValue([
-    ...normalizeMesoTextCandidates(mesoDetection.text),
-    { value: parsedMeso.meso, source: "OCR 楓幣", confidence: parsedMeso.mesoText?.includes(",") ? 0.9 : 0.55 },
-  ]);
+  const mesoResult = resolveMesoValue(mesoCandidate ? [
+    { value: mesoCandidate.meso, source: `楓幣圖樣 ${mesoCandidate.label}`, confidence: mesoCandidate.confidence },
+    ...normalizeMesoTextCandidates(mesoDetection.text).map(row => ({
+      ...row,
+      source: `${row.source} ${mesoCandidate.label}`,
+    })),
+    { value: parsedMeso.meso, source: `OCR 楓幣 ${mesoCandidate.label}`, confidence: parsedMeso.mesoText?.includes(",") ? 0.9 : 0.55 },
+  ] : []);
   const meso = mesoResult.value;
 
   const snapshot = level && expResult.ok ? {
@@ -1713,7 +2159,8 @@ async function captureFrame(addToTimeline = true) {
   } else {
     const mesoText = snapshot.meso === null || snapshot.meso === undefined ? "楓幣未讀取" : `楓幣 ${formatNumber(snapshot.meso)}`;
     const mesoNote = mesoResult.reason === "outlier" ? " · 楓幣讀值離群已略過" : "";
-    setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoNote}`);
+    const mesoCorner = mesoCandidate?.label ? ` · 道具欄${mesoCandidate.label}` : "";
+    setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoCorner}${mesoNote}`);
   }
   if (snapshot && addToTimeline) {
     addSnapshot(snapshot);
@@ -1859,13 +2306,14 @@ function sumSegments(segments, field, sinceTime = null) {
   };
 }
 
-function cumulativeSeries(segments, field) {
+function cumulativeSeries(segments, field, sinceTime = null) {
   const rows = [...segments]
     .filter(segment => segment?.from?.time && segment?.to?.time)
+    .filter(segment => sinceTime === null || segment.to.time >= sinceTime)
     .sort((a, b) => a.to.time - b.to.time);
   if (!rows.length) return [];
   let total = 0;
-  const series = [{ time: rows[0].from.time, value: 0 }];
+  const series = [{ time: sinceTime === null ? rows[0].from.time : sinceTime, value: 0 }];
   for (const segment of rows) {
     total += Math.max(0, Number(segment[field] || 0));
     series.push({ time: segment.to.time, value: total });
@@ -1887,6 +2335,8 @@ function computeStats() {
   const recentMeso = sumSegments(mesoSegments, "mesoDelta", recentSince);
   const expPerMin = totalExp.minutes > 0 ? totalExp.delta / totalExp.minutes : 0;
   const mesoPerMin = totalMeso.minutes > 0 ? totalMeso.delta / totalMeso.minutes : null;
+  const recentExpPer10 = recentExp.minutes > 0 ? recentExp.delta / recentExp.minutes * 10 : 0;
+  const recentMesoPer10 = recentMeso.minutes > 0 ? recentMeso.delta / recentMeso.minutes * 10 : null;
   const expToNext = getExpToNext(lastReliable.level);
   const remainingExp = expToNext ? Math.max(0, expToNext - Number(lastReliable.exp || 0)) : null;
   return {
@@ -1895,12 +2345,16 @@ function computeStats() {
     mesoDelta: totalMeso.minutes > 0 ? totalMeso.delta : null,
     recentExpDelta: recentExp.delta,
     recentMesoDelta: recentMeso.minutes > 0 ? recentMeso.delta : null,
+    recentExpMinutes: recentExp.minutes,
+    recentMesoMinutes: recentMeso.minutes,
+    recentExpPer10,
+    recentMesoPer10,
     expPerMin,
     mesoPerMin,
-    forecast10Exp: expPerMin * 10,
     forecast30Exp: expPerMin * 30,
-    forecast10Meso: mesoPerMin === null ? null : mesoPerMin * 10,
+    forecastHourExp: expPerMin * 60,
     forecast30Meso: mesoPerMin === null ? null : mesoPerMin * 30,
+    forecastHourMeso: mesoPerMin === null ? null : mesoPerMin * 60,
     expToNext,
     remainingExp,
     ignoredExpSegments,
@@ -1909,6 +2363,8 @@ function computeStats() {
     acceptedMesoSegments: mesoSegments.length,
     expSeries: cumulativeSeries(expSegments, "expDelta"),
     mesoSeries: cumulativeSeries(mesoSegments, "mesoDelta"),
+    recentExpSeries: cumulativeSeries(expSegments, "expDelta", recentSince),
+    recentMesoSeries: cumulativeSeries(mesoSegments, "mesoDelta", recentSince),
     etaMinutes: remainingExp !== null && expPerMin > 0 ? remainingExp / expPerMin : null,
   };
 }
@@ -1934,17 +2390,16 @@ function renderAreaSparkline(points, kind = "exp") {
   const area = `M0,${height} L${pointsText.join(" L")} L${width},${height} Z`;
   const line = `M${pointsText.join(" L")}`;
   return `
-    <svg class="combatMetricSparkline ${kind}Sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+    <svg class="combatMetricGroupSparkline ${kind}Sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
       <path d="${area}" fill="currentColor" opacity="0.18"></path>
       <path d="${line}" fill="none" stroke="currentColor" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
     </svg>
   `;
 }
 
-function renderMetricCard({ title, value, unit, detail, kind = "exp", series = [] }) {
+function renderMetricCard({ title, value, unit, detail, kind = "exp" }) {
   return `
     <div class="combatMetricCard ${kind}Metric">
-      ${renderAreaSparkline(series, kind)}
       <div class="combatMetricContent">
         <strong>${formatMetricNumber(value)}</strong>
         <span>${escapeHtml(title)}</span>
@@ -1954,9 +2409,10 @@ function renderMetricCard({ title, value, unit, detail, kind = "exp", series = [
   `;
 }
 
-function renderMetricGroup(title, subtitle, kind, cards) {
+function renderMetricGroup(title, subtitle, kind, cards, series = []) {
   return `
     <section class="combatMetricGroup ${kind}MetricGroup">
+      ${renderAreaSparkline(series, kind)}
       <div class="combatMetricGroupHeader">
         <h3>${escapeHtml(title)}</h3>
         <span>${escapeHtml(subtitle || "")}</span>
@@ -1971,26 +2427,26 @@ function renderMetricGroup(title, subtitle, kind, cards) {
 function renderSummaryCards(stats) {
   const expPerMin = stats?.expPerMin ?? 0;
   const mesoPerMin = stats?.mesoPerMin ?? null;
-  const expSeries = stats?.expSeries || [];
-  const mesoSeries = stats?.mesoSeries || [];
+  const expSeries = stats?.recentExpSeries || [];
+  const mesoSeries = stats?.recentMesoSeries || [];
   const expCards = [
-    renderMetricCard({ title: "累計每分鐘", value: expPerMin, unit: "EXP / 分", detail: stats ? `${stats.acceptedExpSegments} 段有效` : "等待資料", kind: "exp", series: expSeries }),
-    renderMetricCard({ title: "累計10分鐘", value: stats?.recentExpDelta ?? 0, unit: "EXP", detail: "最近 10 分鐘實得", kind: "exp", series: expSeries }),
-    renderMetricCard({ title: "總累計", value: stats?.expDelta ?? 0, unit: "EXP", detail: stats ? `排除 ${stats.ignoredExpSegments} 段` : "等待資料", kind: "exp", series: expSeries }),
-    renderMetricCard({ title: "預估10分鐘", value: stats?.forecast10Exp ?? 0, unit: "EXP", detail: "依累計均速", kind: "exp", series: expSeries }),
-    renderMetricCard({ title: "預估30分鐘", value: stats?.forecast30Exp ?? 0, unit: "EXP", detail: "依累計均速", kind: "exp", series: expSeries }),
-    renderMetricCard({ title: "預估升等", value: stats ? formatDuration(stats.etaMinutes) : "等待資料", unit: "", detail: stats?.remainingExp !== null && stats?.remainingExp !== undefined ? `剩餘 ${formatNumber(stats.remainingExp)} EXP` : "需要等級與 EXP", kind: "exp", series: expSeries }),
+    renderMetricCard({ title: "累計每分鐘", value: expPerMin, unit: "EXP / 分", detail: stats ? `${stats.acceptedExpSegments} 段有效` : "等待資料", kind: "exp" }),
+    renderMetricCard({ title: "累計10分鐘", value: stats?.recentExpDelta ?? 0, unit: "EXP", detail: "最近 10 分鐘實得", kind: "exp" }),
+    renderMetricCard({ title: "總累計", value: stats?.expDelta ?? 0, unit: "EXP", detail: stats ? `排除 ${stats.ignoredExpSegments} 段` : "等待資料", kind: "exp" }),
+    renderMetricCard({ title: "預估30分鐘", value: stats?.forecast30Exp ?? 0, unit: "EXP", detail: "依累計均速", kind: "exp" }),
+    renderMetricCard({ title: "預估每小時", value: stats?.forecastHourExp ?? 0, unit: "EXP", detail: "依累計均速", kind: "exp" }),
+    renderMetricCard({ title: "預估升等", value: stats ? formatDuration(stats.etaMinutes) : "等待資料", unit: "", detail: stats?.remainingExp !== null && stats?.remainingExp !== undefined ? `剩餘 ${formatNumber(stats.remainingExp)} EXP` : "需要等級與 EXP", kind: "exp" }),
   ];
   const mesoCards = [
-    renderMetricCard({ title: "累計每分鐘", value: mesoPerMin, unit: "楓幣 / 分", detail: stats ? `${stats.acceptedMesoSegments} 段有效` : "等待資料", kind: "meso", series: mesoSeries }),
-    renderMetricCard({ title: "累計10分鐘", value: stats?.recentMesoDelta ?? null, unit: "楓幣", detail: "最近 10 分鐘實得", kind: "meso", series: mesoSeries }),
-    renderMetricCard({ title: "總累計", value: stats?.mesoDelta ?? null, unit: "楓幣", detail: stats ? `排除 ${stats.ignoredMesoSegments} 段` : "等待資料", kind: "meso", series: mesoSeries }),
-    renderMetricCard({ title: "預估10分鐘", value: stats?.forecast10Meso ?? null, unit: "楓幣", detail: "依累計均速", kind: "meso", series: mesoSeries }),
-    renderMetricCard({ title: "預估30分鐘", value: stats?.forecast30Meso ?? null, unit: "楓幣", detail: "依累計均速", kind: "meso", series: mesoSeries }),
+    renderMetricCard({ title: "累計每分鐘", value: mesoPerMin, unit: "楓幣 / 分", detail: stats ? `${stats.acceptedMesoSegments} 段有效` : "等待資料", kind: "meso" }),
+    renderMetricCard({ title: "累計10分鐘", value: stats?.recentMesoDelta ?? null, unit: "楓幣", detail: "最近 10 分鐘實得", kind: "meso" }),
+    renderMetricCard({ title: "總累計", value: stats?.mesoDelta ?? null, unit: "楓幣", detail: stats ? `排除 ${stats.ignoredMesoSegments} 段` : "等待資料", kind: "meso" }),
+    renderMetricCard({ title: "預估30分鐘", value: stats?.forecast30Meso ?? null, unit: "楓幣", detail: "依累計均速", kind: "meso" }),
+    renderMetricCard({ title: "預估每小時", value: stats?.forecastHourMeso ?? null, unit: "楓幣", detail: "依累計均速", kind: "meso" }),
   ];
   return `
-    ${renderMetricGroup("EXP 效率", "經驗值", "exp", expCards)}
-    ${renderMetricGroup("楓幣效率", "金錢", "meso", mesoCards)}
+    ${renderMetricGroup("EXP 效率", "最近 10 分鐘趨勢", "exp", expCards, expSeries)}
+    ${renderMetricGroup("楓幣效率", "最近 10 分鐘趨勢", "meso", mesoCards, mesoSeries)}
   `;
 }
 
@@ -2076,6 +2532,289 @@ function renderLevelExpTable() {
   `;
 }
 
+function currentScreenCanvas() {
+  if (!el.video?.videoWidth || !el.video?.videoHeight) return null;
+  const sourceCanvas = document.createElement("canvas");
+  sourceCanvas.width = el.video.videoWidth;
+  sourceCanvas.height = el.video.videoHeight;
+  const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  sourceCtx.drawImage(el.video, 0, 0, sourceCanvas.width, sourceCanvas.height);
+  return sourceCanvas;
+}
+
+async function readShareMapFromScreen() {
+  const manual = (el.shareMap?.value || "").trim();
+  if (manual) {
+    const matched = resolveMapFromText(manual);
+    return {
+      input: manual,
+      rawText: "",
+      map: matched?.map || null,
+      score: matched?.score || 0,
+      source: "manual",
+    };
+  }
+
+  if (!state.stream) {
+    await ensureScreenShare();
+  }
+  const sourceCanvas = currentScreenCanvas();
+  if (!sourceCanvas) {
+    return { input: "", rawText: "", map: null, score: 0, source: "none" };
+  }
+  const region = mapNameRegion(sourceCanvas.width, sourceCanvas.height);
+  if (el.mapCrop) drawRegion(sourceCanvas, region, el.mapCrop);
+  const ocrCanvas = cropRegionCanvas(sourceCanvas, region, 3);
+  const detection = await detectMapText(ocrCanvas);
+  const rawText = normalizeOcrText(detection.text);
+  const matched = resolveMapFromText(rawText);
+  if (matched?.map && el.shareMap) {
+    el.shareMap.value = matched.map.name || "";
+    state.shareMapName = matched.map.name || "";
+    writeCookie(SHARE_MAP_COOKIE, state.shareMapName);
+  }
+  return {
+    input: matched?.map?.name || rawText,
+    rawText,
+    map: matched?.map || null,
+    score: matched?.score || 0,
+    source: detection.supported ? "ocr" : "none",
+  };
+}
+
+function roundRectPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function fillRoundRect(ctx, x, y, width, height, radius, fillStyle) {
+  ctx.fillStyle = fillStyle;
+  roundRectPath(ctx, x, y, width, height, radius);
+  ctx.fill();
+}
+
+function strokeRoundRect(ctx, x, y, width, height, radius, strokeStyle, lineWidth = 2) {
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  roundRectPath(ctx, x, y, width, height, radius);
+  ctx.stroke();
+}
+
+function loadImageForCanvas(src) {
+  return new Promise(resolve => {
+    if (!src) {
+      resolve(null);
+      return;
+    }
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    try {
+      image.src = new URL(src, window.location.href).href;
+    } catch (_error) {
+      image.src = src;
+    }
+  });
+}
+
+function drawImageContain(ctx, image, x, y, width, height) {
+  if (!image) return false;
+  const ratio = Math.min(width / image.width, height / image.height);
+  const drawWidth = image.width * ratio;
+  const drawHeight = image.height * ratio;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  ctx.imageSmoothingEnabled = true;
+  return true;
+}
+
+function drawImageCover(ctx, image, x, y, width, height) {
+  if (!image) return false;
+  const ratio = Math.max(width / image.width, height / image.height);
+  const drawWidth = image.width * ratio;
+  const drawHeight = image.height * ratio;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  ctx.imageSmoothingEnabled = true;
+  return true;
+}
+
+function shareStatText(value, suffix) {
+  if (!Number.isFinite(Number(value))) return "等待資料";
+  return `${formatNumber(Math.round(Number(value)))} ${suffix}`;
+}
+
+function drawShareSparkline(ctx, points, x, y, width, height, color) {
+  const rows = (points || [])
+    .filter(row => Number.isFinite(Number(row?.time)) && Number.isFinite(Number(row?.value)))
+    .map(row => ({ time: Number(row.time), value: Math.max(0, Number(row.value)) }));
+  if (rows.length < 2) return;
+  const minTime = rows[0].time;
+  const maxTime = rows[rows.length - 1].time;
+  const maxValue = Math.max(...rows.map(row => row.value), 1);
+  const mapped = rows.map(row => ({
+    x: x + (maxTime === minTime ? 0 : ((row.time - minTime) / (maxTime - minTime)) * width),
+    y: y + height - (row.value / maxValue) * height,
+  }));
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x, y + height);
+  for (const point of mapped) ctx.lineTo(point.x, point.y);
+  ctx.lineTo(x + width, y + height);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.16;
+  ctx.fill();
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  mapped.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+async function drawShareImage(payload) {
+  const canvas = el.shareCanvas;
+  if (!canvas) return false;
+  canvas.width = 1200;
+  canvas.height = 630;
+  const ctx = canvas.getContext("2d");
+  const isDark = state.theme === "dark";
+  const bg = isDark ? "#0f172a" : "#fffaf0";
+  const panel = isDark ? "rgba(30, 41, 59, 0.94)" : "rgba(255, 255, 255, 0.92)";
+  const text = isDark ? "#e5edf7" : "#243043";
+  const muted = isDark ? "#9fb0c8" : "#66758d";
+  const gold = "#b7791f";
+  const green = "#2f8a57";
+  const monsterImage = await loadImageForCanvas(payload.monster?.image || payload.map?.markImage || "./assets/items/4031456.png");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+  gradient.addColorStop(0, isDark ? "#12233d" : "#fff7df");
+  gradient.addColorStop(0.56, isDark ? "#10251e" : "#edf9ed");
+  gradient.addColorStop(1, isDark ? "#241b14" : "#fff1cd");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 1200, 630);
+  drawShareSparkline(ctx, payload.stats?.recentExpSeries || [], 46, 340, 520, 190, green);
+  drawShareSparkline(ctx, payload.stats?.recentMesoSeries || [], 620, 340, 520, 190, gold);
+
+  fillRoundRect(ctx, 34, 34, 1132, 562, 28, panel);
+  strokeRoundRect(ctx, 34, 34, 1132, 562, 28, isDark ? "rgba(116, 143, 173, 0.45)" : "rgba(132, 156, 184, 0.45)", 3);
+
+  ctx.save();
+  roundRectPath(ctx, 578, 56, 560, 504, 26);
+  ctx.clip();
+  const monsterBackdrop = ctx.createLinearGradient(578, 56, 1138, 560);
+  monsterBackdrop.addColorStop(0, isDark ? "rgba(20, 83, 45, 0.1)" : "rgba(236, 253, 245, 0.1)");
+  monsterBackdrop.addColorStop(1, isDark ? "rgba(146, 64, 14, 0.38)" : "rgba(254, 243, 199, 0.68)");
+  ctx.fillStyle = monsterBackdrop;
+  ctx.fillRect(578, 56, 560, 504);
+  ctx.globalAlpha = 0.9;
+  const imageDrawn = drawImageCover(ctx, monsterImage, 604, 72, 508, 462);
+  ctx.globalAlpha = 1;
+  const fade = ctx.createLinearGradient(578, 56, 850, 56);
+  fade.addColorStop(0, panel);
+  fade.addColorStop(0.72, isDark ? "rgba(30, 41, 59, 0.24)" : "rgba(255, 255, 255, 0.2)");
+  fade.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = fade;
+  ctx.fillRect(578, 56, 300, 504);
+  ctx.restore();
+  if (!imageDrawn) {
+    ctx.fillStyle = muted;
+    ctx.font = "900 34px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Maple", 870, 260);
+  }
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = muted;
+  ctx.font = "900 26px system-ui, sans-serif";
+  ctx.fillText("楓憶 MapleMemory · 戰鬥分析", 78, 92);
+  ctx.fillStyle = text;
+  ctx.font = "900 58px system-ui, sans-serif";
+  ctx.fillText(`Lv.${formatNumber(payload.level)} ${payload.job || "未設定職業"}`, 78, 162);
+  ctx.fillStyle = muted;
+  ctx.font = "800 30px system-ui, sans-serif";
+  ctx.fillText(payload.mapLabel || payload.mapName || "未偵測地圖", 78, 216);
+
+  const metricTop = 324;
+  fillRoundRect(ctx, 78, metricTop, 490, 96, 18, isDark ? "rgba(23, 55, 42, 0.5)" : "rgba(231, 248, 235, 0.62)");
+  strokeRoundRect(ctx, 78, metricTop, 490, 96, 18, isDark ? "rgba(74, 222, 128, 0.24)" : "rgba(47, 138, 87, 0.2)", 2);
+  fillRoundRect(ctx, 78, metricTop + 114, 490, 96, 18, isDark ? "rgba(73, 48, 22, 0.5)" : "rgba(255, 244, 217, 0.62)");
+  strokeRoundRect(ctx, 78, metricTop + 114, 490, 96, 18, isDark ? "rgba(245, 158, 11, 0.24)" : "rgba(183, 121, 31, 0.2)", 2);
+  ctx.fillStyle = green;
+  ctx.font = "950 22px system-ui, sans-serif";
+  ctx.fillText("10分鐘平均經驗收入", 112, metricTop + 32);
+  ctx.fillStyle = text;
+  ctx.font = "950 42px system-ui, sans-serif";
+  ctx.fillText(shareStatText(payload.stats?.recentExpPer10, "EXP"), 112, metricTop + 78);
+  ctx.fillStyle = gold;
+  ctx.font = "950 22px system-ui, sans-serif";
+  ctx.fillText("10分鐘平均楓幣收入", 112, metricTop + 146);
+  ctx.fillStyle = text;
+  ctx.font = "950 42px system-ui, sans-serif";
+  ctx.fillText(shareStatText(payload.stats?.recentMesoPer10, "楓幣"), 112, metricTop + 192);
+
+  ctx.fillStyle = muted;
+  ctx.font = "800 20px system-ui, sans-serif";
+  ctx.fillText(new Date().toLocaleString("zh-TW", { hour12: false }), 78, 560);
+  state.shareImageReady = true;
+  if (el.downloadShare) el.downloadShare.disabled = false;
+  return true;
+}
+
+async function generateShareImage() {
+  const latest = state.latest || state.snapshots[state.snapshots.length - 1];
+  const stats = computeStats();
+  if (!latest || !stats) {
+    setShareStatus("至少需要兩筆有效紀錄後才能生成分享圖。");
+    return;
+  }
+  setShareStatus("正在生成分享圖。");
+  const mapResult = await readShareMapFromScreen();
+  const map = mapResult.map || resolveMapFromText(mapResult.input)?.map || null;
+  const monster = representativeMonsterForMap(map);
+  const job = (el.shareJob?.value || "").trim();
+  await drawShareImage({
+    level: latest.level,
+    job,
+    map,
+    mapName: mapResult.input || "",
+    mapLabel: mapDisplayName(map) || mapResult.input || "",
+    monster,
+    stats,
+  });
+  const mapText = map ? mapDisplayName(map) : (mapResult.input ? `未能對上資料庫：${mapResult.input}` : "未偵測到小地圖名稱");
+  setShareStatus(`${mapText}${monster ? " · 已套用地圖怪物背景" : ""}`);
+}
+
+function downloadShareImage() {
+  if (!el.shareCanvas || !state.shareImageReady) {
+    setShareStatus("請先生成分享圖。");
+    return;
+  }
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const link = document.createElement("a");
+  link.href = el.shareCanvas.toDataURL("image/png");
+  link.download = `maple-combat-share-${stamp}.png`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setShareStatus("已下載分享圖。");
+}
+
 function render() {
   if (!el.panel) return;
   const stats = computeStats();
@@ -2136,6 +2875,24 @@ function initialize() {
       updateRegionPresetStatus();
     });
   }
+  if (el.shareJob) {
+    el.shareJob.value = state.shareJob || "";
+    el.shareJob.addEventListener("change", () => {
+      state.shareJob = el.shareJob.value || "";
+      writeCookie(SHARE_JOB_COOKIE, state.shareJob);
+    });
+  }
+  if (el.shareMap) {
+    el.shareMap.value = state.shareMapName || "";
+    el.shareMap.addEventListener("input", () => {
+      state.shareMapName = el.shareMap.value || "";
+      writeCookie(SHARE_MAP_COOKIE, state.shareMapName);
+      state.shareImageReady = false;
+      if (el.downloadShare) el.downloadShare.disabled = true;
+    });
+  }
+  el.generateShare?.addEventListener("click", generateShareImage);
+  el.downloadShare?.addEventListener("click", downloadShareImage);
   el.exportReport?.addEventListener("click", exportReportDataset);
   el.emailReport?.addEventListener("click", emailReportDataset);
   el.video?.addEventListener("loadedmetadata", () => updateRegionPresetStatus());

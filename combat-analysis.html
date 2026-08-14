@@ -28,7 +28,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260814172622" />
+  <link rel="stylesheet" href="./styles.css?v=20260814204730" />
   <style>
     .combatAnalysisPage {
       min-height: calc(100vh - var(--header-height, 124px));
@@ -172,6 +172,22 @@
       background: #05070b;
       object-fit: contain;
     }
+    .combatSharePreview {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--control-soft);
+      aspect-ratio: 1200 / 630;
+    }
+    .combatSharePreview canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--panel);
+    }
+    .combatWideButton {
+      grid-column: 1 / -1;
+    }
     .combatFormGrid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -225,12 +241,15 @@
       border-bottom: 1px solid var(--line);
     }
     .combatMetricGroup {
+      position: relative;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--control-soft);
     }
     .combatMetricGroupHeader {
+      position: relative;
+      z-index: 2;
       display: flex;
       align-items: baseline;
       justify-content: space-between;
@@ -250,10 +269,27 @@
       white-space: nowrap;
     }
     .combatMetricGroupGrid {
+      position: relative;
+      z-index: 2;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       padding: 12px;
+    }
+    .combatMetricGroupSparkline {
+      position: absolute;
+      inset: 38px 0 0;
+      width: 100%;
+      height: calc(100% - 38px);
+      opacity: 0.28;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .combatMetricGroup.expMetricGroup .combatMetricGroupSparkline {
+      color: var(--green-text);
+    }
+    .combatMetricGroup.mesoMetricGroup .combatMetricGroupSparkline {
+      color: var(--meso-text);
     }
     .combatMetricCard {
       position: relative;
@@ -271,27 +307,18 @@
     .combatMetricCard.expMetric {
       border-color: var(--green-border);
       background: var(--green-bg);
+      background: color-mix(in srgb, var(--green-bg) 76%, transparent);
     }
     .combatMetricCard.mesoMetric {
       border-color: var(--gold-border);
       background: var(--gold-bg);
+      background: color-mix(in srgb, var(--gold-bg) 76%, transparent);
     }
     .combatMetricContent {
       position: relative;
       z-index: 1;
       display: grid;
       gap: 3px;
-    }
-    .combatMetricSparkline {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 78%;
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 0;
     }
     .combatMetricCard strong {
       color: var(--plain-text);
@@ -543,8 +570,8 @@
           </div>
           <button class="combatButtonSecondary" type="button" id="resetSnapshotsButton">重設紀錄</button>
           <div class="combatStatus" id="ocrStatus"></div>
-          <p class="combatHint">分享遊戲視窗後，頁面會在本機擷取 EXP 與楓幣區塊；背包開啟時才能讀到右上角楓幣。</p>
-          <p class="combatHint">偵測楓幣前，請開啟道具欄並把道具欄移到畫面右上角對齊；未對齊時 EXP 仍可分析，但楓幣可能讀不到。</p>
+          <p class="combatHint">分享遊戲視窗後，頁面會在本機擷取 EXP 與楓幣區塊；背包開啟時才能讀到道具欄楓幣。</p>
+          <p class="combatHint">偵測楓幣前，請開啟道具欄並把道具欄貼齊畫面四個角落其中之一；未開啟時 EXP 仍可分析，但楓幣可能讀不到。</p>
         </section>
 
         <section class="combatSection">
@@ -556,6 +583,7 @@
               <option value="1920x1080">1920x1080</option>
               <option value="2560x1440">2560x1440</option>
               <option value="2732x1440">2732x1440</option>
+              <option value="2732x1536">2732x1536</option>
               <option value="3840x2160">3840x2160</option>
             </select>
           </label>
@@ -572,8 +600,47 @@
               楓幣
               <canvas id="mesoCropCanvas"></canvas>
             </label>
+            <label class="combatCropCard">
+              地圖
+              <canvas id="mapCropCanvas"></canvas>
+            </label>
           </div>
           <div class="combatStatus" id="regionPresetStatus"></div>
+        </section>
+
+        <section class="combatSection">
+          <h3>分享圖</h3>
+          <div class="combatFormGrid">
+            <label class="combatField">玩家職業
+              <select id="shareJobSelect">
+                <option value="">未設定</option>
+                <option value="英雄">英雄</option>
+                <option value="聖騎士">聖騎士</option>
+                <option value="黑騎士">黑騎士</option>
+                <option value="大魔導士（火、毒）">大魔導士（火、毒）</option>
+                <option value="大魔導士（冰、雷）">大魔導士（冰、雷）</option>
+                <option value="主教">主教</option>
+                <option value="箭神">箭神</option>
+                <option value="神射手">神射手</option>
+                <option value="夜使者">夜使者</option>
+                <option value="暗影神偷">暗影神偷</option>
+                <option value="拳霸">拳霸</option>
+                <option value="槍神">槍神</option>
+              </select>
+            </label>
+            <label class="combatField">所在地圖
+              <input id="shareMapInput" type="text" placeholder="自動偵測，可手動修正" />
+            </label>
+          </div>
+          <div class="combatActionGrid">
+            <button class="combatButton" type="button" id="generateShareImageButton">生成分享圖</button>
+            <button class="combatButtonSecondary" type="button" id="downloadShareImageButton" disabled>下載分享圖</button>
+          </div>
+          <div class="combatSharePreview">
+            <canvas id="shareImageCanvas" width="1200" height="630"></canvas>
+          </div>
+          <div class="combatStatus" id="shareImageStatus"></div>
+          <p class="combatHint">生成時會讀取左上角小地圖名稱；若 OCR 不準，可手動輸入地圖名稱後重新生成。</p>
         </section>
 
         <section class="combatSection">
@@ -592,7 +659,8 @@
     </div>
   </main>
 
-  <script src="./combat-analysis-data.js?v=20260814172622"></script>
-  <script src="./combat-analysis.js?v=20260814172622"></script>
+  <script src="./maps-data.js?v=20260814204730"></script>
+  <script src="./combat-analysis-data.js?v=20260814204730"></script>
+  <script src="./combat-analysis.js?v=20260814204730"></script>
 </body>
 </html>
