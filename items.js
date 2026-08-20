@@ -1402,17 +1402,29 @@ function renderBoxChoiceSources(item) {
 function renderGachaSources(item) {
   const rows = sourceRows(item).gachaSources;
   return sourceBlock("轉蛋取得", rows, row => {
+    const sourceItem = row.sourceItem || {};
+    const sourceName = sourceItem.name || row.poolName || "轉蛋";
+    const sourceImage = sourceItem.image || row.itemImage || item.image;
     const meta = [];
     if (row.poolName) meta.push(row.poolName);
+    if (row.tier) meta.push(`${row.tier}賞`);
+    if (Number.isFinite(Number(row.chance))) meta.push(`${formatNumber(row.chance)}%`);
     if (state.showIds && row.itemId) meta.push(`ID ${row.itemId}`);
-    return `
-      <article class="sourceRow">
-        ${assetImage(row.itemImage || item.image, row.itemName || item.name, String(row.itemName || item.name || "?").slice(0, 1), "sourceMonsterImage")}
+    const body = `
+        ${assetImage(sourceImage, sourceName, String(sourceName || "?").slice(0, 1), "sourceMonsterImage")}
         <div>
-          <strong>${escapeHtml(row.sourceLabel || "轉蛋取得")}</strong>
+          <strong>${escapeHtml(sourceName)}</strong>
           <span>${escapeHtml(meta.join(" · ") || "轉蛋")}</span>
+          ${row.itemName && row.itemName !== item.name ? `<p>獎項：${escapeHtml(row.itemName)}</p>` : ""}
         </div>
         <small>轉蛋</small>
+    `;
+    if (sourceItem.id) {
+      return `<a class="sourceRow sourceLinkRow" href="${itemUrl(sourceItem.id)}">${body}</a>`;
+    }
+    return `
+      <article class="sourceRow">
+        ${body}
       </article>
     `;
   });
