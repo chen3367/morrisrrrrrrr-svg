@@ -577,6 +577,7 @@ function sourceRows(item) {
     crafts: craftSourceRows(item),
     boxSources: item.sources?.boxSources || [],
     boxChoices: item.sources?.boxChoices || [],
+    gachaSources: item.sources?.gachaSources || [],
   };
 }
 
@@ -597,6 +598,7 @@ function sourceCounts(item) {
     crafts: rows.crafts.length,
     boxSources: rows.boxSources.length,
     boxChoices: rows.boxChoices.length,
+    gachaSources: rows.gachaSources.length,
   };
 }
 
@@ -609,6 +611,7 @@ function sourceSummary(item) {
   if (counts.crafts) parts.push(`合成 ${formatNumber(counts.crafts)}`);
   if (counts.boxSources) parts.push(`箱子 ${formatNumber(counts.boxSources)}`);
   if (counts.boxChoices) parts.push(`可選 ${formatNumber(counts.boxChoices)}`);
+  if (counts.gachaSources) parts.push(`轉蛋 ${formatNumber(counts.gachaSources)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
 }
 
@@ -679,6 +682,12 @@ function searchableText(item) {
     row.item?.id,
     row.item?.name,
   ]);
+  const gachaText = sources.gachaSources.flatMap(row => [
+    row.sourceLabel,
+    row.poolName,
+    row.itemId,
+    row.itemName,
+  ]);
   return [
     item.id,
     ...(item.mergedIds || []),
@@ -695,6 +704,7 @@ function searchableText(item) {
     ...craftRequirementText,
     ...boxSourceText,
     ...boxChoiceText,
+    ...gachaText,
   ].map(norm).join(" ");
 }
 
@@ -1036,7 +1046,7 @@ function renderList() {
 
 function totalSources(item) {
   const counts = sourceCounts(item);
-  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices;
+  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices + counts.gachaSources;
 }
 
 function selectedItem() {
@@ -1065,16 +1075,6 @@ function renderDetail() {
         <div class="heroCounter"><strong>${escapeHtml(item.subcategory || item.kind)}</strong><span>細類</span></div>
       </div>
     </section>
-    <section class="sectionBlock">
-      <div class="sourceStats">
-        <div class="statCell"><span>怪物掉落</span><strong>${formatNumber(counts.monsterDrops)}</strong></div>
-        <div class="statCell"><span>任務獲取</span><strong>${formatNumber(counts.questRewards)}</strong></div>
-        <div class="statCell"><span>商人購買</span><strong>${formatNumber(counts.shops)}</strong></div>
-        <div class="statCell"><span>合成取得</span><strong>${formatNumber(counts.crafts)}</strong></div>
-        ${counts.boxSources ? `<div class="statCell"><span>箱子取得</span><strong>${formatNumber(counts.boxSources)}</strong></div>` : ""}
-        ${counts.boxChoices ? `<div class="statCell"><span>開箱內容</span><strong>${formatNumber(counts.boxChoices)}</strong></div>` : ""}
-      </div>
-    </section>
     ${renderEquipmentStats(item)}
     ${renderSellPrice(item)}
     ${renderMonsterSources(item)}
@@ -1083,6 +1083,7 @@ function renderDetail() {
     ${renderCraftSources(item)}
     ${renderBoxSources(item)}
     ${renderBoxChoiceSources(item)}
+    ${renderGachaSources(item)}
     ${renderQuestRequirementSources(item)}
     ${renderCraftRequirementSources(item)}
     ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length || craftRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出需求用途" : "目前資料集中沒有取得途徑"}</div>`}
@@ -1394,6 +1395,25 @@ function renderBoxChoiceSources(item) {
         </div>
         <small>${formatNumber(reward.count || 1)} 個</small>
       </a>
+    `;
+  });
+}
+
+function renderGachaSources(item) {
+  const rows = sourceRows(item).gachaSources;
+  return sourceBlock("轉蛋取得", rows, row => {
+    const meta = [];
+    if (row.poolName) meta.push(row.poolName);
+    if (state.showIds && row.itemId) meta.push(`ID ${row.itemId}`);
+    return `
+      <article class="sourceRow">
+        ${assetImage(row.itemImage || item.image, row.itemName || item.name, String(row.itemName || item.name || "?").slice(0, 1), "sourceMonsterImage")}
+        <div>
+          <strong>${escapeHtml(row.sourceLabel || "轉蛋取得")}</strong>
+          <span>${escapeHtml(meta.join(" · ") || "轉蛋")}</span>
+        </div>
+        <small>轉蛋</small>
+      </article>
     `;
   });
 }
