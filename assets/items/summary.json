@@ -1,16 +1,9 @@
 {
-  "requested": 13577,
-  "exported": 12526,
-  "missing": 1051,
+  "requested": 11433,
+  "exported": 10529,
+  "missing": 904,
   "missingSample": [
     30430,
-    30431,
-    30432,
-    30433,
-    30434,
-    30435,
-    30436,
-    30437,
     31430,
     31431,
     31432,
@@ -19,14 +12,6 @@
     31435,
     31436,
     31437,
-    33070,
-    33071,
-    33072,
-    33073,
-    33074,
-    33075,
-    33076,
-    33077,
     33080,
     33081,
     33082,
@@ -42,7 +27,22 @@
     33094,
     33095,
     33096,
-    33097
+    33097,
+    33130,
+    33131,
+    33132,
+    33133,
+    33134,
+    33135,
+    33136,
+    33137,
+    34070,
+    34071,
+    34072,
+    34073,
+    34074,
+    34075,
+    34076
   ],
   "groupInfos": [
     "0200",
@@ -61,10 +61,7 @@
     "0227",
     "0228",
     "0229",
-    "0231",
-    "0232",
     "0233",
-    "0235",
     "0236",
     "0238",
     "0243",
@@ -106,7 +103,6 @@
     "0515",
     "0516",
     "0517",
-    "0518",
     "0519",
     "0520",
     "0521",
@@ -131,18 +127,18 @@
     "0578",
     "0910"
   ],
-  "equipmentWzjsRoots": 4577,
-  "avatarWzjsRoots": 3332,
+  "equipmentWzjsRoots": 4202,
+  "avatarWzjsRoots": 2153,
   "petWzjsRoots": 15,
   "bundles": {
     "spritesheet_631a1e3068991baa271ccec09d9f7dd3.bundle": {
       "groups": 0,
-      "equipment": 4521,
-      "avatar": 3316,
+      "equipment": 4150,
+      "avatar": 2144,
       "pet": 0
     },
-    "spritesheet_abb78745197801a52a5dc39a4ed0212e.bundle": {
-      "groups": 4674,
+    "spritesheet_abb78745197801a59b36735c77783da5.bundle": {
+      "groups": 4220,
       "equipment": 0,
       "avatar": 0,
       "pet": 15
@@ -153,13 +149,13 @@
       "avatar": 0,
       "pet": 0
     },
-    "spritesheet_1023f33d7803aa6e3454012c29102656.bundle": {
+    "spritesheet_1023f33d7803aa6ec6ec9c49277ec3bf.bundle": {
       "groups": 0,
       "equipment": 0,
       "avatar": 0,
       "pet": 0
     },
-    "spritesheet_1b3bc95af88aeb7d29b8136f3cf1f4c4.bundle": {
+    "spritesheet_1b3bc95af88aeb7d127adb2ba1f9f70e.bundle": {
       "groups": 0,
       "equipment": 0,
       "avatar": 0,
@@ -201,7 +197,7 @@
       "avatar": 0,
       "pet": 0
     },
-    "spritesheet_ef97f1e56f7745b1dbc614d0bd45ffc0.bundle": {
+    "spritesheet_ef97f1e56f7745b18b0753d33f4faea9.bundle": {
       "groups": 0,
       "equipment": 0,
       "avatar": 0,

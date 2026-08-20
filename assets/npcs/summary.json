@@ -1,8 +1,12 @@
 {
   "targets": 282,
-  "exported": 250,
-  "missing": 32,
+  "exported": 249,
+  "missing": 33,
   "skipped": [
+    {
+      "id": 9201000,
+      "reason": "missing rects"
+    },
     {
       "id": 900040,
       "reason": "missing sprite"
