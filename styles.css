@@ -332,7 +332,6 @@ h1 {
 .topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
 .topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
 .topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
-.topNav a[href$="quest_summary.html"] { --nav-icon: url("./assets/npcs/2005.png"); }
 .topNav a:hover {
   background: var(--nav-hover);
   border-color: var(--link-hover-border);
@@ -4136,4 +4135,67 @@ h3 {
   .mapMarker:hover {
     outline: none;
   }
+}
+
+.qsSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  padding: 12px 14px 16px;
+}
+.qsSummaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px dashed var(--dash-line);
+  border-radius: 9px;
+  background: var(--card-bg);
+  padding: 10px 11px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 13px;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.12s ease;
+}
+.qsSummaryCard:hover {
+  border-color: var(--link-hover-border);
+  background: var(--link-hover-bg);
+  transform: translateY(-1px);
+}
+.qsSummaryHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.qsSummaryHead img {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--icon-bg);
+  padding: 2px;
+}
+.qsSummaryName {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.qsSummaryTotal {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+.qsQuestList {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.qsQuestList a {
+  color: inherit;
 }

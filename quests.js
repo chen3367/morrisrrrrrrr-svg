@@ -115,6 +115,7 @@ const state = {
   levelMax: cookieValue("ms_quest_level_max"),
   nameOnlySearch: cookieBool("ms_quest_name_only_search"),
   showUnnamedIndex: cookieBool("ms_quest_show_unnamed_index"),
+  showDropSummary: cookieBool("ms_quest_show_drop_summary"),
   showQuestRewardItemDetails: cookieBool("ms_monster_drop_item_details", true),
   showIds: cookieBool("ms_show_ids"),
   theme: initialTheme(),
@@ -132,6 +133,7 @@ const els = {
   nameOnlySearch: document.getElementById("nameOnlySearch"),
   nameOnlySearchControl: document.getElementById("nameOnlySearchControl"),
   unnamedIndexToggle: document.getElementById("unnamedIndexToggle"),
+  dropSummaryToggle: document.getElementById("dropSummaryToggle"),
   idToggle: document.getElementById("idToggle"),
   themeToggle: document.getElementById("themeToggle"),
   settingsToggle: document.getElementById("settingsToggle"),
@@ -534,6 +536,85 @@ function filteredQuests() {
   }).sort(compareQuests);
 }
 
+let dropItemIdSet = null;
+function questDropItemIds() {
+  if (dropItemIdSet) return dropItemIdSet;
+  const ids = new Set();
+  try {
+    (window.MS_DROP_DB.monsters || []).forEach(monster => {
+      (monster.drops || []).forEach(drop => ids.add(Number(drop.id)));
+    });
+  } catch (_error) {
+    // 無法取得掉落資料時，視為全部道具皆為掉落物。
+    return null;
+  }
+  dropItemIdSet = ids;
+  return dropItemIdSet;
+}
+
+function isQuestDropItem(itemId) {
+  const ids = questDropItemIds();
+  return !ids || ids.has(Number(itemId));
+}
+
+function aggregatedRequiredDrops() {
+  const aggregate = new Map();
+  filteredQuests().forEach(quest => {
+    visibleIndexRows((quest.completeRequirements || {}).items || [], "item").forEach(item => {
+      if (!isQuestDropItem(item.id)) return;
+      const key = `${item.id}|${item.name}`;
+      const amount = Number(item.count) > 0 ? Number(item.count) : 1;
+      let record = aggregate.get(key);
+      if (!record) {
+        record = { id: item.id, name: item.name, image: item.image, total: 0, perQuest: new Map() };
+        aggregate.set(key, record);
+      }
+      record.total += amount;
+      const entryKey = String(quest.id);
+      const entry = record.perQuest.get(entryKey);
+      if (entry) entry.count += amount;
+      else record.perQuest.set(entryKey, { quest, count: amount });
+    });
+  });
+  return [...aggregate.values()].sort((a, b) =>
+    b.total - a.total || String(a.name).localeCompare(String(b.name), "zh-Hant")
+  );
+}
+
+function renderDropSummary() {
+  if (!state.showDropSummary) return "";
+  const records = aggregatedRequiredDrops();
+  const totalPieces = records.reduce((sum, record) => sum + record.total, 0);
+  const cards = records.map(record => {
+    const questEntries = [...record.perQuest.values()].sort(compareQuests);
+    const questListHtml = `<ul class="qsQuestList">${questEntries.map(entry => `
+      <li><a href="${questUrl(entry.quest.id)}">${escapeHtml(entry.quest.name)}</a> <b>x${escapeHtml(formatNumber(entry.count))}</b></li>
+    `).join("")}</ul>`;
+    const thumb = record.image
+      ? `<img src="${escapeHtml(record.image)}" alt="" loading="lazy" onerror="this.remove()" />`
+      : "";
+    return `
+      <div class="qsSummaryCard">
+        <a class="qsSummaryHead" href="${itemUrl(record.id)}">
+          ${thumb}
+          <span class="qsSummaryName">${escapeHtml(record.name)}</span>
+          <b class="qsSummaryTotal">x${escapeHtml(formatNumber(record.total))}</b>
+        </a>
+        ${questListHtml}
+      </div>
+    `;
+  }).join("");
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <h3>掉落物需求彙總</h3>
+        <span>${records.length.toLocaleString()} 種 · 共 ${formatNumber(totalPieces)} 件</span>
+      </div>
+      ${records.length ? `<div class="qsSummaryGrid">${cards}</div>` : `<div class="empty">目前條件下沒有可由怪物掉落的繳交物品。</div>`}
+    </section>
+  `;
+}
+
 function questById(questId) {
   return (db.quests || []).find(quest => String(quest.id) === String(questId));
 }
@@ -612,6 +693,10 @@ function updateToggles() {
     els.unnamedIndexToggle.setAttribute("aria-pressed", String(state.showUnnamedIndex));
     els.unnamedIndexToggle.textContent = state.showUnnamedIndex ? "隱藏未命名索引" : "顯示未命名索引";
   }
+  if (els.dropSummaryToggle) {
+    els.dropSummaryToggle.setAttribute("aria-pressed", String(state.showDropSummary));
+    els.dropSummaryToggle.textContent = state.showDropSummary ? "隱藏所有掉落物彙整" : "顯示所有掉落物彙整";
+  }
 }
 
 function updateSettingsPanel() {
@@ -670,6 +755,7 @@ function renderDetail() {
     return;
   }
   els.detail.innerHTML = `
+    ${renderDropSummary()}
     <section class="monsterHero questHero">
       ${questNpcThumb(quest, "questMark")}
       <div class="heroText">
@@ -1045,6 +1131,12 @@ els.clearFilters.addEventListener("click", clearSearchFilters);
 els.unnamedIndexToggle.addEventListener("click", () => {
   state.showUnnamedIndex = !state.showUnnamedIndex;
   saveBool("ms_quest_show_unnamed_index", state.showUnnamedIndex);
+  render();
+});
+
+els.dropSummaryToggle.addEventListener("click", () => {
+  state.showDropSummary = !state.showDropSummary;
+  saveBool("ms_quest_show_drop_summary", state.showDropSummary);
   render();
 });
 
