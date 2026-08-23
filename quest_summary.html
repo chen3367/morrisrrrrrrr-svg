@@ -30,24 +30,10 @@
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css?v=20260820170957" />
   <style>
-    .qsLayout {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 16px;
-    }
-    .qsPanel {
-      max-width: 1180px;
-      margin: 0 auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--detail-bg);
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(10px);
-    }
-    .mobileDock {
-      display: none !important;
+    .qsResultCount {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
     }
     .qsHero {
       position: sticky;
@@ -240,28 +226,36 @@
     </div>
 
   </header>
-  <section class="pageToolbar" aria-label="任務等級區間查詢">
-    <div class="searchWrap pageToolbarControls">
-      <label class="advancedField questLevelField">
-        <span>等級下限</span>
-        <input id="levelMin" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="下限" autocomplete="off" />
-      </label>
-      <label class="advancedField questLevelField">
-        <span>等級上限</span>
-        <input id="levelMax" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="上限" autocomplete="off" />
-      </label>
-      <button id="applyRange" class="toggleButton" type="button">套用區間</button>
-      <label class="nameOnlySearchControl">
-        <input id="onlyWithItems" type="checkbox" autocomplete="off" checked />
-        <span>只顯示需繳交物品的任務</span>
-      </label>
-      <button id="idToggle" class="toggleIdButton toggleButton" type="button" aria-pressed="false">顯示ID</button>
-      <span id="resultCount"></span>
-    </div>
-  </section>
 
-  <main class="qsLayout">
-    <section class="qsPanel" id="summaryPane">
+  <main class="layout simulatorLayout qsLayout">
+    <aside class="monsterList simulatorControls">
+      <section class="simControlSection">
+        <h2>查詢條件</h2>
+        <label class="advancedField fullWidthField">
+          <span>等級下限</span>
+          <input id="levelMin" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="下限" autocomplete="off" />
+        </label>
+        <label class="advancedField fullWidthField">
+          <span>等級上限</span>
+          <input id="levelMax" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="上限" autocomplete="off" />
+        </label>
+        <button id="applyRange" class="toggleButton primaryActionButton" type="button">套用區間</button>
+        <label class="nameOnlySearchControl">
+          <input id="onlyWithItems" type="checkbox" autocomplete="off" checked />
+          <span>只顯示需繳交物品的任務</span>
+        </label>
+        <span id="resultCount" class="qsResultCount"></span>
+      </section>
+
+      <section class="simControlSection utilitySettingsSection">
+        <h2>工具設定</h2>
+        <div id="settingsPanel" class="settingsPanel utilitySettingsPanel">
+          <button id="idToggle" class="toggleIdButton" type="button" aria-pressed="false">顯示ID</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="detail simulatorDetail" id="simulatorDetail">
       <div class="qsHero">
         <div>
           <h2>任務等級區間彙總</h2>
