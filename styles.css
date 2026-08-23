@@ -332,7 +332,7 @@ h1 {
 .topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
 .topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
 .topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
-.topNav a[href$="quests.html"] { --nav-icon: url("./assets/npcs/2005.png"); }
+.topNav a[href$="quest_summary.html"] { --nav-icon: url("./assets/npcs/2005.png"); }
 .topNav a:hover {
   background: var(--nav-hover);
   border-color: var(--link-hover-border);
