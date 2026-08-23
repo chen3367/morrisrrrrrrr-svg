@@ -955,6 +955,22 @@ select {
   color: var(--plain-text);
   line-height: 1.55;
 }
+.patchDiffPre {
+  margin: 0;
+  color: var(--plain-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.patchDiffPre strong {
+  color: var(--text-strong);
+}
+.patchDiffPre del {
+  color: var(--muted);
+}
 .patchDiffItemGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
