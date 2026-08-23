@@ -427,11 +427,17 @@
             if (!isDrop) return;
             var key = item.id + "|" + item.name;
             if (!aggregate.has(key)) {
-              aggregate.set(key, { id: item.id, name: item.name, image: item.image, total: 0, quests: [] });
+              aggregate.set(key, { id: item.id, name: item.name, image: item.image, total: 0, perQuest: new Map() });
             }
             var record = aggregate.get(key);
-            record.total += item.count || 1;
-            record.quests.push(quest);
+            var amount = item.count || 1;
+            record.total += amount;
+            var entry = record.perQuest.get(quest.id);
+            if (entry) {
+              entry.count += amount;
+            } else {
+              record.perQuest.set(quest.id, { quest: quest, count: amount });
+            }
           });
         });
 
@@ -467,13 +473,18 @@
         }).join("");
 
         var summaryRows = aggregated.map(function (record) {
-          var questListHtml = '<ul class="qsQuestList">' + record.quests.map(function (quest) {
-            return '<li><a href="' + questUrl(quest.id) + '">' + escapeHtml(quest.name) + "</a></li>";
+          var questEntries = Array.from(record.perQuest.values()).sort(function (a, b) {
+            var ka = sortKey(a.quest);
+            var kb = sortKey(b.quest);
+            if (ka[0] !== kb[0]) return ka[0] - kb[0];
+            return ka[1] - kb[1];
+          });
+          var questListHtml = '<ul class="qsQuestList">' + questEntries.map(function (entry) {
+            return '<li><a href="' + questUrl(entry.quest.id) + '">' + escapeHtml(entry.quest.name) + " <b>x" + escapeHtml(formatNumber(entry.count)) + "</b></a></li>";
           }).join("") + "</ul>";
           return "<tr>" +
             '<td><a class="qsItemChip" href="' + itemUrl(record.id) + '"><img src="./assets/items/' + encodeURIComponent(record.id) + '.png" alt="" loading="lazy" onerror="this.remove()" /><span>' + escapeHtml(record.name) + "</span></a></td>" +
             '<td class="num"><strong>' + escapeHtml(formatNumber(record.total)) + "</strong></td>" +
-            '<td class="num">' + escapeHtml(formatNumber(record.quests.length)) + "</td>" +
             "<td>" + questListHtml + "</td>" +
             "</tr>";
         }).join("");
@@ -483,7 +494,7 @@
         if (summaryRows) {
           summarySection +=
             '<div class="qsTableWrap"><table class="qsTable">' +
-              '<thead><tr><th>物品</th><th class="num">總需求</th><th class="num">涉及任務</th><th>相關任務</th></tr></thead>' +
+              '<thead><tr><th>物品</th><th class="num">總需求</th><th>相關任務需求</th></tr></thead>' +
               "<tbody>" + summaryRows + "</tbody>" +
             "</table></div>";
         } else {
