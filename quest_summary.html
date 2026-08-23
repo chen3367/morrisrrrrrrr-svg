@@ -270,7 +270,7 @@
         <div class="heroCounters" id="heroCounters"></div>
       </div>
       <div id="resultArea"></div>
-      <p class="qsNote">說明：「非掉落」代表該道具未出現於怪物掉落表中，多為 NPC 轉交、製作或活動取得；等級顯示「?」表示該任務未登記等級上下限，仍會與區間進行比對。資料來源：quests-data.js（遊戲版本 1.14.5）。</p>
+      <p class="qsNote">說明：「非掉落」代表該道具未出現於怪物掉落表中，多為 NPC 轉交、製作或活動取得，不會計入下方「掉落物需求彙總」；等級顯示「?」表示該任務未登記等級上下限，仍會與區間進行比對。資料來源：quests-data.js（遊戲版本 1.14.5）。</p>
     </section>
   </main>
 
@@ -423,6 +423,8 @@
         var aggregate = new Map();
         matched.forEach(function (quest) {
           requiredItems(quest).forEach(function (item) {
+            var isDrop = !dropItemIds || dropItemIds.has(Number(item.id));
+            if (!isDrop) return;
             var key = item.id + "|" + item.name;
             if (!aggregate.has(key)) {
               aggregate.set(key, { id: item.id, name: item.name, image: item.image, total: 0, quests: [] });
@@ -476,6 +478,19 @@
             "</tr>";
         }).join("");
 
+        var summarySection = '<section class="sectionBlock">' +
+          '<div class="sectionTitle"><h3>掉落物需求彙總</h3><span>' + escapeHtml(formatNumber(aggregated.length)) + " 種 · 共 " + escapeHtml(formatNumber(totalPieces)) + " 件</span></div>";
+        if (summaryRows) {
+          summarySection +=
+            '<div class="qsTableWrap"><table class="qsTable">' +
+              '<thead><tr><th>物品</th><th class="num">總需求</th><th class="num">涉及任務</th><th>相關任務</th></tr></thead>' +
+              "<tbody>" + summaryRows + "</tbody>" +
+            "</table></div>";
+        } else {
+          summarySection += '<div class="qsEmpty">此等級區間內沒有可由怪物掉落的繳交物品。</div>';
+        }
+        summarySection += "</section>";
+
         els.resultArea.innerHTML =
           '<section class="sectionBlock">' +
             '<div class="sectionTitle"><h3>任務清單（依等級排序）</h3><span>' + escapeHtml(formatNumber(matched.length)) + " 個</span></div>" +
@@ -484,13 +499,7 @@
               "<tbody>" + questRows + "</tbody>" +
             "</table></div>" +
           "</section>" +
-          '<section class="sectionBlock">' +
-            '<div class="sectionTitle"><h3>掉落物需求彙總</h3><span>' + escapeHtml(formatNumber(aggregated.length)) + " 種 · 共 " + escapeHtml(formatNumber(totalPieces)) + " 件</span></div>" +
-            '<div class="qsTableWrap"><table class="qsTable">' +
-              "<thead><tr><th>物品</th><th class=\"num\">總需求</th><th class=\"num\">涉及任務</th><th>相關任務</th></tr></thead>" +
-              "<tbody>" + summaryRows + "</tbody>" +
-            "</table></div>" +
-          "</section>";
+          summarySection;
       }
 
       function updateUrl() {
