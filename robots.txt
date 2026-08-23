@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://morrisrrrrrrr-svg.github.io/sitemap.xml
