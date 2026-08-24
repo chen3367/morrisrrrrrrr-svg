@@ -165,6 +165,7 @@ const state = {
   showSameMapPortals: cookieBool("ms_map_show_same_map_portals", cookieBool("ms_map_show_portals", true)),
   hiddenSpawnKeys: parseCookieSet("ms_map_hidden_spawns"),
   showIds: cookieBool("ms_show_ids"),
+  favoriteIds: parseCookieSet("ms_favorite_maps"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialMapId(),
@@ -198,6 +199,34 @@ function norm(value) {
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+function favoriteButton(id, name) {
+  const key = String(id);
+  const active = state.favoriteIds.has(key);
+  const action = active ? "移除最愛" : "加入最愛";
+  return `<button class="favoriteButton${active ? " active" : ""}" type="button" data-favorite-id="${escapeHtml(key)}" aria-label="${escapeHtml(`${action}：${name || key}`)}" aria-pressed="${active ? "true" : "false"}" title="${action}">★</button>`;
+}
+
+function toggleFavorite(id) {
+  const key = String(id);
+  if (state.favoriteIds.has(key)) {
+    state.favoriteIds.delete(key);
+  } else {
+    state.favoriteIds.add(key);
+  }
+  writeCookieSet("ms_favorite_maps", state.favoriteIds);
+  renderList();
+}
+
+function favoritePinnedRows(filteredRows, allRows, keyFn, compareFn, limit) {
+  const favorites = [...(allRows || [])]
+    .filter(row => state.favoriteIds.has(String(keyFn(row))))
+    .sort(compareFn);
+  const favoriteKeys = new Set(favorites.map(row => String(keyFn(row))));
+  const normalRows = filteredRows.filter(row => !favoriteKeys.has(String(keyFn(row))));
+  const visibleRows = [...favorites, ...normalRows.slice(0, Math.max(0, limit - favorites.length))];
+  return { rows: visibleRows, total: favorites.length + normalRows.length };
 }
 
 function assetImage(src, alt, fallback, className) {
@@ -610,6 +639,7 @@ function hiddenWorldMapComponentsFor(map) {
 function selectedMap() {
   const rows = filteredMaps();
   return (state.preserveSelectedDetail && mapById(state.selectedId))
+    || (state.favoriteIds.has(String(state.selectedId)) && mapById(state.selectedId))
     || rows.find(map => String(map.id) === String(state.selectedId))
     || rows[0];
 }
@@ -653,13 +683,14 @@ function mapDetailMeta(map) {
 
 function renderList() {
   const rows = filteredMaps();
-  if (!rows.some(map => String(map.id) === String(state.selectedId))) {
+  const pinned = favoritePinnedRows(rows, db.maps || [], map => map.id, compareMaps, 1000);
+  if (!pinned.rows.some(map => String(map.id) === String(state.selectedId))) {
     const preserved = state.preserveSelectedDetail && mapById(state.selectedId);
-    if (!preserved) state.selectedId = rows[0]?.id || null;
+    if (!preserved) state.selectedId = pinned.rows[0]?.id || null;
   }
-  els.count.textContent = `${rows.length.toLocaleString()} 張`;
-  const visibleRows = rows.slice(0, 1000);
-  const limitNote = rows.length > visibleRows.length
+  els.count.textContent = `${pinned.total.toLocaleString()} 張`;
+  const visibleRows = pinned.rows;
+  const limitNote = pinned.total > visibleRows.length
     ? `<div class="listLimit">已顯示前 ${visibleRows.length.toLocaleString()} 張</div>`
     : "";
   let lastRegion = "";
@@ -672,14 +703,17 @@ function renderList() {
     const portalCount = displayPortals(map).length;
     return `
       ${regionHead}
-      <button class="monsterRow mapIndexRow ${String(map.id) === String(state.selectedId) ? "active" : ""}" data-id="${map.id}">
-        ${mapThumb(map, "rowMonsterImage")}
-        <span class="rowText">
-          <strong>${escapeHtml(map.name)}</strong>
-          <span class="rowMeta">${escapeHtml(meta || "未知地區")}${idMeta(map.id)}</span>
-          <em>${escapeHtml(spawnCount)} 個重生點 · ${escapeHtml(npcCount)} 個 NPC · ${escapeHtml(portalCount)} 個傳送點</em>
-        </span>
-      </button>
+      <div class="favoriteRowShell">
+        ${favoriteButton(map.id, map.name)}
+        <button class="monsterRow mapIndexRow ${String(map.id) === String(state.selectedId) ? "active" : ""}" data-id="${map.id}">
+          ${mapThumb(map, "rowMonsterImage")}
+          <span class="rowText">
+            <strong>${escapeHtml(map.name)}</strong>
+            <span class="rowMeta">${escapeHtml(meta || "未知地區")}${idMeta(map.id)}</span>
+            <em>${escapeHtml(spawnCount)} 個重生點 · ${escapeHtml(npcCount)} 個 NPC · ${escapeHtml(portalCount)} 個傳送點</em>
+          </span>
+        </button>
+      </div>
     `;
   }).join("") + limitNote;
 }
@@ -1204,6 +1238,13 @@ els.settingsToggle.addEventListener("click", () => {
 });
 
 els.list.addEventListener("click", event => {
+  const favorite = event.target.closest("[data-favorite-id]");
+  if (favorite) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleFavorite(favorite.dataset.favoriteId);
+    return;
+  }
   const button = event.target.closest(".mapIndexRow");
   if (!button) return;
   selectMap(button.dataset.id, false);

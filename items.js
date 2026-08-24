@@ -130,6 +130,7 @@ const state = {
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   hideNoSourceItems: cookieBool("ms_hide_no_source_items", true),
   showIds: cookieBool("ms_show_ids"),
+  favoriteIds: parseCookieSet("ms_favorite_items"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialItemId(),
@@ -169,6 +170,34 @@ function renderBuildMeta() {
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
   if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
   els.meta.textContent = parts.join(" · ");
+}
+
+function favoriteButton(id, name) {
+  const key = String(id);
+  const active = state.favoriteIds.has(key);
+  const action = active ? "移除最愛" : "加入最愛";
+  return `<button class="favoriteButton${active ? " active" : ""}" type="button" data-favorite-id="${escapeHtml(key)}" aria-label="${escapeHtml(`${action}：${name || key}`)}" aria-pressed="${active ? "true" : "false"}" title="${action}">★</button>`;
+}
+
+function toggleFavorite(id) {
+  const key = String(id);
+  if (state.favoriteIds.has(key)) {
+    state.favoriteIds.delete(key);
+  } else {
+    state.favoriteIds.add(key);
+  }
+  writeCookieSet("ms_favorite_items", state.favoriteIds);
+  renderList();
+}
+
+function favoritePinnedRows(filteredRows, allRows, keyFn, compareFn, limit) {
+  const favorites = [...(allRows || [])]
+    .filter(row => state.favoriteIds.has(String(keyFn(row))))
+    .sort(compareFn);
+  const favoriteKeys = new Set(favorites.map(row => String(keyFn(row))));
+  const normalRows = filteredRows.filter(row => !favoriteKeys.has(String(keyFn(row))));
+  const visibleRows = [...favorites, ...normalRows.slice(0, Math.max(0, limit - favorites.length))];
+  return { rows: visibleRows, total: favorites.length + normalRows.length };
 }
 
 function initialTheme() {
@@ -1023,24 +1052,28 @@ function updateSettingsPanel() {
 
 function renderList() {
   const rows = filteredItems();
-  if (!rows.some(item => itemMatchesId(item, state.selectedId))) {
+  const pinned = favoritePinnedRows(rows, db.items || [], item => item.id, compareItems, 900);
+  if (!pinned.rows.some(item => itemMatchesId(item, state.selectedId))) {
     const preserved = state.preserveSelectedDetail && itemById(state.selectedId);
-    if (!preserved) state.selectedId = rows[0]?.id || null;
+    if (!preserved) state.selectedId = pinned.rows[0]?.id || null;
   }
-  els.count.textContent = `${rows.length.toLocaleString()} 項`;
-  const visibleRows = rows.slice(0, 900);
-  const limitNote = rows.length > visibleRows.length
+  els.count.textContent = `${pinned.total.toLocaleString()} 項`;
+  const visibleRows = pinned.rows;
+  const limitNote = pinned.total > visibleRows.length
     ? `<div class="listLimit">已顯示前 ${visibleRows.length.toLocaleString()} 項</div>`
     : "";
   els.list.innerHTML = visibleRows.map(item => `
-    <button class="monsterRow itemIndexRow ${itemMatchesId(item, state.selectedId) ? "active" : ""}" data-id="${item.id}">
-      ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemGlyph")}
-      <span class="rowText">
-        <strong>${escapeHtml(item.name)}</strong>
-        <span class="rowMeta">${escapeHtml(itemTypeText(item))}${idMeta(item)}</span>
-        <em>${escapeHtml(sourceSummary(item))}</em>
-      </span>
-    </button>
+    <div class="favoriteRowShell">
+      ${favoriteButton(item.id, item.name)}
+      <button class="monsterRow itemIndexRow ${itemMatchesId(item, state.selectedId) ? "active" : ""}" data-id="${item.id}">
+        ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemGlyph")}
+        <span class="rowText">
+          <strong>${escapeHtml(item.name)}</strong>
+          <span class="rowMeta">${escapeHtml(itemTypeText(item))}${idMeta(item)}</span>
+          <em>${escapeHtml(sourceSummary(item))}</em>
+        </span>
+      </button>
+    </div>
   `).join("") + limitNote;
 }
 
@@ -1052,6 +1085,7 @@ function totalSources(item) {
 function selectedItem() {
   const rows = filteredItems();
   return (state.preserveSelectedDetail && itemById(state.selectedId))
+    || (state.favoriteIds.has(String(state.selectedId)) && itemById(state.selectedId))
     || rows.find(item => itemMatchesId(item, state.selectedId))
     || rows[0];
 }
@@ -1633,6 +1667,13 @@ els.settingsToggle.addEventListener("click", () => {
 });
 
 els.list.addEventListener("click", event => {
+  const favorite = event.target.closest("[data-favorite-id]");
+  if (favorite) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleFavorite(favorite.dataset.favoriteId);
+    return;
+  }
   const button = event.target.closest(".itemIndexRow");
   if (!button) return;
   state.preserveSelectedDetail = false;

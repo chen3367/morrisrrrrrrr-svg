@@ -313,9 +313,9 @@
     }
 
     const row = event.target.closest(
-      ".monsterRow, .levelExpRow, .patchVersionRow"
+      ".monsterRow, .bossTimerBossCard, .levelExpRow, .patchVersionRow"
     );
-    if (row && (row.classList.contains("patchVersionRow") || row.classList.contains("levelExpRow") || !event.target.closest("a[href], button:not(.monsterRow)"))) {
+    if (row && (row.classList.contains("patchVersionRow") || row.classList.contains("levelExpRow") || row.classList.contains("bossTimerBossCard") || !event.target.closest("a[href], button:not(.monsterRow)"))) {
       requestAnimationFrame(() => setPane("detail", { scrollTop: true }));
       return;
     }

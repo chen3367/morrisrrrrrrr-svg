@@ -37,6 +37,14 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+function parseCookieSet(name) {
+  return new Set(cookieValue(name).split("|").map(value => value.trim()).filter(Boolean));
+}
+
+function writeCookieSet(name, values) {
+  writeCookie(name, [...values].join("|"));
+}
+
 const SEARCH_HISTORY_COOKIE = "ms_search_history";
 const SEARCH_HISTORY_LIMIT = 20;
 const SEARCH_HISTORY_MAX_LENGTH = 40;
@@ -117,6 +125,7 @@ const state = {
   showUnnamedIndex: cookieBool("ms_quest_show_unnamed_index"),
   showQuestRewardItemDetails: cookieBool("ms_monster_drop_item_details", true),
   showIds: cookieBool("ms_show_ids"),
+  favoriteIds: parseCookieSet("ms_favorite_quests"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialQuestId(),
@@ -149,6 +158,34 @@ function renderBuildMeta() {
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
   if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
   els.meta.textContent = parts.join(" · ");
+}
+
+function favoriteButton(id, name) {
+  const key = String(id);
+  const active = state.favoriteIds.has(key);
+  const action = active ? "移除最愛" : "加入最愛";
+  return `<button class="favoriteButton${active ? " active" : ""}" type="button" data-favorite-id="${escapeHtml(key)}" aria-label="${escapeHtml(`${action}：${name || key}`)}" aria-pressed="${active ? "true" : "false"}" title="${action}">★</button>`;
+}
+
+function toggleFavorite(id) {
+  const key = String(id);
+  if (state.favoriteIds.has(key)) {
+    state.favoriteIds.delete(key);
+  } else {
+    state.favoriteIds.add(key);
+  }
+  writeCookieSet("ms_favorite_quests", state.favoriteIds);
+  renderList();
+}
+
+function favoritePinnedRows(filteredRows, allRows, keyFn, compareFn, limit) {
+  const favorites = [...(allRows || [])]
+    .filter(row => state.favoriteIds.has(String(keyFn(row))))
+    .sort(compareFn);
+  const favoriteKeys = new Set(favorites.map(row => String(keyFn(row))));
+  const normalRows = filteredRows.filter(row => !favoriteKeys.has(String(keyFn(row))));
+  const visibleRows = [...favorites, ...normalRows.slice(0, Math.max(0, limit - favorites.length))];
+  return { rows: visibleRows, total: favorites.length + normalRows.length };
 }
 
 function initialTheme() {
@@ -625,27 +662,31 @@ function updateSettingsPanel() {
 
 function renderList() {
   const rows = filteredQuests();
-  if (!rows.some(quest => String(quest.id) === String(state.selectedId))) {
+  const pinned = favoritePinnedRows(rows, db.quests || [], quest => quest.id, compareQuests, 900);
+  if (!pinned.rows.some(quest => String(quest.id) === String(state.selectedId))) {
     const preserved = state.preserveSelectedDetail && questById(state.selectedId);
-    if (!preserved) state.selectedId = rows[0]?.id || null;
+    if (!preserved) state.selectedId = pinned.rows[0]?.id || null;
   }
-  els.count.textContent = `${rows.length.toLocaleString()} 個`;
-  const visibleRows = rows.slice(0, 900);
-  const limitNote = rows.length > visibleRows.length
+  els.count.textContent = `${pinned.total.toLocaleString()} 個`;
+  const visibleRows = pinned.rows;
+  const limitNote = pinned.total > visibleRows.length
     ? `<div class="listLimit">已顯示前 ${visibleRows.length.toLocaleString()} 個</div>`
     : "";
   els.list.innerHTML = visibleRows.map(quest => {
     const npc = npcForQuest(quest);
     const npcLine = npc ? `${npc.name}${npc.locationText ? ` · ${shorten(npc.locationText, 36)}` : ""}` : (quest.parent || "任務");
     return `
-      <button class="monsterRow questIndexRow ${String(quest.id) === String(state.selectedId) ? "active" : ""}" data-id="${quest.id}">
-        ${questNpcThumb(quest, "questGlyph")}
-        <span class="rowText">
-          <strong>${escapeHtml(quest.name)}</strong>
-          <span class="rowMeta">${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}</span>
-          <em>${escapeHtml(npcLine)}</em>
-        </span>
-      </button>
+      <div class="favoriteRowShell">
+        ${favoriteButton(quest.id, quest.name)}
+        <button class="monsterRow questIndexRow ${String(quest.id) === String(state.selectedId) ? "active" : ""}" data-id="${quest.id}">
+          ${questNpcThumb(quest, "questGlyph")}
+          <span class="rowText">
+            <strong>${escapeHtml(quest.name)}</strong>
+            <span class="rowMeta">${escapeHtml(quest.category)} · ${escapeHtml(levelText(quest))}${idMeta(quest.id)}</span>
+            <em>${escapeHtml(npcLine)}</em>
+          </span>
+        </button>
+      </div>
     `;
   }).join("") + limitNote;
 }
@@ -659,6 +700,7 @@ function selectedQuest() {
   const rows = filteredQuests();
   const preserved = state.preserveSelectedDetail ? questById(state.selectedId) : null;
   return (preserved && !questHiddenByUnnamedIndex(preserved) && preserved)
+    || (state.favoriteIds.has(String(state.selectedId)) && questById(state.selectedId))
     || rows.find(quest => String(quest.id) === String(state.selectedId))
     || rows[0];
 }
@@ -1073,6 +1115,13 @@ els.detail.addEventListener("click", event => {
 });
 
 els.list.addEventListener("click", event => {
+  const favorite = event.target.closest("[data-favorite-id]");
+  if (favorite) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleFavorite(favorite.dataset.favoriteId);
+    return;
+  }
   const button = event.target.closest(".questIndexRow");
   if (!button) return;
   state.preserveSelectedDetail = false;

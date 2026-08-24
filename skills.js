@@ -37,6 +37,14 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+function parseCookieSet(name) {
+  return new Set(cookieValue(name).split("|").map(value => value.trim()).filter(Boolean));
+}
+
+function writeCookieSet(name, values) {
+  writeCookie(name, [...values].join("|"));
+}
+
 const SEARCH_HISTORY_COOKIE = "ms_search_history";
 const SEARCH_HISTORY_LIMIT = 20;
 const SEARCH_HISTORY_MAX_LENGTH = 40;
@@ -115,6 +123,7 @@ const state = {
   jobId: cookieValue("ms_skill_job_id"),
   nameOnlySearch: cookieBool("ms_skill_name_only_search"),
   showIds: cookieBool("ms_show_ids"),
+  favoriteIds: parseCookieSet("ms_favorite_skills"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialSkillId(),
@@ -213,6 +222,34 @@ function formatNumber(value) {
 
 function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
+}
+
+function favoriteButton(id, name) {
+  const key = String(id);
+  const active = state.favoriteIds.has(key);
+  const action = active ? "移除最愛" : "加入最愛";
+  return `<button class="favoriteButton${active ? " active" : ""}" type="button" data-favorite-id="${escapeHtml(key)}" aria-label="${escapeHtml(`${action}：${name || key}`)}" aria-pressed="${active ? "true" : "false"}" title="${action}">★</button>`;
+}
+
+function toggleFavorite(id) {
+  const key = String(id);
+  if (state.favoriteIds.has(key)) {
+    state.favoriteIds.delete(key);
+  } else {
+    state.favoriteIds.add(key);
+  }
+  writeCookieSet("ms_favorite_skills", state.favoriteIds);
+  renderList();
+}
+
+function favoritePinnedRows(filteredRows, allRows, keyFn, compareFn, limit) {
+  const favorites = [...(allRows || [])]
+    .filter(row => state.favoriteIds.has(String(keyFn(row))))
+    .sort(compareFn);
+  const favoriteKeys = new Set(favorites.map(row => String(keyFn(row))));
+  const normalRows = filteredRows.filter(row => !favoriteKeys.has(String(keyFn(row))));
+  const visibleRows = [...favorites, ...normalRows.slice(0, Math.max(0, limit - favorites.length))];
+  return { rows: visibleRows, total: favorites.length + normalRows.length };
 }
 
 function skillUrl(skillId) {
@@ -358,31 +395,36 @@ function updateSettingsPanel() {
 
 function renderList() {
   const rows = filteredSkills();
-  if (!rows.some(skill => String(skill.id) === String(state.selectedId))) {
+  const pinned = favoritePinnedRows(rows, db.skills || [], skill => skill.id, compareSkills, 1000);
+  if (!pinned.rows.some(skill => String(skill.id) === String(state.selectedId))) {
     const preserved = state.preserveSelectedDetail && skillById(state.selectedId);
-    if (!preserved) state.selectedId = rows[0]?.id || null;
+    if (!preserved) state.selectedId = pinned.rows[0]?.id || null;
   }
-  els.count.textContent = `${rows.length.toLocaleString()} 個`;
-  const visibleRows = rows.slice(0, 1000);
-  const limitNote = rows.length > visibleRows.length
+  els.count.textContent = `${pinned.total.toLocaleString()} 個`;
+  const visibleRows = pinned.rows;
+  const limitNote = pinned.total > visibleRows.length
     ? `<div class="listLimit">已顯示前 ${visibleRows.length.toLocaleString()} 個</div>`
     : "";
   els.list.innerHTML = visibleRows.map(skill => `
-    <button class="monsterRow skillIndexRow ${String(skill.id) === String(state.selectedId) ? "active" : ""}" data-id="${skill.id}">
-      ${assetImage(skill.image, skill.name, "技", "skillGlyph")}
-      <span class="rowText">
-        <strong>${escapeHtml(skill.name)}</strong>
-        <span class="rowMeta">${escapeHtml(skill.jobGroup)} · ${escapeHtml(skill.advancement)}${idMeta(skill.id)}</span>
-        <em>${escapeHtml(skill.jobName)}</em>
-      </span>
-      <small>${escapeHtml(levelText(skill))}</small>
-    </button>
+    <div class="favoriteRowShell">
+      ${favoriteButton(skill.id, skill.name)}
+      <button class="monsterRow skillIndexRow ${String(skill.id) === String(state.selectedId) ? "active" : ""}" data-id="${skill.id}">
+        ${assetImage(skill.image, skill.name, "技", "skillGlyph")}
+        <span class="rowText">
+          <strong>${escapeHtml(skill.name)}</strong>
+          <span class="rowMeta">${escapeHtml(skill.jobGroup)} · ${escapeHtml(skill.advancement)}${idMeta(skill.id)}</span>
+          <em>${escapeHtml(skill.jobName)}</em>
+        </span>
+        <small>${escapeHtml(levelText(skill))}</small>
+      </button>
+    </div>
   `).join("") + limitNote;
 }
 
 function selectedSkill() {
   const rows = filteredSkills();
   return (state.preserveSelectedDetail && skillById(state.selectedId))
+    || (state.favoriteIds.has(String(state.selectedId)) && skillById(state.selectedId))
     || rows.find(skill => String(skill.id) === String(state.selectedId))
     || rows[0];
 }
@@ -568,6 +610,13 @@ els.settingsToggle.addEventListener("click", () => {
 });
 
 els.list.addEventListener("click", event => {
+  const favorite = event.target.closest("[data-favorite-id]");
+  if (favorite) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleFavorite(favorite.dataset.favoriteId);
+    return;
+  }
   const button = event.target.closest(".skillIndexRow");
   if (!button) return;
   state.preserveSelectedDetail = false;
