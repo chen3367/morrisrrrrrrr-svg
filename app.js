@@ -727,6 +727,27 @@ function formatMesoRange(meso) {
   return formatMesoAmountRange(meso?.totalMin, meso?.totalMax);
 }
 
+function mesoDropsAnything(meso) {
+  return Boolean(meso) && Number(meso.piles || 0) > 0 && Number(meso.totalMax ?? meso.max) > 0;
+}
+
+function mesoHasTableRate(meso) {
+  return Boolean(mesoDropsAnything(meso) && primaryDropRateRow(meso.dropRates));
+}
+
+function mesoRateText(meso) {
+  if (!mesoDropsAnything(meso)) return "";
+  const tableRate = dropRateSummary(meso.dropRates);
+  return tableRate || "100%";
+}
+
+function mesoListSummary(meso) {
+  if (!mesoDropsAnything(meso)) return "";
+  const rate = mesoRateText(meso);
+  if (!mesoHasTableRate(meso)) return `楓幣 ${rate}`;
+  return `楓幣 ${rate} · ${formatMesoRange(meso)}`;
+}
+
 function yesNo(value) {
   return Number(value) ? "是" : "否";
 }
@@ -960,7 +981,8 @@ function renderDetail() {
     return;
   }
   const drops = visibleDrops(monster);
-  const hasMesoDrop = Boolean(monster.mesoDrop);
+  const mesoSummary = mesoListSummary(monster.mesoDrop);
+  const hasMesoDrop = Boolean(mesoSummary);
   const dropCount = drops.length + (hasMesoDrop ? 1 : 0);
   const hiddenUnnamed = state.showUnnamedItems ? 0 : hiddenUnnamedCount(monster);
   els.detail.innerHTML = `
@@ -990,7 +1012,7 @@ function renderDetail() {
           <button id="dropItemDetailsToggle" class="inlineToggleButton" type="button" aria-pressed="${state.showDropItemDetails ? "true" : "false"}">
             ${state.showDropItemDetails ? "隱藏道具詳細資訊" : "顯示道具詳細資訊"}
           </button>
-          <span>${drops.length.toLocaleString()} 項道具${hasMesoDrop ? ` · 楓幣 ${formatMesoRange(monster.mesoDrop)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
+          <span>${drops.length.toLocaleString()} 項道具${mesoSummary ? ` · ${escapeHtml(mesoSummary)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
         </div>
       </div>
       <div class="dropGroups">
@@ -1341,24 +1363,30 @@ function renderMesoDrop(monster) {
   const meso = monster.mesoDrop;
   if (!meso) return "";
   const piles = Number(meso.piles || 0);
-  const source = meso.sourceLabel || "推估";
+  const dropsAnything = mesoDropsAnything(meso);
+  const hasTableRate = mesoHasTableRate(meso);
+  const rateText = mesoRateText(meso);
   const totalRange = formatMesoRange(meso);
   const perPileRange = formatMesoAmountRange(meso.min, meso.max);
-  const tier = mesoTierForRange(meso.totalMin ?? meso.min, meso.totalMax ?? meso.max);
+  const tier = dropsAnything ? mesoTierForRange(meso.totalMin ?? meso.min, meso.totalMax ?? meso.max) : "";
   const meta = piles > 1
     ? `${piles.toLocaleString()} 包 · 每包 ${perPileRange}`
     : (piles === 1 ? "單包掉落" : "不掉落楓幣");
+  const mainText = !dropsAnything
+    ? "不掉落楓幣"
+    : (hasTableRate ? `掉落率 ${rateText}` : "100%");
+  const subText = dropsAnything && hasTableRate ? `金額 ${totalRange} · ${meta}` : "";
   return `
     <section class="dropGroup mesoDropGroup">
       <div class="dropGroupTitle">
         <strong>楓幣</strong>
-        <span>${escapeHtml(source)}</span>
+        <span>${dropsAnything ? "推估值" : ""}</span>
       </div>
       <div class="mesoDropCard">
         <div class="mesoIcon">${tier ? mesoIconHtml(tier, "mesoDropIcon") : "楓"}</div>
         <div class="mesoText">
-          <strong>${escapeHtml(totalRange)}</strong>
-          <span>${escapeHtml(meta)}</span>
+          <strong>${escapeHtml(mainText)}</strong>
+          ${subText ? `<span>${escapeHtml(subText)}</span>` : ""}
         </div>
       </div>
     </section>
