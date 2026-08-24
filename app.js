@@ -151,6 +151,7 @@ const state = {
   showUnnamedItems: cookieBool("ms_show_unnamed_items"),
   showIds: cookieBool("ms_show_ids"),
   showDropItemDetails: cookieBool("ms_monster_drop_item_details", true),
+  favoriteIds: parseCookieSet("ms_favorite_monsters"),
   theme: initialTheme(),
   settingsOpen: cookieBool("ms_settings_open"),
   selectedId: initialMonsterId(),
@@ -825,6 +826,34 @@ function idMeta(id) {
   return state.showIds ? ` · ID ${escapeHtml(id)}` : "";
 }
 
+function favoriteButton(id, name) {
+  const key = String(id);
+  const active = state.favoriteIds.has(key);
+  const action = active ? "移除最愛" : "加入最愛";
+  return `<button class="favoriteButton${active ? " active" : ""}" type="button" data-favorite-id="${escapeHtml(key)}" aria-label="${escapeHtml(`${action}：${name || key}`)}" aria-pressed="${active ? "true" : "false"}" title="${action}">★</button>`;
+}
+
+function toggleFavorite(id) {
+  const key = String(id);
+  if (state.favoriteIds.has(key)) {
+    state.favoriteIds.delete(key);
+  } else {
+    state.favoriteIds.add(key);
+  }
+  writeCookieSet("ms_favorite_monsters", state.favoriteIds);
+  renderList();
+}
+
+function favoritePinnedRows(filteredRows, allRows, keyFn, compareFn, limit) {
+  const favorites = [...(allRows || [])]
+    .filter(row => state.favoriteIds.has(String(keyFn(row))))
+    .sort(compareFn);
+  const favoriteKeys = new Set(favorites.map(row => String(keyFn(row))));
+  const normalRows = filteredRows.filter(row => !favoriteKeys.has(String(keyFn(row))));
+  const visibleRows = [...favorites, ...normalRows.slice(0, Math.max(0, limit - favorites.length))];
+  return { rows: visibleRows, total: favorites.length + normalRows.length };
+}
+
 function updateIdToggle() {
   els.idToggle.setAttribute("aria-pressed", String(state.showIds));
   els.idToggle.textContent = state.showIds ? "隱藏ID" : "顯示ID";
@@ -857,26 +886,31 @@ function updateSettingsPanel() {
 
 function renderList() {
   const rows = filteredMonsters();
-  if (!rows.some(m => String(m.id) === String(state.selectedId))) {
+  const pinned = favoritePinnedRows(rows, db.monsters || [], monster => monster.id, compareMonsters, 500);
+  if (!pinned.rows.some(m => String(m.id) === String(state.selectedId))) {
     const preserved = state.preserveSelectedDetail && monsterById(state.selectedId);
-    if (!preserved) state.selectedId = rows[0]?.id || null;
+    if (!preserved) state.selectedId = pinned.rows[0]?.id || null;
   }
-  els.count.textContent = `${rows.length.toLocaleString()} 隻`;
-  els.list.innerHTML = rows.slice(0, 500).map(monster => `
-    <button class="monsterRow ${String(monster.id) === String(state.selectedId) ? "active" : ""}" data-id="${monster.id}">
-      ${assetImage(monster.image, monster.name, monster.name.slice(0, 1), "rowMonsterImage")}
-      <span class="rowText">
-        <strong>${escapeHtml(monster.name)}</strong>
-        <span class="rowMeta">${monster.level ? `Lv.${monster.level}` : "Lv.?"}${idMeta(monster.id)}</span>
-        <em>${escapeHtml(continentText(monster))}</em>
-      </span>
-    </button>
+  els.count.textContent = `${pinned.total.toLocaleString()} 隻`;
+  els.list.innerHTML = pinned.rows.map(monster => `
+    <div class="favoriteRowShell">
+      ${favoriteButton(monster.id, monster.name)}
+      <button class="monsterRow ${String(monster.id) === String(state.selectedId) ? "active" : ""}" data-id="${monster.id}">
+        ${assetImage(monster.image, monster.name, monster.name.slice(0, 1), "rowMonsterImage")}
+        <span class="rowText">
+          <strong>${escapeHtml(monster.name)}</strong>
+          <span class="rowMeta">${monster.level ? `Lv.${monster.level}` : "Lv.?"}${idMeta(monster.id)}</span>
+          <em>${escapeHtml(continentText(monster))}</em>
+        </span>
+      </button>
+    </div>
   `).join("");
 }
 
 function renderDetail() {
   const rows = filteredMonsters();
   const monster = (state.preserveSelectedDetail && monsterById(state.selectedId))
+    || (state.favoriteIds.has(String(state.selectedId)) && monsterById(state.selectedId))
     || rows.find(m => String(m.id) === String(state.selectedId))
     || rows[0];
   if (!monster) {
@@ -1481,6 +1515,13 @@ els.settingsToggle.addEventListener("click", () => {
 });
 
 els.list.addEventListener("click", event => {
+  const favorite = event.target.closest("[data-favorite-id]");
+  if (favorite) {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleFavorite(favorite.dataset.favoriteId);
+    return;
+  }
   const button = event.target.closest(".monsterRow");
   if (!button) return;
   state.preserveSelectedDetail = false;

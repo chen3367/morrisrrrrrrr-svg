@@ -129,6 +129,17 @@ body {
   color: var(--ink);
   background: var(--page-bg);
 }
+.seoIntro {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .appHeader {
   position: sticky;
   top: 0;
@@ -329,6 +340,7 @@ h1 {
 .topNav a[href$="scroll-simulator.html"] { --nav-icon: url("./assets/items/2040407.png"); }
 .topNav a[href$="damage-calculator.html"] { --nav-icon: url("./assets/skills/1121002.png"); }
 .topNav a[href$="combat-analysis.html"] { --nav-icon: url("./assets/meso/gold.png"); }
+.topNav a[href$="boss-timer.html"] { --nav-icon: url("./assets/monster_frames/6130101.png"); }
 .topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
 .topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
 .topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
@@ -955,22 +967,6 @@ select {
   color: var(--plain-text);
   line-height: 1.55;
 }
-.patchDiffPre {
-  margin: 0;
-  color: var(--plain-text);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.65;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.patchDiffPre strong {
-  color: var(--text-strong);
-}
-.patchDiffPre del {
-  color: var(--muted);
-}
 .patchDiffItemGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -994,6 +990,53 @@ select {
   background: var(--panel);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(10px);
+}
+.favoriteRowShell {
+  position: relative;
+  display: block;
+}
+.monsterList .favoriteRowShell {
+  border-bottom: 1px solid var(--row-border);
+}
+.monsterList .favoriteRowShell > .monsterRow {
+  border-bottom: 0;
+  padding-left: 42px;
+}
+.favoriteButton {
+  position: absolute;
+  z-index: 3;
+  left: 10px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color 0.16s ease, opacity 0.16s ease, transform 0.12s ease;
+}
+.monsterList .favoriteButton {
+  min-height: 0;
+}
+.favoriteButton:hover {
+  color: var(--gold);
+  transform: translateY(-50%) scale(1.04);
+}
+.favoriteButton.active {
+  color: var(--gold);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--gold) 40%, transparent);
+}
+.favoriteButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .monsterRow {
   display: grid;
@@ -2260,6 +2303,340 @@ h3 {
   padding: 8px 10px;
   font-size: 12px;
   font-weight: 850;
+}
+.bossTimerLayout {
+  grid-template-columns: 340px minmax(0, 1fr);
+}
+.bossTimerBossList,
+.bossTimerLog {
+  display: grid;
+  gap: 8px;
+}
+.bossTimerFavoriteShell {
+  position: relative;
+  display: block;
+}
+.bossTimerFavoriteShell .favoriteButton {
+  left: 10px;
+  min-height: 0;
+}
+.bossTimerBossCard {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  color: var(--plain-text);
+  padding: 8px 8px 8px 42px;
+  text-align: left;
+  cursor: pointer;
+}
+.bossTimerBossCard:hover {
+  border-color: var(--link-hover-border);
+  background: var(--hover-bg);
+}
+.bossTimerBossCard.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
+.bossTimerBossText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.bossTimerBossText strong,
+.bossTimerBossText span,
+.bossTimerBossText small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bossTimerBossText strong {
+  font-size: 15px;
+  font-weight: 950;
+}
+.bossTimerBossText span,
+.bossTimerBossText small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.bossTimerModeHint {
+  display: grid;
+  gap: 3px;
+  border: 1px dashed var(--dash-line);
+  border-radius: 8px;
+  background: var(--control-soft);
+  padding: 9px 10px;
+}
+.bossTimerModeHint strong {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+.bossTimerModeHint span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.bossTimerSettingActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.bossTimerLogRow {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  padding: 7px 8px;
+}
+.bossTimerLogRow img {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--mini-border);
+  border-radius: 7px;
+  background: var(--icon-bg);
+  object-fit: contain;
+  padding: 2px;
+}
+.bossTimerLogRow strong,
+.bossTimerLogRow small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bossTimerLogRow strong {
+  font-size: 12px;
+  font-weight: 900;
+}
+.bossTimerLogRow small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+.bossTimerDetailCard {
+  display: grid;
+  gap: 0;
+  min-height: auto;
+  border: 1px solid var(--detail-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  overflow: hidden;
+}
+.bossTimerHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--detail-border);
+  background: var(--hero-bg);
+  padding: 16px;
+}
+.bossTimerHeroIdentity {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+.bossTimerHeroIdentity img {
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--icon-bg);
+  object-fit: contain;
+  padding: 5px;
+}
+.bossTimerHeroIdentity h2 {
+  margin: 2px 0 3px;
+  color: var(--text-strong);
+  font-size: clamp(26px, 2.6vw, 34px);
+  line-height: 1.05;
+}
+.bossTimerHeroIdentity p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 850;
+}
+.bossTimerMapLink {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  margin-top: 8px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+.bossTimerMapLink:hover {
+  border-color: var(--link-hover-border);
+  background: var(--link-hover-bg);
+}
+.bossTimerHeroStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  gap: 8px;
+}
+.bossTimerHeroStats div {
+  min-width: 82px;
+  border: 1px solid var(--item-glyph-border);
+  border-radius: 8px;
+  background: var(--item-glyph-bg);
+  color: var(--item-glyph-text);
+  padding: 10px 8px;
+  text-align: center;
+}
+.bossTimerHeroStats strong,
+.bossTimerHeroStats span {
+  display: block;
+  white-space: nowrap;
+}
+.bossTimerHeroStats strong {
+  color: var(--text-strong);
+  font-size: 20px;
+  font-weight: 950;
+}
+.bossTimerHeroStats span {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 900;
+}
+.bossTimerGridPanel {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 18px;
+}
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+.sectionHeading h3 {
+  color: var(--text-strong);
+  font-size: 18px;
+}
+.sectionHeading span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-align: right;
+}
+.bossTimerQuickHint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+.bossTimerLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.bossTimerLegend span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid var(--mini-border);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+.bossTimerLegendUnknown { background: var(--card-bg); color: var(--muted); }
+.bossTimerLegendWaiting { background: rgba(88, 129, 190, 0.16); color: var(--control-text); }
+.bossTimerLegendReady { background: rgba(65, 163, 105, 0.18); color: var(--active-text); }
+.bossTimerLegendSoon { background: rgba(214, 163, 62, 0.2); color: var(--item-glyph-text); }
+.bossTimerChannelGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+.bossTimerChannel {
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  min-width: 0;
+  min-height: 64px;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--plain-text);
+  padding: 8px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.16s ease, background 0.16s ease;
+}
+.bossTimerChannel:hover {
+  border-color: var(--link-hover-border);
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+.bossTimerChannel.active {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+.bossTimerChannel strong,
+.bossTimerChannel span,
+.bossTimerChannel small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bossTimerChannel strong {
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 950;
+}
+.bossTimerChannel span {
+  font-size: 13px;
+  font-weight: 950;
+}
+.bossTimerChannel small {
+  display: none;
+}
+.bossTimerState-waiting {
+  border-color: rgba(88, 129, 190, 0.42);
+  background: rgba(88, 129, 190, 0.12);
+}
+.bossTimerState-ready {
+  border-color: rgba(65, 163, 105, 0.55);
+  background: rgba(65, 163, 105, 0.18);
+}
+.bossTimerState-ready span {
+  color: var(--active-text);
+}
+.bossTimerState-soon,
+.bossTimerState-overdue {
+  border-color: rgba(214, 163, 62, 0.62);
+  background: rgba(214, 163, 62, 0.16);
+}
+.bossTimerState-soon span,
+.bossTimerState-overdue span {
+  color: var(--item-glyph-text);
+}
+.bossTimerState-overdue {
+  box-shadow: inset 0 0 0 2px rgba(214, 163, 62, 0.2);
 }
 .gachaProductGrid {
   display: grid;
@@ -3889,6 +4266,31 @@ h3 {
   html[data-mobile-pane="detail"] .simulatorControls.monsterList,
   html[data-mobile-pane="detail"] .damageControls.monsterList {
     display: none;
+  }
+  .bossTimerHero {
+    grid-template-columns: 1fr;
+  }
+  .bossTimerHero {
+    padding: 14px;
+  }
+  .bossTimerHeroIdentity {
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+  .bossTimerHeroIdentity img {
+    width: 58px;
+    height: 58px;
+  }
+  .bossTimerHeroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .bossTimerGridPanel {
+    padding: 12px;
+  }
+  .bossTimerChannelGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .bossTimerChannel {
+    min-height: 58px;
   }
   .patchNotesLayout {
     display: block;

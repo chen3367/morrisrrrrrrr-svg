@@ -35,6 +35,14 @@ function saveBool(name, value) {
   writeCookie(name, value ? "1" : "0");
 }
 
+function parseCookieSet(name) {
+  return new Set(cookieValue(name).split("|").map(value => value.trim()).filter(Boolean));
+}
+
+function writeCookieSet(name, values) {
+  writeCookie(name, [...values].join("|"));
+}
+
 const SEARCH_HISTORY_COOKIE = "ms_search_history";
 const SEARCH_HISTORY_LIMIT = 20;
 const SEARCH_HISTORY_MAX_LENGTH = 40;
