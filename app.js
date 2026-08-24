@@ -737,15 +737,16 @@ function mesoHasTableRate(meso) {
 
 function mesoRateText(meso) {
   if (!mesoDropsAnything(meso)) return "";
-  const tableRate = dropRateSummary(meso.dropRates);
-  return tableRate || "100%";
+  const ruleRate = formatDropRatePercent(meso.dropProbability);
+  if (ruleRate) return ruleRate;
+  const row = primaryDropRateRow(meso.dropRates);
+  return row ? formatDropRatePercent(dropRateProbability(row)) : "";
 }
 
 function mesoListSummary(meso) {
   if (!mesoDropsAnything(meso)) return "";
-  const rate = mesoRateText(meso);
-  if (!mesoHasTableRate(meso)) return `楓幣 ${rate}`;
-  return `楓幣 ${rate} · ${formatMesoRange(meso)}`;
+  const rateText = mesoRateText(meso);
+  return rateText ? `楓幣 ${rateText}` : "楓幣";
 }
 
 function yesNo(value) {
@@ -1361,32 +1362,27 @@ function renderQuestRequirements(monster) {
 
 function renderMesoDrop(monster) {
   const meso = monster.mesoDrop;
-  if (!meso) return "";
+  if (!mesoDropsAnything(meso)) return "";
   const piles = Number(meso.piles || 0);
-  const dropsAnything = mesoDropsAnything(meso);
-  const hasTableRate = mesoHasTableRate(meso);
   const rateText = mesoRateText(meso);
   const totalRange = formatMesoRange(meso);
   const perPileRange = formatMesoAmountRange(meso.min, meso.max);
-  const tier = dropsAnything ? mesoTierForRange(meso.totalMin ?? meso.min, meso.totalMax ?? meso.max) : "";
+  const tier = mesoTierForRange(meso.totalMin ?? meso.min, meso.totalMax ?? meso.max);
   const meta = piles > 1
     ? `${piles.toLocaleString()} 包 · 每包 ${perPileRange}`
-    : (piles === 1 ? "單包掉落" : "不掉落楓幣");
-  const mainText = !dropsAnything
-    ? "不掉落楓幣"
-    : (hasTableRate ? `掉落率 ${rateText}` : "100%");
-  const subText = dropsAnything && hasTableRate ? `金額 ${totalRange} · ${meta}` : "";
+    : "單包掉落";
+  const subText = [rateText ? `掉落率 ${rateText}` : "", meta].filter(Boolean).join(" · ");
   return `
     <section class="dropGroup mesoDropGroup">
       <div class="dropGroupTitle">
         <strong>楓幣</strong>
-        <span>${dropsAnything ? "推估值" : ""}</span>
+        <span>推估值</span>
       </div>
       <div class="mesoDropCard">
         <div class="mesoIcon">${tier ? mesoIconHtml(tier, "mesoDropIcon") : "楓"}</div>
         <div class="mesoText">
-          <strong>${escapeHtml(mainText)}</strong>
-          ${subText ? `<span>${escapeHtml(subText)}</span>` : ""}
+          <strong>${escapeHtml(totalRange)}</strong>
+          <span>${escapeHtml(subText)}</span>
         </div>
       </div>
     </section>
