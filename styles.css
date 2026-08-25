@@ -1294,6 +1294,17 @@ h3 {
   gap: 10px;
   padding: 12px 14px 0;
 }
+.sectionHeading {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 9px;
+  min-width: 0;
+}
+.sectionHeading h3 {
+  flex: 0 0 auto;
+}
 .sectionTitleActions {
   display: flex;
   flex-wrap: wrap;
@@ -1305,6 +1316,15 @@ h3 {
 .sectionTitle span {
   color: var(--muted);
   font-size: 13px;
+}
+.dropRateReferenceInline {
+  flex: 1 1 220px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 .inlineToggleButton {
   min-height: 30px;
@@ -2562,8 +2582,16 @@ h3 {
   font-size: 12px;
   font-weight: 900;
 }
-.bossTimerLegendUnknown { background: var(--card-bg); color: var(--muted); }
-.bossTimerLegendWaiting { background: rgba(88, 129, 190, 0.16); color: var(--control-text); }
+.bossTimerLegendUnknown {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--card-bg) 62%, var(--page-bg));
+  color: var(--muted);
+}
+.bossTimerLegendWaiting {
+  border-color: rgba(37, 99, 235, 0.52);
+  background: rgba(37, 99, 235, 0.18);
+  color: color-mix(in srgb, #2563eb 76%, var(--text-strong));
+}
 .bossTimerLegendReady { background: rgba(65, 163, 105, 0.18); color: var(--active-text); }
 .bossTimerLegendSoon { background: rgba(214, 163, 62, 0.2); color: var(--item-glyph-text); }
 .bossTimerChannelGrid {
@@ -2615,9 +2643,21 @@ h3 {
 .bossTimerChannel small {
   display: none;
 }
+.bossTimerState-unknown {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--mini-border) 58%, var(--muted));
+  background: color-mix(in srgb, var(--card-bg) 62%, var(--page-bg));
+}
+.bossTimerState-unknown strong,
+.bossTimerState-unknown span {
+  color: var(--muted);
+}
 .bossTimerState-waiting {
-  border-color: rgba(88, 129, 190, 0.42);
-  background: rgba(88, 129, 190, 0.12);
+  border-color: rgba(37, 99, 235, 0.64);
+  background: rgba(37, 99, 235, 0.18);
+}
+.bossTimerState-waiting span {
+  color: color-mix(in srgb, #2563eb 76%, var(--text-strong));
 }
 .bossTimerState-ready {
   border-color: rgba(65, 163, 105, 0.55);
@@ -3396,6 +3436,14 @@ h3 {
 .itemText strong {
   display: block;
   overflow-wrap: anywhere;
+}
+.dropRateLine {
+  display: block;
+  margin-top: 2px;
+  color: var(--control-text);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.35;
 }
 .compactDropItemCard .itemText strong {
   margin-top: 0;

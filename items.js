@@ -420,6 +420,48 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
 }
 
+function formatDropRatePercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) return "";
+  const percent = number * 100;
+  const digits = percent >= 1 ? 2 : percent >= 0.01 ? 3 : percent >= 0.001 ? 4 : 5;
+  return `${percent.toFixed(digits).replace(/\.?0+$/, "")}%`;
+}
+
+function dropRateProbability(row) {
+  if (!row) return null;
+  if (row.probability !== null && row.probability !== undefined) return row.probability;
+  if (row.probabilityApprox !== null && row.probabilityApprox !== undefined) return row.probabilityApprox;
+  return null;
+}
+
+function dropRateQuantity(row) {
+  const min = Number(row?.min);
+  const max = Number(row?.max);
+  if (!Number.isFinite(min) || min <= 0) return "";
+  if (!Number.isFinite(max) || max <= 0 || min === max) return min > 1 ? `數量 ${formatNumber(min)}` : "";
+  return `數量 ${formatNumber(min)}~${formatNumber(max)}`;
+}
+
+function primaryDropRateRow(rows) {
+  return (rows || []).find(row => formatDropRatePercent(dropRateProbability(row))) || null;
+}
+
+function dropRateSummary(rows, options = {}) {
+  const row = primaryDropRateRow(rows);
+  if (!row) return "";
+  const percent = formatDropRatePercent(dropRateProbability(row));
+  const quantity = dropRateQuantity(row);
+  const source = row.sourceLabel || row.source || "外部";
+  const base = `${percent}${quantity ? ` · ${quantity}` : ""}`;
+  return options.withSource ? `${source} ${base}` : base;
+}
+
+function renderMonsterDropRateReferenceNote(rows) {
+  if (!(rows || []).some(item => primaryDropRateRow(item.dropRates))) return "";
+  return `<small class="dropRateReferenceInline">掉落率來自伺服器資料表推估，僅供參考。</small>`;
+}
+
 function formatSigned(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return escapeHtml(value);
@@ -743,6 +785,8 @@ function monsterSourceRows(item) {
 }
 
 function monsterDropSourceLabel(row) {
+  const rateText = dropRateSummary(row.dropRates);
+  if (rateText) return rateText;
   if (row.sourceLabel) return row.sourceLabel;
   if (row.source === "quest") return "任務掉落";
   if (row.source === "miniGame") return "小遊戲材料";
@@ -1205,7 +1249,7 @@ function renderMonsterSources(item) {
         <small>${escapeHtml(monsterDropSourceLabel(row))}</small>
       </a>
     `;
-  });
+  }, renderMonsterDropRateReferenceNote(rows));
 }
 
 function renderQuestSources(item) {
@@ -1511,12 +1555,15 @@ function renderCraftRequirementSources(item) {
   ].join("");
 }
 
-function sourceBlock(title, rows, renderRow) {
+function sourceBlock(title, rows, renderRow, noteHtml = "") {
   if (!rows.length) return "";
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
-        <h3>${escapeHtml(title)}</h3>
+        <div class="sectionHeading">
+          <h3>${escapeHtml(title)}</h3>
+          ${noteHtml || ""}
+        </div>
         <span>${rows.length.toLocaleString()} 筆</span>
       </div>
       <div class="sourceList">

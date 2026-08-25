@@ -136,6 +136,7 @@ const bossListEl = document.getElementById("bossTimerBossList");
 const logEl = document.getElementById("bossTimerLog");
 const detailEl = document.getElementById("simulatorDetail");
 const buildMetaEl = document.getElementById("buildMeta");
+const themeToggleEl = document.getElementById("themeToggle");
 let tickHandle = null;
 
 function clamp(value, min, max) {
@@ -548,19 +549,19 @@ function resetChannelTimer(channel) {
   clearChannel(channel);
 }
 
-function statusCounts(boss) {
+function statusCounts(boss, now = Date.now()) {
   const counts = { unknown: 0, waiting: 0, ready: 0, soon: 0, overdue: 0 };
   for (let channel = 1; channel <= CHANNEL_COUNT; channel += 1) {
-    const result = timerState(boss, channel);
+    const result = timerState(boss, channel, now);
     counts[result.key] = (counts[result.key] || 0) + 1;
   }
   return counts;
 }
 
-function nextUsefulChannels(boss) {
+function nextUsefulChannels(boss, now = Date.now()) {
   const rows = [];
   for (let channel = 1; channel <= CHANNEL_COUNT; channel += 1) {
-    const result = timerState(boss, channel);
+    const result = timerState(boss, channel, now);
     if (result.key === "unknown") continue;
     rows.push({ channel, result });
   }
@@ -576,11 +577,12 @@ function renderBossList() {
   bossListEl.innerHTML = favoritePinnedBosses().map(base => {
     const key = bossKey(base);
     const boss = bossConfig(key);
-    const counts = statusCounts(boss);
+    const now = Date.now();
+    const counts = statusCounts(boss, now);
     const active = key === state.selectedBossId ? " active" : "";
     const urgent = counts.ready + counts.soon + counts.overdue;
     const timeLabel = boss.type === "fixed" ? `${boss.minMinutes} 分` : `${boss.minMinutes}-${boss.maxMinutes} 分`;
-    const best = nextUsefulChannels(boss)[0];
+    const best = nextUsefulChannels(boss, now)[0];
     const bestText = best ? `CH${best.channel} ${best.result.shortLabel}` : "尚無計時";
     return `
       <div class="bossTimerFavoriteShell">
@@ -590,9 +592,9 @@ function renderBossList() {
           <span class="bossTimerBossText">
             <strong>${escapeHtml(boss.name)}</strong>
             <span>${escapeHtml(timeLabel)} · ${escapeHtml(boss.mapLabel)}</span>
-            <small>${escapeHtml(bestText)}</small>
+            <small data-boss-summary>${escapeHtml(bestText)}</small>
           </span>
-          <span class="simPickerBadge">${urgent > 0 ? `${urgent} 可看` : "巡迴"}</span>
+          <span class="simPickerBadge" data-boss-badge>${urgent > 0 ? `${urgent} 可看` : "巡迴"}</span>
         </button>
       </div>
     `;
@@ -606,6 +608,20 @@ function renderBossList() {
   });
   bossListEl.querySelectorAll("[data-boss-id]").forEach(button => {
     button.addEventListener("click", () => selectBoss(button.dataset.bossId));
+  });
+}
+
+function updateBossListTimers(now = Date.now()) {
+  bossListEl.querySelectorAll("[data-boss-id]").forEach(button => {
+    const key = button.dataset.bossId;
+    const boss = bossConfig(key);
+    const counts = statusCounts(boss, now);
+    const urgent = counts.ready + counts.soon + counts.overdue;
+    const best = nextUsefulChannels(boss, now)[0];
+    const summary = button.querySelector("[data-boss-summary]");
+    const badge = button.querySelector("[data-boss-badge]");
+    if (summary) summary.textContent = best ? `CH${best.channel} ${best.result.shortLabel}` : "尚無計時";
+    if (badge) badge.textContent = urgent > 0 ? `${urgent} 可看` : "巡迴";
   });
 }
 
@@ -647,9 +663,26 @@ function renderChannelGrid(boss) {
   return cells.join("");
 }
 
+function updateChannelButton(button, boss, channel, now = Date.now()) {
+  const result = timerState(boss, channel, now);
+  const active = channel === state.selectedChannel ? " active" : "";
+  button.className = `bossTimerChannel bossTimerState-${result.key}${active}`;
+  button.setAttribute("aria-pressed", String(channel === state.selectedChannel));
+  button.setAttribute("aria-label", `CH${channel} ${result.label} ${result.shortLabel}`);
+  const title = result.detail ? `CH${channel} ${result.label}：${result.detail}` : `CH${channel} ${result.label}`;
+  button.setAttribute("title", title);
+  const channelLabel = button.querySelector("strong");
+  const statusLabel = button.querySelector("span");
+  const detailLabel = button.querySelector("small");
+  if (channelLabel) channelLabel.textContent = `CH${channel}`;
+  if (statusLabel) statusLabel.textContent = result.shortLabel;
+  if (detailLabel) detailLabel.textContent = result.detail;
+}
+
 function renderDetail() {
   const boss = bossConfig();
-  const counts = statusCounts(boss);
+  const now = Date.now();
+  const counts = statusCounts(boss, now);
   const timeLabel = boss.type === "fixed" ? `${boss.minMinutes} 分鐘` : `${boss.minMinutes}-${boss.maxMinutes} 分鐘`;
   const selectableCount = boss.type === "fixed" ? counts.ready : counts.soon + counts.overdue;
   detailEl.innerHTML = `
@@ -665,15 +698,15 @@ function renderDetail() {
           </div>
         </div>
         <div class="bossTimerHeroStats">
-          <div><strong>${escapeHtml(timeLabel)}</strong><span>重生時間</span></div>
-          <div><strong>${selectableCount}</strong><span>${boss.type === "fixed" ? "已重生" : "即將重生"}</span></div>
-          <div><strong>${counts.waiting}</strong><span>等待重生</span></div>
+          <div><strong data-boss-stat="respawnTime">${escapeHtml(timeLabel)}</strong><span>重生時間</span></div>
+          <div><strong data-boss-stat="selectableCount">${selectableCount}</strong><span data-boss-stat-label="selectableCount">${boss.type === "fixed" ? "已重生" : "即將重生"}</span></div>
+          <div><strong data-boss-stat="waitingCount">${counts.waiting}</strong><span>等待重生</span></div>
         </div>
       </header>
 
       <section class="bossTimerGridPanel">
         <div class="sectionHeading">
-          <h3>60 頻道</h3>
+          <h3>頻道計時</h3>
           <button id="bossResetAll" class="toggleButton clearFiltersButton" type="button">全部重設未確認</button>
         </div>
         <p class="bossTimerQuickHint">點擊頻道格子即可開始或重新倒數；右鍵可將單一頻道重設為未確認。</p>
@@ -700,6 +733,23 @@ function renderDetail() {
   document.getElementById("bossResetAll")?.addEventListener("click", () => resetBossTimers());
 }
 
+function updateDetailTimers(now = Date.now()) {
+  const boss = bossConfig();
+  const counts = statusCounts(boss, now);
+  const selectableCount = boss.type === "fixed" ? counts.ready : counts.soon + counts.overdue;
+  const selectableLabel = boss.type === "fixed" ? "已重生" : "即將重生";
+  const selectableEl = detailEl.querySelector('[data-boss-stat="selectableCount"]');
+  const selectableLabelEl = detailEl.querySelector('[data-boss-stat-label="selectableCount"]');
+  const waitingEl = detailEl.querySelector('[data-boss-stat="waitingCount"]');
+  if (selectableEl) selectableEl.textContent = String(selectableCount);
+  if (selectableLabelEl) selectableLabelEl.textContent = selectableLabel;
+  if (waitingEl) waitingEl.textContent = String(counts.waiting);
+  detailEl.querySelectorAll("[data-channel]").forEach(button => {
+    const channel = clamp(Math.trunc(toNumber(button.dataset.channel, 1)), 1, CHANNEL_COUNT);
+    updateChannelButton(button, boss, channel, now);
+  });
+}
+
 function renderBuildMeta() {
   if (!buildMetaEl) return;
   const metadata = db.metadata || {};
@@ -707,6 +757,29 @@ function renderBuildMeta() {
   if (metadata.gameVersion) parts.push(`遊戲版本 ${metadata.gameVersion}`);
   if (metadata.generatedAtText) parts.push(`更新 ${metadata.generatedAtText}`);
   buildMetaEl.textContent = parts.join(" · ");
+}
+
+function updateThemeButton() {
+  if (!themeToggleEl) return;
+  const isDark = document.documentElement.dataset.theme === "dark";
+  const label = isDark ? "切換為白底" : "切換為黑底";
+  themeToggleEl.textContent = isDark ? "☀" : "☾";
+  themeToggleEl.setAttribute("aria-label", label);
+  themeToggleEl.setAttribute("title", label);
+  themeToggleEl.setAttribute("aria-pressed", String(isDark));
+}
+
+function setupTheme() {
+  updateThemeButton();
+  themeToggleEl?.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    writeCookieRaw("ms_theme", nextTheme);
+    try {
+      localStorage.setItem("ms-theme", nextTheme);
+    } catch (_error) {}
+    updateThemeButton();
+  });
 }
 
 function render() {
@@ -719,14 +792,15 @@ function render() {
 function startTicker() {
   if (tickHandle) window.clearInterval(tickHandle);
   tickHandle = window.setInterval(() => {
-    renderBossList();
-    renderLog();
-    renderDetail();
+    const now = Date.now();
+    updateBossListTimers(now);
+    updateDetailTimers(now);
   }, 1000);
 }
 
 state.favoriteIds = parseCookieSet(FAVORITE_COOKIE_KEY);
 normalizeLoadedState(loadCookieJson(loadJson(STORAGE_KEY, {})));
 loadSettings();
+setupTheme();
 render();
 startTicker();

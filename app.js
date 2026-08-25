@@ -530,6 +530,48 @@ function formatNumber(value) {
   return Number.isFinite(number) ? number.toLocaleString() : escapeHtml(value);
 }
 
+function formatDropRatePercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) return "";
+  const percent = number * 100;
+  const digits = percent >= 1 ? 2 : percent >= 0.01 ? 3 : percent >= 0.001 ? 4 : 5;
+  return `${percent.toFixed(digits).replace(/\.?0+$/, "")}%`;
+}
+
+function dropRateProbability(row) {
+  if (!row) return null;
+  if (row.probability !== null && row.probability !== undefined) return row.probability;
+  if (row.probabilityApprox !== null && row.probabilityApprox !== undefined) return row.probabilityApprox;
+  return null;
+}
+
+function dropRateQuantity(row) {
+  const min = Number(row?.min);
+  const max = Number(row?.max);
+  if (!Number.isFinite(min) || min <= 0) return "";
+  if (!Number.isFinite(max) || max <= 0 || min === max) return min > 1 ? `數量 ${formatNumber(min)}` : "";
+  return `數量 ${formatNumber(min)}~${formatNumber(max)}`;
+}
+
+function primaryDropRateRow(rows) {
+  return (rows || []).find(row => formatDropRatePercent(dropRateProbability(row))) || null;
+}
+
+function dropRateSummary(rows, options = {}) {
+  const row = primaryDropRateRow(rows);
+  if (!row) return "";
+  const percent = formatDropRatePercent(dropRateProbability(row));
+  const quantity = dropRateQuantity(row);
+  const source = row.sourceLabel || row.source || "外部";
+  const base = `${percent}${quantity ? ` · ${quantity}` : ""}`;
+  return options.withSource ? `${source} ${base}` : base;
+}
+
+function renderDropRateReferenceNote(drops) {
+  if (!(drops || []).some(item => primaryDropRateRow(item.dropRates))) return "";
+  return `<small class="dropRateReferenceInline">掉落率來自伺服器資料表推估，僅供參考。</small>`;
+}
+
 function formatSigned(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return escapeHtml(value);
@@ -683,6 +725,28 @@ function formatMesoAmountRange(min, max) {
 
 function formatMesoRange(meso) {
   return formatMesoAmountRange(meso?.totalMin, meso?.totalMax);
+}
+
+function mesoDropsAnything(meso) {
+  return Boolean(meso) && Number(meso.piles || 0) > 0 && Number(meso.totalMax ?? meso.max) > 0;
+}
+
+function mesoHasTableRate(meso) {
+  return Boolean(mesoDropsAnything(meso) && primaryDropRateRow(meso.dropRates));
+}
+
+function mesoRateText(meso) {
+  if (!mesoDropsAnything(meso)) return "";
+  const ruleRate = formatDropRatePercent(meso.dropProbability);
+  if (ruleRate) return ruleRate;
+  const row = primaryDropRateRow(meso.dropRates);
+  return row ? formatDropRatePercent(dropRateProbability(row)) : "";
+}
+
+function mesoListSummary(meso) {
+  if (!mesoDropsAnything(meso)) return "";
+  const rateText = mesoRateText(meso);
+  return rateText ? `楓幣 ${rateText}` : "楓幣";
 }
 
 function yesNo(value) {
@@ -918,7 +982,8 @@ function renderDetail() {
     return;
   }
   const drops = visibleDrops(monster);
-  const hasMesoDrop = Boolean(monster.mesoDrop);
+  const mesoSummary = mesoListSummary(monster.mesoDrop);
+  const hasMesoDrop = Boolean(mesoSummary);
   const dropCount = drops.length + (hasMesoDrop ? 1 : 0);
   const hiddenUnnamed = state.showUnnamedItems ? 0 : hiddenUnnamedCount(monster);
   els.detail.innerHTML = `
@@ -940,12 +1005,15 @@ function renderDetail() {
     ${renderQuestRequirements(monster)}
     <section class="sectionBlock">
       <div class="sectionTitle dropSectionTitle">
-        <h3>掉落</h3>
+        <div class="sectionHeading">
+          <h3>掉落</h3>
+          ${renderDropRateReferenceNote(drops)}
+        </div>
         <div class="sectionTitleActions">
           <button id="dropItemDetailsToggle" class="inlineToggleButton" type="button" aria-pressed="${state.showDropItemDetails ? "true" : "false"}">
             ${state.showDropItemDetails ? "隱藏道具詳細資訊" : "顯示道具詳細資訊"}
           </button>
-          <span>${drops.length.toLocaleString()} 項道具${hasMesoDrop ? ` · 楓幣 ${formatMesoRange(monster.mesoDrop)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
+          <span>${drops.length.toLocaleString()} 項道具${mesoSummary ? ` · ${escapeHtml(mesoSummary)}` : ""}${hiddenUnnamed ? `，隱藏 ${hiddenUnnamed.toLocaleString()} 項未命名` : ""}</span>
         </div>
       </div>
       <div class="dropGroups">
@@ -1294,26 +1362,27 @@ function renderQuestRequirements(monster) {
 
 function renderMesoDrop(monster) {
   const meso = monster.mesoDrop;
-  if (!meso) return "";
+  if (!mesoDropsAnything(meso)) return "";
   const piles = Number(meso.piles || 0);
-  const source = meso.sourceLabel || "推估";
+  const rateText = mesoRateText(meso);
   const totalRange = formatMesoRange(meso);
   const perPileRange = formatMesoAmountRange(meso.min, meso.max);
   const tier = mesoTierForRange(meso.totalMin ?? meso.min, meso.totalMax ?? meso.max);
   const meta = piles > 1
     ? `${piles.toLocaleString()} 包 · 每包 ${perPileRange}`
-    : (piles === 1 ? "單包掉落" : "不掉落楓幣");
+    : "單包掉落";
+  const subText = [rateText ? `掉落率 ${rateText}` : "", meta].filter(Boolean).join(" · ");
   return `
     <section class="dropGroup mesoDropGroup">
       <div class="dropGroupTitle">
         <strong>楓幣</strong>
-        <span>${escapeHtml(source)}</span>
+        <span>推估值</span>
       </div>
       <div class="mesoDropCard">
         <div class="mesoIcon">${tier ? mesoIconHtml(tier, "mesoDropIcon") : "楓"}</div>
         <div class="mesoText">
           <strong>${escapeHtml(totalRange)}</strong>
-          <span>${escapeHtml(meta)}</span>
+          <span>${escapeHtml(subText)}</span>
         </div>
       </div>
     </section>
@@ -1362,6 +1431,7 @@ function itemCard(item) {
   const metaParts = [];
   if (state.showIds) metaParts.push(`ID ${item.id}`);
   metaParts.push(item.source === "quest" ? "任務掉落" : itemTypeText(item));
+  const rateText = dropRateSummary(item.dropRates);
   if (item.source === "quest" && item.questNames?.length) metaParts.push(`任務：${item.questNames.slice(0, 2).join("、")}`);
   const meta = metaParts.map(escapeHtml).join(" · ");
   const requirementRows = equipRequirementRowsHtml(item);
@@ -1377,6 +1447,7 @@ function itemCard(item) {
       ${assetImage(item.image, item.name, item.name.slice(0, 1), "itemIcon")}
       <div class="itemText">
         <strong>${escapeHtml(item.name)}</strong>
+        ${rateText ? `<small class="dropRateLine">掉落率 ${escapeHtml(rateText)}</small>` : ""}
         ${detailHtml}
       </div>
     </a>
