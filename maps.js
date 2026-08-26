@@ -163,6 +163,7 @@ const state = {
   showUnnamedNpcs: cookieBool("ms_map_show_unnamed_npcs", false),
   showCrossPortals: cookieBool("ms_map_show_cross_portals", cookieBool("ms_map_show_portals", true)),
   showSameMapPortals: cookieBool("ms_map_show_same_map_portals", cookieBool("ms_map_show_portals", true)),
+  showTerrainLines: cookieBool("ms_map_show_terrain_lines", true),
   hiddenSpawnKeys: parseCookieSet("ms_map_hidden_spawns"),
   showIds: cookieBool("ms_show_ids"),
   favoriteIds: parseCookieSet("ms_favorite_maps"),
@@ -745,6 +746,20 @@ function renderDetail() {
   `;
 }
 
+function terrainFootholds(map) {
+  const terrain = map.terrain || {};
+  return Array.isArray(terrain.footholds) ? terrain.footholds : [];
+}
+
+function terrainLadderRopes(map) {
+  const terrain = map.terrain || {};
+  return Array.isArray(terrain.ladderRopes) ? terrain.ladderRopes : [];
+}
+
+function hasTerrainLines(map) {
+  return terrainFootholds(map).length > 0 || terrainLadderRopes(map).length > 0;
+}
+
 function mapMetrics(map) {
   const mini = map.miniMap || {};
   if (mini.width > 0 && mini.height > 0) {
@@ -758,7 +773,16 @@ function mapMetrics(map) {
       source: "miniMap",
     };
   }
-  const points = [...(map.monsterSpawns || []), ...displayNpcs(map), ...visiblePortals(map)].filter(point => Number.isFinite(Number(point.x)) && Number.isFinite(Number(point.y)));
+  const terrainPoints = [];
+  terrainFootholds(map).forEach(line => {
+    if (!Array.isArray(line) || line.length < 4) return;
+    terrainPoints.push({ x: line[0], y: line[1] }, { x: line[2], y: line[3] });
+  });
+  terrainLadderRopes(map).forEach(line => {
+    if (!Array.isArray(line) || line.length < 3) return;
+    terrainPoints.push({ x: line[0], y: line[1] }, { x: line[0], y: line[2] });
+  });
+  const points = [...(map.monsterSpawns || []), ...displayNpcs(map), ...visiblePortals(map), ...terrainPoints].filter(point => Number.isFinite(Number(point.x)) && Number.isFinite(Number(point.y)));
   const xs = points.map(point => Number(point.x));
   const ys = points.map(point => Number(point.y));
   const minX = xs.length ? Math.min(...xs) - 220 : -500;
@@ -821,6 +845,46 @@ function portalArrowsHtml(metrics, portals, mapId) {
   `;
 }
 
+function terrainPoint(metrics, x, y) {
+  return pointPercent(metrics, { x, y });
+}
+
+function terrainLineHtml(metrics, line, className, title) {
+  if (!Array.isArray(line) || line.length < 4) return "";
+  const start = terrainPoint(metrics, line[0], line[1]);
+  const end = terrainPoint(metrics, line[2], line[3]);
+  if (!start || !end) return "";
+  return `<line class="${className}" x1="${start.left.toFixed(3)}" y1="${start.top.toFixed(3)}" x2="${end.left.toFixed(3)}" y2="${end.top.toFixed(3)}"><title>${escapeHtml(title)}</title></line>`;
+}
+
+function terrainLadderRopeHtml(metrics, line) {
+  if (!Array.isArray(line) || line.length < 3) return "";
+  const start = terrainPoint(metrics, line[0], line[1]);
+  const end = terrainPoint(metrics, line[0], line[2]);
+  if (!start || !end) return "";
+  const isLadder = Number(line[3] || 0) === 1;
+  const className = isLadder ? "terrainLine terrainLadderLine" : "terrainLine terrainRopeLine";
+  const title = isLadder ? "梯子" : "繩子";
+  return `<line class="${className}" x1="${start.left.toFixed(3)}" y1="${start.top.toFixed(3)}" x2="${end.left.toFixed(3)}" y2="${end.top.toFixed(3)}"><title>${title}</title></line>`;
+}
+
+function terrainLayerHtml(metrics, map) {
+  if (!state.showTerrainLines || !hasTerrainLines(map)) return "";
+  const footholds = terrainFootholds(map)
+    .map(line => terrainLineHtml(metrics, line, "terrainLine terrainFootholdLine", "地形線"))
+    .join("");
+  const ladderRopes = terrainLadderRopes(map)
+    .map(line => terrainLadderRopeHtml(metrics, line))
+    .join("");
+  if (!footholds && !ladderRopes) return "";
+  return `
+    <svg class="terrainLineLayer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      ${footholds}
+      ${ladderRopes}
+    </svg>
+  `;
+}
+
 function renderMapCanvas(map) {
   const metrics = mapMetrics(map);
   const imageStyle = map.miniMapImage ? `background-image:url('${escapeHtml(map.miniMapImage)}');` : "";
@@ -839,6 +903,7 @@ function renderMapCanvas(map) {
         <div class="mapCanvas ${map.miniMapImage ? "withMiniMapImage" : ""}" style="${style}" aria-label="${escapeHtml(map.name)}">
           <div class="mapAxisLabel mapAxisLabelX">${formatNumber(Math.round(metrics.x0))} → ${formatNumber(Math.round(metrics.x1))}</div>
           <div class="mapAxisLabel mapAxisLabelY">${formatNumber(Math.round(metrics.y0))} → ${formatNumber(Math.round(metrics.y1))}</div>
+          ${terrainLayerHtml(metrics, map)}
           ${portalArrowsHtml(metrics, portals, map.id)}
           ${spawns.map(spawn => markerHtml(metrics, spawn, "spawn")).join("")}
           ${npcs.map(npc => markerHtml(metrics, npc, "npc")).join("")}
@@ -849,6 +914,7 @@ function renderMapCanvas(map) {
           <span><i class="legendDot npcDot"></i>NPC</span>
           <span><i class="legendDot portalDot"></i>跨地圖傳送</span>
           <span><i class="legendDot sameMapDot"></i>同地圖傳送</span>
+          ${hasTerrainLines(map) ? `<span><i class="legendLine terrainLegendLine"></i>地形線</span>` : ""}
         </div>
         ${mapLayerControlsHtml(map)}
       </div>
@@ -867,8 +933,12 @@ function mapLayerControlsHtml(map) {
   const unnamedNpcButton = unnamedCount
     ? `<button class="mapLayerToggle" type="button" data-layer-toggle="unnamedNpcs" aria-pressed="${String(state.showUnnamedNpcs)}">${escapeHtml(unnamedNpcButtonText)}</button>`
     : "";
+  const terrainButton = hasTerrainLines(map)
+    ? `<button class="mapLayerToggle" type="button" data-layer-toggle="terrainLines" aria-pressed="${String(state.showTerrainLines)}">${state.showTerrainLines ? "隱藏地形線" : "顯示地形線"}</button>`
+    : "";
   return `
     <div class="mapLayerControls" aria-label="小地圖顯示選項">
+      ${terrainButton}
       <button class="mapLayerToggle" type="button" data-layer-toggle="monsters" aria-pressed="${String(monsterPressed)}">${escapeHtml(monsterButtonText)}</button>
       <button class="mapLayerToggle" type="button" data-layer-toggle="npcs" aria-pressed="${String(state.showNpcs)}">${state.showNpcs ? "隱藏NPC" : "顯示NPC"}</button>
       ${unnamedNpcButton}
@@ -1270,6 +1340,9 @@ els.detail.addEventListener("click", event => {
     } else if (layer === "sameMapPortals") {
       state.showSameMapPortals = !state.showSameMapPortals;
       saveBool("ms_map_show_same_map_portals", state.showSameMapPortals);
+    } else if (layer === "terrainLines") {
+      state.showTerrainLines = !state.showTerrainLines;
+      saveBool("ms_map_show_terrain_lines", state.showTerrainLines);
     }
     render();
     return;

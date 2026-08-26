@@ -38,7 +38,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260824235907" />
+  <link rel="stylesheet" href="./styles.css?v=20260826173821" />
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -82,13 +82,7 @@
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#c906445a"><strong>906445a</strong><span>2026-08-25</span></a>
-      <a class="patchVersionRow" href="#c65bd3ed"><strong>65bd3ed</strong><span>2026-08-25</span></a>
-      <a class="patchVersionRow" href="#c9a92513"><strong>9a92513</strong><span>2026-08-24</span></a>
-      <a class="patchVersionRow" href="#c436303b"><strong>436303b</strong><span>2026-08-24</span></a>
-      <a class="patchVersionRow" href="#c845d077"><strong>845d077</strong><span>2026-08-20</span></a>
-      <a class="patchVersionRow" href="#c529dd1f"><strong>529dd1f</strong><span>2026-08-20</span></a>
-      <a class="patchVersionRow" href="#c07f2640"><strong>07f2640</strong><span>2026-08-20</span></a>
+      <a class="patchVersionRow active" href="#cc4b6404"><strong>c4b6404</strong><span>2026-08-26</span></a>
       <a class="patchVersionRow" href="#cd5a6039"><strong>d5a6039</strong><span>2026-08-14</span></a>
       <a class="patchVersionRow" href="#cba5eb93"><strong>ba5eb93</strong><span>2026-08-13</span></a>
       <a class="patchVersionRow" href="#c37f4883"><strong>37f4883</strong><span>2026-08-12</span></a>
@@ -130,69 +124,16 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>37</strong>
+            <strong>31</strong>
             <span>筆更新</span>
           </div>
         </header>
 
-        <section id="c906445a" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/906445a485cac61137db5611843bbdf197b23838">906445a</a> 楓幣與任務掉落資料修正</h3>
+        <section id="cc4b6404" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/c4b64041ff6b5dafa1d5750a0f16ae0854b707a5">c4b6404</a> 地圖 NPC 圖示修正</h3>
           <ul class="patchChangeList">
-            <li>楓幣卡改為有伺服器楓幣資料時顯示以 chance 推算的掉落率與金額，缺少資料時只顯示 100%。</li>
-            <li>補上魔法粉末、怪物卡、圍棋板、穿甲彈等掉落率參考，降低怪物頁與道具反查頁的缺率項目。</li>
-            <li>移除巴洛古掉落賽伊蘭的盾牌、殭屍猴王掉落詛咒針兩筆任務文字誤判資料。</li>
-          </ul>
-        </section>
-
-        <section id="c65bd3ed" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/65bd3edbd608526163196f0e88143fae6785e4b5">65bd3ed</a> 掉落率與 Boss 計時器修正</h3>
-          <ul class="patchChangeList">
-            <li>怪物與道具反查頁的掉落率顯示改為單一機率，並使用伺服器資料表推估提示，避免資訊卡版面被來源文字擠壓。</li>
-            <li>Boss 計時器修正黑白模式按鈕，並拉開未確認與等待重生的顏色差異。</li>
-            <li>Boss 計時器改為只更新倒數文字、統計數字與頻道狀態，減少每秒刷新造成的畫面閃爍。</li>
-          </ul>
-        </section>
-
-        <section id="c9a92513" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/9a9251369aeeb66c11f6f3d10dbb7a5832906409">9a92513</a> 最愛置頂與 Boss 計時器</h3>
-          <ul class="patchChangeList">
-            <li>怪物、道具、任務、地圖、技能與 Boss 計時器新增最愛星號，最愛項目會記住並置頂顯示。</li>
-            <li>收藏星號整合到列表卡片內，改為無框線圖示樣式，降低左側欄視覺干擾。</li>
-            <li>新增 Boss 計時器頁面，可快速記錄固定與浮動重生時間，並連結到對應 Boss 資訊。</li>
-          </ul>
-        </section>
-
-        <section id="c436303b" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/436303b927c018d07a53c6528452ea24f1c01451">436303b</a> 怪物楓幣掉落估算修正</h3>
-          <ul class="patchChangeList">
-            <li>修正怪物掉落楓幣的估算公式，降低一般怪物下限並修正 BOSS 楓幣範圍。</li>
-            <li>殭屍菇菇、蘑菇王、殭屍蘑菇王等實測掉落金額現在會落在網站顯示範圍內。</li>
-          </ul>
-        </section>
-
-        <section id="c845d077" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/845d07748e952a0cf17f2c137e1cd61511064aab">845d077</a> 遊戲更新報告修正</h3>
-          <ul class="patchChangeList">
-            <li>遊戲更新日誌新增 1.14.5 的內嵌資料更新報告，不再需要打開 markdown report。</li>
-            <li>1.14.5 報告整理為玩家可讀的折疊式區塊，包含道具來源、商店來源與商城來源資料差異。</li>
-          </ul>
-        </section>
-
-        <section id="c529dd1f" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/529dd1f29ddae1a130d4581e098e8d97f924ff08">529dd1f</a> 遊戲資料更新至 1.14.5</h3>
-          <ul class="patchChangeList">
-            <li>透過 NXDL 抓取最新官方客戶端，網站資料版本更新為 1.14.5。</li>
-            <li>道具來源資料更新為 3,958 筆，商城與商店來源各增加 1 筆。</li>
-            <li>怪物、任務、地圖與技能數量未變；本次主要同步版本號、道具來源與本地圖示素材。</li>
-          </ul>
-        </section>
-
-        <section id="c07f2640" class="patchNoteSection">
-          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/07f26403572faa0aff1c3e891cd7af7391b9c602">07f2640</a> 轉蛋機獎池更新</h3>
-          <ul class="patchChangeList">
-            <li>轉蛋模擬器新增 2026/08/20「轉蛋機」活動獎池，包含 101 個獎項與官方公告機率。</li>
-            <li>轉蛋機使用「轉蛋券」作為來源道具，預設單抽價格依商城資料設為 20 楓葉點數。</li>
-            <li>道具索引會將轉蛋機獎池內的道具標示為「轉蛋取得」，並連結回「轉蛋券」。</li>
+            <li>地圖頁補上大量本地遊戲資料擷取出的 NPC 圖示，常用地圖預設可見 NPC 不再出現缺圖框。</li>
+            <li>魔法圖書館角落等本地資料標示為隱藏名稱或滑鼠互動的熱區，預設不再當成缺圖 NPC 顯示。</li>
           </ul>
         </section>
 
@@ -442,7 +383,7 @@
     </section>
   </main>
 
-  <script src="./patch-notes.js?v=20260824235907"></script>
-  <script src="./mobile.js?v=20260824235907"></script>
+  <script src="./patch-notes.js?v=20260826173821"></script>
+  <script src="./mobile.js?v=20260826173821"></script>
 </body>
 </html>
