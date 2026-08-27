@@ -1,0 +1,208 @@
+{
+  "total": 25,
+  "same": 17,
+  "changed": 8,
+  "new": 0,
+  "rows": [
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog.bin",
+      "status": "changed",
+      "oldSize": 4241415,
+      "newSize": 4241415,
+      "oldSha": "ec0003913006fcce6e1c1caf76936949752eeb8a8eaa95ddb07c099e66c04f64",
+      "newSha": "10358fd48b4b41bdb009374a0099aefcf9e0682b8c80c42aa1eb85520673c559"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog.hash",
+      "status": "changed",
+      "oldSize": 32,
+      "newSize": 32,
+      "oldSha": "22c1771edc3fe1e4f0ae6dba82a45664efd443a82be650db57510e595180c20b",
+      "newSha": "ac3aee08b6274c26ed077be5744610a33de6994193d59d34c13c5727430779e4"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog_json.bin",
+      "status": "changed",
+      "oldSize": 1868547,
+      "newSize": 1868547,
+      "oldSha": "d8b0dc8a30f8b7d0bf655f8cae36fd31d4f503cfc14cc2b5975e41a4f997881d",
+      "newSha": "9ebc0794f5dbcee0b32013bd142130af1a5063467dec47a8552c38dd459927f0"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog_json.hash",
+      "status": "changed",
+      "oldSize": 10,
+      "newSize": 10,
+      "oldSha": "3266c5d22c19f51cedf31efb08e05d3b3c65db565b50c7f6f2f40d4e336c58f9",
+      "newSha": "8b10ecf514c270c1da7569143eb0d7a71ffea01f93f7a314fdd0b3779911e85e"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\catalog_1.14.2.bin",
+      "status": "changed",
+      "oldSize": 4241415,
+      "newSize": 4241415,
+      "oldSha": "ec0003913006fcce6e1c1caf76936949752eeb8a8eaa95ddb07c099e66c04f64",
+      "newSha": "10358fd48b4b41bdb009374a0099aefcf9e0682b8c80c42aa1eb85520673c559"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\catalog_1.14.2.hash",
+      "status": "changed",
+      "oldSize": 32,
+      "newSize": 32,
+      "oldSha": "22c1771edc3fe1e4f0ae6dba82a45664efd443a82be650db57510e595180c20b",
+      "newSha": "ac3aee08b6274c26ed077be5744610a33de6994193d59d34c13c5727430779e4"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_27ed12ab55c4464e7db01cade1a2e593.bundle",
+      "status": "same",
+      "oldSize": 5237001,
+      "newSize": 5237001,
+      "oldSha": "3bd45ec48af9b5cfa88068696301d9095296fa96bcc723bacf10c7a978f28b9c",
+      "newSha": "3bd45ec48af9b5cfa88068696301d9095296fa96bcc723bacf10c7a978f28b9c"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_2f1452e1c898196af3f6fe242a41a23b.bundle",
+      "status": "same",
+      "oldSize": 845239,
+      "newSize": 845239,
+      "oldSha": "d396d3a92d5c88280212584b769e966acb6dcc1b68d0837b81cdae50ff21188d",
+      "newSha": "d396d3a92d5c88280212584b769e966acb6dcc1b68d0837b81cdae50ff21188d"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_430887d60077dcacada388e21112609d.bundle",
+      "status": "same",
+      "oldSize": 1103,
+      "newSize": 1103,
+      "oldSha": "3c489684b06b020dcfc54b463be02cd69a8e48f3aaa0453264c69dcaa038bb00",
+      "newSha": "3c489684b06b020dcfc54b463be02cd69a8e48f3aaa0453264c69dcaa038bb00"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_4f0192b4db49dca312b7c5d0d6d30555.bundle",
+      "status": "same",
+      "oldSize": 3255093,
+      "newSize": 3255093,
+      "oldSha": "13d5c3cbca4cd6c05d936e1685b471382e5e55425165d1b3d3d6e46b9a6776e0",
+      "newSha": "13d5c3cbca4cd6c05d936e1685b471382e5e55425165d1b3d3d6e46b9a6776e0"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_573635e18aaf09bb64172d620192f40c.bundle",
+      "status": "same",
+      "oldSize": 44561203,
+      "newSize": 44561203,
+      "oldSha": "ad68faa1da62ffbbf5d4a1b7069f13670811a7a135ed8c7da03497fd36460d8b",
+      "newSha": "ad68faa1da62ffbbf5d4a1b7069f13670811a7a135ed8c7da03497fd36460d8b"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_670307ac2a95df1f8c45e13ed9d160c2.bundle",
+      "status": "same",
+      "oldSize": 379995,
+      "newSize": 379995,
+      "oldSha": "67e115cfaad48b5feb53b1124cd29b2e5bf24ee76a8ab2cfb14773bba4a86dab",
+      "newSha": "67e115cfaad48b5feb53b1124cd29b2e5bf24ee76a8ab2cfb14773bba4a86dab"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_6baa5b91985050c8f406de48a83cad30.bundle",
+      "status": "same",
+      "oldSize": 335415,
+      "newSize": 335415,
+      "oldSha": "da781f6668077a1af630128311edd74f28d1828e4a0a714264eb6999d1784b4f",
+      "newSha": "da781f6668077a1af630128311edd74f28d1828e4a0a714264eb6999d1784b4f"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_7f583f6701726440f66638681ff5f1f7.bundle",
+      "status": "same",
+      "oldSize": 429294,
+      "newSize": 429294,
+      "oldSha": "59f894f0913587e9a6fd394bf7a97d3574e19e9f63d90892f829f332f2fb75a0",
+      "newSha": "59f894f0913587e9a6fd394bf7a97d3574e19e9f63d90892f829f332f2fb75a0"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_8b237d4c91c514515b4bf74dda23d0e8.bundle",
+      "status": "same",
+      "oldSize": 245745,
+      "newSize": 245745,
+      "oldSha": "4384b5f7b84438efca897dbc2a49bd53bfb1f5e1d51f4d06c3f36acb8dbfb3e0",
+      "newSha": "4384b5f7b84438efca897dbc2a49bd53bfb1f5e1d51f4d06c3f36acb8dbfb3e0"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_a2909ccd82f5e94b75cf905405af04af.bundle",
+      "status": "same",
+      "oldSize": 2411845,
+      "newSize": 2411845,
+      "oldSha": "c958ef6c8b71de1388b70cbfdefbcf9bc9ea8d28a6627fe975ad6a666c9564c5",
+      "newSha": "c958ef6c8b71de1388b70cbfdefbcf9bc9ea8d28a6627fe975ad6a666c9564c5"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_bf757d300f3608f6a2611ca0bd3f274f.bundle",
+      "status": "same",
+      "oldSize": 211263,
+      "newSize": 211263,
+      "oldSha": "21f6e6c1550f95183e725005a0a619bc22e43b995855eea755672c1f6e1d4a3a",
+      "newSha": "21f6e6c1550f95183e725005a0a619bc22e43b995855eea755672c1f6e1d4a3a"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_c32a59ee3c932de55e86771676afba45.bundle",
+      "status": "same",
+      "oldSize": 141269082,
+      "newSize": 141269082,
+      "oldSha": "b5389687335b883661487ff8c7d78397c57dcecb3b985edf3069ad17352b02a9",
+      "newSha": "b5389687335b883661487ff8c7d78397c57dcecb3b985edf3069ad17352b02a9"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_catalog_1.14.2.bin",
+      "status": "changed",
+      "oldSize": 1869087,
+      "newSize": 1869087,
+      "oldSha": "4a65e2b7c4e1893315b78fb3c9254b5ca4cf93e7b5643f105d9775229809b9c5",
+      "newSha": "8a828a398020ca13071405313b434883ffe75cef2045f041f7c58ae2ced07953"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_catalog_1.14.2.hash",
+      "status": "changed",
+      "oldSize": 32,
+      "newSize": 32,
+      "oldSha": "48aea479b3dcfbe70666aa31d1874c33d971f771a1b94e6a05ced56abc2e931c",
+      "newSha": "9a39209d8f0fcdb535da9da76b7d026a69cde59b90fcb19bd66905bdfce652a0"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_d0204d274fe26485581cd3b21891ab84.bundle",
+      "status": "same",
+      "oldSize": 663885,
+      "newSize": 663885,
+      "oldSha": "8af096301474267746328d2165a553165c09abebf8e09f8d5f548c030a2d2030",
+      "newSha": "8af096301474267746328d2165a553165c09abebf8e09f8d5f548c030a2d2030"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_dd1d5a6fdc0d09fde76a416d7a8272ba.bundle",
+      "status": "same",
+      "oldSize": 915677,
+      "newSize": 915677,
+      "oldSha": "1649d08555d2b696d4247109fcd8a84df38231ec03891caa68a220cfb8d5a6d4",
+      "newSha": "1649d08555d2b696d4247109fcd8a84df38231ec03891caa68a220cfb8d5a6d4"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_e66ac8390d02720f97a33bca31723791.bundle",
+      "status": "same",
+      "oldSize": 35424,
+      "newSize": 35424,
+      "oldSha": "97e63a85b01743879486415c3c8bcc2c387c878f7faad2057282213c0a557ed3",
+      "newSha": "97e63a85b01743879486415c3c8bcc2c387c878f7faad2057282213c0a557ed3"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_ea789eaaa37ed8ffb3e0760d5d06f6d2.bundle",
+      "status": "same",
+      "oldSize": 3602061,
+      "newSize": 3602061,
+      "oldSha": "a1f27fc0eed4c661373d8c631bc6e5a5de5b4e2d668f17ce7de98809668b6092",
+      "newSha": "a1f27fc0eed4c661373d8c631bc6e5a5de5b4e2d668f17ce7de98809668b6092"
+    },
+    {
+      "path": "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_fc4e161bd2228c79fe3d243a1e8590e0.bundle",
+      "status": "same",
+      "oldSize": 230622,
+      "newSize": 230622,
+      "oldSha": "6f38fab12c1358db60fed0d84b4e49ec1931cf1f07c77540488fd8a5716ec748",
+      "newSha": "6f38fab12c1358db60fed0d84b4e49ec1931cf1f07c77540488fd8a5716ec748"
+    }
+  ]
+}
