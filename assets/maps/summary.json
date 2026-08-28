@@ -4,7 +4,7 @@
   "exported": 333,
   "bundles": [
     {
-      "bundle": "spritesheet_ef97f1e56f7745b18b0753d33f4faea9.bundle",
+      "bundle": "spritesheet_ef97f1e56f7745b1df0a22a145ced814.bundle",
       "targets": 333,
       "exported": 333,
       "cropped": 333,
@@ -12,5 +12,6 @@
       "wzssSizes": 337,
       "missing": 0
     }
-  ]
+  ],
+  "elapsedSec": 228.28
 }

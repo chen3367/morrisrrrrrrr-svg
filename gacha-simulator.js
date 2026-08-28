@@ -193,6 +193,10 @@ function royalGroupName() {
   return `${kind}(${royalGenderText()})`;
 }
 
+function royalGroupKey(value) {
+  return String(value || "").replace(/\s+/g, "");
+}
+
 function isRoyalPrize(prize) {
   const group = String(prize?.group || prize?.tier || "");
   return group.includes("皇家美髮") || group.includes("皇家整形") || String(prize?.image || "").includes("/royal_avatars/");
@@ -204,8 +208,8 @@ function iconClassForPrize(prize, baseClass) {
 
 function activePoolGroups(pool = currentPool()) {
   if (!isRoyalPool(pool)) return null;
-  const group = royalGroupName();
-  return groupNames(pool).includes(group) ? [group] : [];
+  const groupKey = royalGroupKey(royalGroupName());
+  return groupNames(pool).filter(group => royalGroupKey(group) === groupKey);
 }
 
 function displayedGroupNames(pool = currentPool()) {
@@ -628,7 +632,7 @@ function renderGroupFilter() {
   if (isRoyalPool(pool)) {
     state.targetGroup = "";
     els.targetGroupFilter.hidden = true;
-    els.targetGroupFilter.innerHTML = `<option value="">${escapeHtml(royalGroupName())}</option>`;
+    els.targetGroupFilter.innerHTML = `<option value="">${escapeHtml(activePoolGroups(pool)?.[0] || royalGroupName())}</option>`;
     return;
   }
   els.targetGroupFilter.hidden = false;

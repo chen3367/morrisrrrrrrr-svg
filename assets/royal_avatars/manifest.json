@@ -1,0 +1,295 @@
+{
+  "poolId": "royal-beauty-20260827",
+  "eventAdId": 18938,
+  "period": "2026/08/27 00:00 ~ 2026/09/09 23:59",
+  "entries": {
+    "royal-001.png": {
+      "id": "royal-001",
+      "itemId": 33700,
+      "name": "黑色俐落幻影造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-002.png": {
+      "id": "royal-002",
+      "itemId": 33750,
+      "name": "黑色簡約瀏海造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-003.png": {
+      "id": "royal-003",
+      "itemId": 36440,
+      "name": "黑色情歌王子造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-004.png": {
+      "id": "royal-004",
+      "itemId": 33220,
+      "name": "黑色漂色造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-005.png": {
+      "id": "royal-005",
+      "itemId": 33160,
+      "name": "黑色莉琳造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-006.png": {
+      "id": "royal-006",
+      "itemId": 33600,
+      "name": "黑色層次柔順造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-007.png": {
+      "id": "royal-007",
+      "itemId": 33970,
+      "name": "黑色個性大紮造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-008.png": {
+      "id": "royal-008",
+      "itemId": 36650,
+      "name": "黑色雲朵造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-009.png": {
+      "id": "royal-009",
+      "itemId": 33210,
+      "name": "黑色擴散鬃毛造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-010.png": {
+      "id": "royal-010",
+      "itemId": 33720,
+      "name": "黑色側分飄逸造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-011.png": {
+      "id": "royal-011",
+      "itemId": 33930,
+      "name": "黑色粗曠造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-012.png": {
+      "id": "royal-012",
+      "itemId": 30870,
+      "name": "黑色街頭雅痞造型",
+      "group": "皇家美髮 (男)"
+    },
+    "royal-013.png": {
+      "id": "royal-013",
+      "itemId": 37090,
+      "name": "黑色捲馬尾造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-014.png": {
+      "id": "royal-014",
+      "itemId": 37710,
+      "name": "黑色高音歌手造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-015.png": {
+      "id": "royal-015",
+      "itemId": 37740,
+      "name": "黑色西洋栗造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-016.png": {
+      "id": "royal-016",
+      "itemId": 38040,
+      "name": "黑色蝴蝶波浪造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-017.png": {
+      "id": "royal-017",
+      "itemId": 34430,
+      "name": "黑色鞭炮辮子造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-018.png": {
+      "id": "royal-018",
+      "itemId": 37720,
+      "name": "黑色雙色髮辮造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-019.png": {
+      "id": "royal-019",
+      "itemId": 37960,
+      "name": "黑色妖精女王造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-020.png": {
+      "id": "royal-020",
+      "itemId": 38280,
+      "name": "黑色甜姐兒造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-021.png": {
+      "id": "royal-021",
+      "itemId": 31680,
+      "name": "黑色長髮娃娃造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-022.png": {
+      "id": "royal-022",
+      "itemId": 34250,
+      "name": "黑色濃密澎澎造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-023.png": {
+      "id": "royal-023",
+      "itemId": 34120,
+      "name": "黑色波希米亞造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-024.png": {
+      "id": "royal-024",
+      "itemId": 37100,
+      "name": "黑色桃樂絲造型",
+      "group": "皇家美髮 (女)"
+    },
+    "royal-025.png": {
+      "id": "royal-025",
+      "itemId": 25045,
+      "name": "內向謹慎臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-026.png": {
+      "id": "royal-026",
+      "itemId": 23018,
+      "name": "奧妙的臉(男)",
+      "group": "皇家整形 (男)"
+    },
+    "royal-027.png": {
+      "id": "royal-027",
+      "itemId": 24007,
+      "name": "瞭望的臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-028.png": {
+      "id": "royal-028",
+      "itemId": 20020,
+      "name": "懷疑的臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-029.png": {
+      "id": "royal-029",
+      "itemId": 23035,
+      "name": "堅決的臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-030.png": {
+      "id": "royal-030",
+      "itemId": 20022,
+      "name": "細長眼臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-031.png": {
+      "id": "royal-031",
+      "itemId": 20025,
+      "name": "很鎮定臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-032.png": {
+      "id": "royal-032",
+      "itemId": 20027,
+      "name": "好親切臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-033.png": {
+      "id": "royal-033",
+      "itemId": 20028,
+      "name": "翻白眼臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-034.png": {
+      "id": "royal-034",
+      "itemId": 20029,
+      "name": "夠性格臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-035.png": {
+      "id": "royal-035",
+      "itemId": 20001,
+      "name": "有自信臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-036.png": {
+      "id": "royal-036",
+      "itemId": 20031,
+      "name": "頗柔和臉型",
+      "group": "皇家整形 (男)"
+    },
+    "royal-037.png": {
+      "id": "royal-037",
+      "itemId": 21031,
+      "name": "很搶眼臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-038.png": {
+      "id": "royal-038",
+      "itemId": 24014,
+      "name": "很妙的臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-039.png": {
+      "id": "royal-039",
+      "itemId": 24007,
+      "name": "瞭望的臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-040.png": {
+      "id": "royal-040",
+      "itemId": 20027,
+      "name": "好親切臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-041.png": {
+      "id": "royal-041",
+      "itemId": 20029,
+      "name": "夠性格臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-042.png": {
+      "id": "royal-042",
+      "itemId": 20001,
+      "name": "有自信臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-043.png": {
+      "id": "royal-043",
+      "itemId": 20045,
+      "name": "很叛逆臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-044.png": {
+      "id": "royal-044",
+      "itemId": 20037,
+      "name": "龍魔導士臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-045.png": {
+      "id": "royal-045",
+      "itemId": 20018,
+      "name": "好時髦臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-046.png": {
+      "id": "royal-046",
+      "itemId": 20019,
+      "name": "小眼睛臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-047.png": {
+      "id": "royal-047",
+      "itemId": 20020,
+      "name": "懷疑的臉型",
+      "group": "皇家整形 (女)"
+    },
+    "royal-048.png": {
+      "id": "royal-048",
+      "itemId": 21022,
+      "name": "丹鳳眼臉型",
+      "group": "皇家整形 (女)"
+    }
+  }
+}

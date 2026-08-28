@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-08-28T03:17:23+08:00",
+  "before": {
+    "items": 11369,
+    "missingItems": 912,
+    "namedMissingItems": 599,
+    "monsters": 346,
+    "missingMonsters": 1
+  },
+  "after": {
+    "items": 11369,
+    "itemImages": 11365,
+    "missingItems": 4,
+    "namedMissingItems": 3,
+    "monsters": 346,
+    "monsterImages": 346,
+    "missingMonsters": 0
+  },
+  "resolved": {
+    "items": 908,
+    "monsters": 1,
+    "localNewItemIcons": 67,
+    "mxdcDownloadedItemIcons": 841,
+    "mxdcFailedItemDownloads": 1
+  },
+  "missingItems": [
+    {
+      "id": 2390000,
+      "name": "赫麗娜的小珠子",
+      "category": "消耗",
+      "subcategory": "消耗",
+      "unnamed": false,
+      "note": "本地資料包未命中素材；MXDC 舊頁有道具資料但無 icon；新版頁面引用 /dbsource/icon/item/2390000.png，但圖檔回 404；DVG 079/CMSC/TMS113 查無可用圖。"
+    },
+    {
+      "id": 4001150,
+      "name": "靈藥幻境",
+      "category": "其他",
+      "subcategory": "任務道具",
+      "unnamed": false,
+      "note": "本地資料包未命中素材；MXDC 舊頁有道具資料但無 icon；新版頁面引用 /dbsource/icon/item/4001150.png，但圖檔回 404；DVG 079/CMSC/TMS113 查無可用圖。"
+    },
+    {
+      "id": 5068302,
+      "name": "未命名道具 5068302",
+      "category": "現金",
+      "subcategory": "封印/保護",
+      "unnamed": true,
+      "note": "本地資料包未命中素材；MXDC 舊頁引用 /dbsource/iconsource/Item/Item.Cash.0506.img.05068302.info.icon.png，但圖檔回 404；其他 DVG 版本查無可用圖。"
+    },
+    {
+      "id": 5420027,
+      "name": "高級楓之谷會員單月券",
+      "category": "現金",
+      "subcategory": "現金道具",
+      "unnamed": false,
+      "note": "本地資料包未命中素材；MXDC 主站只回短頁/404；DVG 079/CMSC/TMS113 查無可用圖。"
+    }
+  ],
+  "missingMonsters": [],
+  "specialFixes": [
+    {
+      "id": 5004011,
+      "type": "item",
+      "name": "嫩寶",
+      "source": "本地遊戲資料 Item/Special 5004011 spritesheet；WZJS 缺 metadata，因此採本地第一個標準站立幀。"
+    },
+    {
+      "id": 9300274,
+      "type": "monster",
+      "name": "怪物 9300274",
+      "source": "MXDC 怪物頁顯示對應 Mob.2300102 stand 圖；本地目前未找到 9300274 專屬 sprite。"
+    }
+  ]
+}
