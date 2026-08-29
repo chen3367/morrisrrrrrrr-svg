@@ -3561,6 +3561,11 @@ h3 {
   background-position: center;
   background-size: 100% 100%;
 }
+.mapCanvas.withRenderedMapImage {
+  min-height: 0;
+  max-height: none;
+  background-color: #94cfe8;
+}
 :root[data-theme="dark"] .mapCanvas {
   background:
     linear-gradient(rgba(86, 213, 143, 0.08), rgba(86, 213, 143, 0.02)),
@@ -3573,6 +3578,9 @@ h3 {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
+}
+:root[data-theme="dark"] .mapCanvas.withRenderedMapImage {
+  background-color: #1f4255;
 }
 .mapAxisLabel {
   position: absolute;
