@@ -164,6 +164,7 @@ const state = {
   showCrossPortals: cookieBool("ms_map_show_cross_portals", cookieBool("ms_map_show_portals", true)),
   showSameMapPortals: cookieBool("ms_map_show_same_map_portals", cookieBool("ms_map_show_portals", true)),
   showTerrainLines: cookieBool("ms_map_show_terrain_lines", true),
+  useRenderedMapMode: false,
   hiddenSpawnKeys: parseCookieSet("ms_map_hidden_spawns"),
   showIds: cookieBool("ms_show_ids"),
   favoriteIds: parseCookieSet("ms_favorite_maps"),
@@ -760,7 +761,34 @@ function hasTerrainLines(map) {
   return terrainFootholds(map).length > 0 || terrainLadderRopes(map).length > 0;
 }
 
+function hasRenderedMapImage(map) {
+  const rendered = map.renderedMap || {};
+  const bounds = rendered.bounds || {};
+  return Boolean(rendered.image && bounds.width > 0 && bounds.height > 0);
+}
+
+function hasMiniMapImage(map) {
+  return Boolean(map.miniMapImage);
+}
+
+function shouldUseRenderedMap(map) {
+  return hasRenderedMapImage(map) && (state.useRenderedMapMode || !hasMiniMapImage(map));
+}
+
 function mapMetrics(map) {
+  const rendered = map.renderedMap || {};
+  const bounds = rendered.bounds || {};
+  if (shouldUseRenderedMap(map)) {
+    return {
+      x0: Number(bounds.left || 0),
+      y0: Number(bounds.top || 0),
+      x1: Number(bounds.right || 0),
+      y1: Number(bounds.bottom || 0),
+      width: Number(bounds.width),
+      height: Number(bounds.height),
+      source: "renderedMap",
+    };
+  }
   const mini = map.miniMap || {};
   if (mini.width > 0 && mini.height > 0) {
     return {
@@ -887,20 +915,24 @@ function terrainLayerHtml(metrics, map) {
 
 function renderMapCanvas(map) {
   const metrics = mapMetrics(map);
-  const imageStyle = map.miniMapImage ? `background-image:url('${escapeHtml(map.miniMapImage)}');` : "";
+  const rendered = map.renderedMap || {};
+  const usingRenderedMap = shouldUseRenderedMap(map);
+  const mapImage = usingRenderedMap ? rendered.image : (map.miniMapImage || "");
+  const imageStyle = mapImage ? `background-image:url('${escapeHtml(mapImage)}');` : "";
   const style = `aspect-ratio:${Math.max(320, Math.round(metrics.width))} / ${Math.max(180, Math.round(metrics.height))};${imageStyle}`;
   const spawns = displayCoordinateSpawns(map);
   const npcs = displayNpcs(map);
   const portals = displayPortals(map);
-  const metricText = map.miniMapImage ? "" : (metrics.source === "miniMap" ? `${metrics.width} × ${metrics.height}` : "座標範圍");
+  const metricText = mapImage ? "" : (metrics.source === "miniMap" ? `${metrics.width} × ${metrics.height}` : "座標範圍");
+  const canvasClass = ["mapCanvas", mapImage ? "withMiniMapImage" : "", usingRenderedMap ? "withRenderedMapImage" : ""].filter(Boolean).join(" ");
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
-        <h3>小地圖</h3>
+        <h3>${usingRenderedMap ? "地圖預覽" : "小地圖"}</h3>
         ${metricText ? `<span>${escapeHtml(metricText)}</span>` : ""}
       </div>
       <div class="mapCanvasShell">
-        <div class="mapCanvas ${map.miniMapImage ? "withMiniMapImage" : ""}" style="${style}" aria-label="${escapeHtml(map.name)}">
+        <div class="${canvasClass}" style="${style}" aria-label="${escapeHtml(map.name)}">
           <div class="mapAxisLabel mapAxisLabelX">${formatNumber(Math.round(metrics.x0))} → ${formatNumber(Math.round(metrics.x1))}</div>
           <div class="mapAxisLabel mapAxisLabelY">${formatNumber(Math.round(metrics.y0))} → ${formatNumber(Math.round(metrics.y1))}</div>
           ${terrainLayerHtml(metrics, map)}
@@ -936,8 +968,12 @@ function mapLayerControlsHtml(map) {
   const terrainButton = hasTerrainLines(map)
     ? `<button class="mapLayerToggle" type="button" data-layer-toggle="terrainLines" aria-pressed="${String(state.showTerrainLines)}">${state.showTerrainLines ? "隱藏地形線" : "顯示地形線"}</button>`
     : "";
+  const renderedModeButton = hasRenderedMapImage(map) && hasMiniMapImage(map)
+    ? `<button class="mapLayerToggle mapRenderModeToggle" type="button" data-layer-toggle="renderedMapMode" aria-pressed="${String(state.useRenderedMapMode)}" title="切換完整貼圖預覽">貼圖模式 beta</button>`
+    : "";
   return `
     <div class="mapLayerControls" aria-label="小地圖顯示選項">
+      ${renderedModeButton}
       ${terrainButton}
       <button class="mapLayerToggle" type="button" data-layer-toggle="monsters" aria-pressed="${String(monsterPressed)}">${escapeHtml(monsterButtonText)}</button>
       <button class="mapLayerToggle" type="button" data-layer-toggle="npcs" aria-pressed="${String(state.showNpcs)}">${state.showNpcs ? "隱藏NPC" : "顯示NPC"}</button>
@@ -1343,6 +1379,8 @@ els.detail.addEventListener("click", event => {
     } else if (layer === "terrainLines") {
       state.showTerrainLines = !state.showTerrainLines;
       saveBool("ms_map_show_terrain_lines", state.showTerrainLines);
+    } else if (layer === "renderedMapMode") {
+      state.useRenderedMapMode = !state.useRenderedMapMode;
     }
     render();
     return;
