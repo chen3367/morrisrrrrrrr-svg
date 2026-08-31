@@ -38,7 +38,8 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260830013106" />
+  <link rel="stylesheet" href="./styles.css?v=20260901060053" />
+  <script>window.MS_SITE_METADATA = {"updatedAt": "2026-09-01T06:00:53.696953+08:00", "updatedAtText": "2026-09-01 06:00:53 GMT+8"};</script>
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -76,13 +77,18 @@
           </div>
         </details>
       </nav>
-      <div class="buildMeta" id="buildMeta">只列已提交到 GitHub Pages 的網站功能更新</div>
+      <div class="buildMeta" id="buildMeta">網頁更新 2026-09-01 06:00:53 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
     </div>
   </header>
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#c0b2cc10"><strong>0b2cc10</strong><span>2026-08-28</span></a>
+      <a class="patchVersionRow active" href="#ce08ad18"><strong>e08ad18</strong><span>2026-09-01</span></a>
+      <a class="patchVersionRow" href="#c02ea3a0"><strong>02ea3a0</strong><span>2026-09-01</span></a>
+      <a class="patchVersionRow" href="#c5de2068"><strong>5de2068</strong><span>2026-09-01</span></a>
+      <a class="patchVersionRow" href="#cae1e1df"><strong>ae1e1df</strong><span>2026-08-30</span></a>
+      <a class="patchVersionRow" href="#c6e721bd"><strong>6e721bd</strong><span>2026-08-28</span></a>
+      <a class="patchVersionRow" href="#c0b2cc10"><strong>0b2cc10</strong><span>2026-08-28</span></a>
       <a class="patchVersionRow" href="#ca6bbae6"><strong>a6bbae6</strong><span>2026-08-28</span></a>
       <a class="patchVersionRow" href="#cc4b6404"><strong>c4b6404</strong><span>2026-08-26</span></a>
       <a class="patchVersionRow" href="#c34a10fc"><strong>34a10fc</strong><span>2026-08-26</span></a>
@@ -137,10 +143,51 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>44</strong>
+            <strong>49</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="ce08ad18" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/e08ad188a51c68443b7a80310c12bb53110621e3">e08ad18</a> 戰鬥分析地圖辨識修正</h3>
+          <ul class="patchChangeList">
+            <li>所在地圖辨識改抓小地圖標題下方兩行文字，避免將「小地圖」標題當成地圖名稱。</li>
+            <li>OCR 只讀到介面標題時會自動過濾，不再寫入所在地圖欄位。</li>
+          </ul>
+        </section>
+
+        <section id="c02ea3a0" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/02ea3a0e63043be2f436ee39e5f8af4571c4cd8e">02ea3a0</a> 戰鬥分析自動偵測改善</h3>
+          <ul class="patchChangeList">
+            <li>楓幣欄位改用多解析度與多角落候選偵測，提升道具欄錢欄辨識率。</li>
+            <li>職業偵測改為多候選框，螢幕分享與分析期間會自動更新。</li>
+            <li>楓幣模板讀值降權，優先使用逗號格式 OCR，降低誤讀。</li>
+          </ul>
+        </section>
+
+        <section id="c5de2068" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/5de20680109a21354fe084de4aa69ae75191dfaf">5de2068</a> 戰鬥分析 OCR 穩定度改善</h3>
+          <ul class="patchChangeList">
+            <li>等級可由 EXP 與百分比推算作為備援，降低 LV 圖樣 OCR 失敗造成的空值。</li>
+            <li>戰鬥分析分享資料保留更完整的 OCR 狀態與裁切資訊，方便追查辨識結果。</li>
+          </ul>
+        </section>
+
+        <section id="cae1e1df" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/ae1e1dfe233b0caacb4ad4711b705d2029b73398">ae1e1df</a> 地圖貼圖模式 Beta</h3>
+          <ul class="patchChangeList">
+            <li>地圖頁新增貼圖模式 beta，可在小地圖縮放與地圖貼圖渲染間切換。</li>
+            <li>地圖渲染套用區塊方式，改善地形與物件預覽完整度。</li>
+          </ul>
+        </section>
+
+        <section id="c6e721bd" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/6e721bd829cecd5b1f45321f4df47da5edc43049">6e721bd</a> 怪物卡掉落率補齊</h3>
+          <ul class="patchChangeList">
+            <li>補上怪物圖鑑卡片掉落率，使用 TMS / MapleStoryDB 等可對照來源補足 MapleLandHub 缺值。</li>
+            <li>怪物頁與道具反查頁同步顯示怪物卡掉落率。</li>
+          </ul>
+        </section>
 
         <section id="c0b2cc10" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/0b2cc107aea3d5da0ab004c86c9e288ca9012c03">0b2cc10</a> 大型報告檔案整理</h3>
@@ -504,7 +551,7 @@
     </section>
   </main>
 
-  <script src="./patch-notes.js?v=20260830013106"></script>
-  <script src="./mobile.js?v=20260830013106"></script>
+  <script src="./patch-notes.js?v=20260901060053"></script>
+  <script src="./mobile.js?v=20260901060053"></script>
 </body>
 </html>

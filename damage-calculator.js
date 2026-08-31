@@ -1644,7 +1644,13 @@ function setupEvents() {
 }
 
 function init() {
-  el.buildMeta.textContent = `遊戲版本 ${db.metadata?.gameVersion || "未知"} · 更新 ${db.metadata?.generatedAt || ""}`;
+  const meta = db.metadata || {};
+  const siteMeta = window.MS_SITE_METADATA || {};
+  const parts = [];
+  if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
+  if (meta.generatedAtText || meta.generatedAt) parts.push(`資料更新 ${meta.generatedAtText || String(meta.generatedAt).replace("T", " ")}`);
+  if (siteMeta.updatedAtText) parts.push(`網頁更新 ${siteMeta.updatedAtText}`);
+  el.buildMeta.textContent = parts.join(" · ");
   el.idToggle?.setAttribute("aria-pressed", String(state.showIds));
   initFields();
   initJobs();
