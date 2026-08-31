@@ -753,11 +753,8 @@ function updateDetailTimers(now = Date.now()) {
 function renderBuildMeta() {
   if (!buildMetaEl) return;
   const metadata = db.metadata || {};
-  const siteMeta = window.MS_SITE_METADATA || {};
   const parts = [];
   if (metadata.gameVersion) parts.push(`遊戲版本 ${metadata.gameVersion}`);
-  if (metadata.generatedAtText) parts.push(`資料更新 ${metadata.generatedAtText}`);
-  if (siteMeta.updatedAtText) parts.push(`網頁更新 ${siteMeta.updatedAtText}`);
   buildMetaEl.textContent = parts.join(" · ");
 }
 

@@ -887,13 +887,7 @@ function renderHeaderMeta() {
   const officialRows = new Set(selectablePools.flatMap(pool => pool.prizes.map(prize => `${pool.eventAdId}:${prize.id}`))).size;
   if (els.resultCount) els.resultCount.textContent = `${formatInt(selectablePools.length)} 商品 · ${formatInt(count)} 列獎項`;
   if (els.buildMeta) {
-    const meta = gachaDb.metadata || {};
-    const siteMeta = window.MS_SITE_METADATA || {};
-    const generatedAt = meta.generatedAtText || (meta.generatedAt ? String(meta.generatedAt).replace("T", " ") : "");
-    const parts = ["官方活動資料"];
-    if (generatedAt) parts.push(`資料更新 ${generatedAt}`);
-    if (siteMeta.updatedAtText) parts.push(`網頁更新 ${siteMeta.updatedAtText}`);
-    els.buildMeta.textContent = parts.join(" · ");
+    els.buildMeta.textContent = "官方活動資料";
   }
 }
 

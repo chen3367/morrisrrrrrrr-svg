@@ -3443,11 +3443,8 @@ function render() {
 function initialize() {
   setTheme(state.theme);
   const meta = db.metadata || {};
-  const siteMeta = window.MS_SITE_METADATA || {};
   const parts = [];
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
-  if (meta.generatedAtText) parts.push(`資料更新 ${meta.generatedAtText}`);
-  if (siteMeta.updatedAtText) parts.push(`網頁更新 ${siteMeta.updatedAtText}`);
   if (el.buildMeta) el.buildMeta.textContent = parts.join(" · ");
 
   el.themeToggle?.addEventListener("click", () => {

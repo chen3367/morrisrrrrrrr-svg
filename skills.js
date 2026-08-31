@@ -172,11 +172,8 @@ function setSkillUrl(skillId) {
 function renderBuildMeta() {
   if (!els.meta) return;
   const meta = db.metadata || {};
-  const siteMeta = window.MS_SITE_METADATA || {};
   const parts = [];
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
-  if (meta.generatedAtText) parts.push(`資料更新 ${meta.generatedAtText}`);
-  if (siteMeta.updatedAtText) parts.push(`網頁更新 ${siteMeta.updatedAtText}`);
   els.meta.textContent = parts.join(" · ");
 }
 
