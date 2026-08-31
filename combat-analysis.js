@@ -145,6 +145,8 @@ const state = {
   tesseractFailed: false,
   pendingCalibration: null,
   pendingMesoCandidate: null,
+  identityScanPromise: null,
+  lastIdentityScanAt: 0,
   lastReportFilename: "",
   shareJob: "",
   shareMapName: "",
@@ -1209,56 +1211,143 @@ function mapNameRegion(width, height) {
   };
 }
 
-function jobNameRegion(width, height) {
-  const lvRegion = rectFor("lv", width, height);
+function jobRegionFromLevelRect(lvRegion, width, height) {
   const regionWidth = Math.max(88, Math.round(width * 0.07));
   const regionHeight = Math.max(16, Math.round(lvRegion.height * 0.56));
   const x = Math.round(lvRegion.x + lvRegion.width * 0.92);
   const y = Math.round(lvRegion.y + lvRegion.height * 0.02);
+  const clampedX = clamp(x, 0, Math.max(0, width - regionWidth));
+  const clampedY = clamp(y, 0, Math.max(0, height - regionHeight));
   return {
-    x: clamp(x, 0, Math.max(0, width - regionWidth)),
-    y: clamp(y, 0, Math.max(0, height - regionHeight)),
-    width: Math.min(regionWidth, width - clamp(x, 0, Math.max(0, width - regionWidth))),
-    height: Math.min(regionHeight, height - clamp(y, 0, Math.max(0, height - regionHeight))),
+    x: clampedX,
+    y: clampedY,
+    width: Math.min(regionWidth, Math.max(1, width - clampedX)),
+    height: Math.min(regionHeight, Math.max(1, height - clampedY)),
   };
+}
+
+function jobNameRegion(width, height) {
+  return jobRegionFromLevelRect(rectFor("lv", width, height), width, height);
+}
+
+function jobNameRegionCandidates(width, height) {
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (key, label, region) => {
+    const rect = {
+      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
+      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
+      width: Math.max(1, Math.round(region.width)),
+      height: Math.max(1, Math.round(region.height)),
+    };
+    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push({ key, label, region: rect });
+  };
+
+  addCandidate("selected", "目前", jobNameRegion(width, height));
+  for (const [key, row] of Object.entries(OCR_REGION_PRESETS)) {
+    if (!row.lv) continue;
+    const size = presetDimensions(key);
+    const frame = frameForPresetSize(size, width, height) || defaultFrame(width, height);
+    const lvRegion = regionToRect(row.lv, width, height, frame);
+    addCandidate(`preset-${key}`, key, jobRegionFromLevelRect(lvRegion, width, height));
+  }
+  return candidates;
 }
 
 function mesoCornerCandidateRects(width, height) {
   const preset = selectedRegionPreset(width, height);
-  const region = preset?.regions?.meso;
-  if (!region) return [];
-  const frame = preset.frame || defaultFrame(width, height);
-  const base = regionToRect(region, width, height, frame);
-  const mesoTopOffset = Math.max(0, base.y - frame.y);
-  const mesoLeftOffset = Math.max(2, Math.round(base.height * 0.16));
-  const inventoryWidth = Math.min(frame.width, Math.max(base.width, Math.round(base.width * 1.38)));
-  const inventoryHeight = Math.min(frame.height, Math.max(base.height, Math.round(mesoTopOffset + base.height * 2.35)));
-  const topY = frame.y + mesoTopOffset;
-  const bottomY = frame.y + frame.height - inventoryHeight + mesoTopOffset;
-  const leftX = frame.x + mesoLeftOffset;
-  const rightX = frame.x + frame.width - inventoryWidth + mesoLeftOffset;
-  const makeRect = (x, y) => ({
-    x: clamp(Math.round(x), 0, Math.max(0, width - base.width)),
-    y: clamp(Math.round(y), 0, Math.max(0, height - base.height)),
-    width: base.width,
-    height: base.height,
-  });
-  const bottomOffsets = [0, Math.round(base.height * 0.45), Math.round(base.height * 0.9)];
-  const bottomCandidates = [];
-  for (const offset of bottomOffsets) {
-    bottomCandidates.push({ key: `bottom-left-${offset}`, label: "左下", region: makeRect(leftX, bottomY + offset) });
-    bottomCandidates.push({ key: `bottom-right-${offset}`, label: "右下", region: makeRect(rightX, bottomY + offset) });
+  const frame = preset?.frame || defaultFrame(width, height);
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (key, label, region) => {
+    const rect = {
+      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
+      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
+      width: Math.max(1, Math.round(region.width)),
+      height: Math.max(1, Math.round(region.height)),
+    };
+    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push({ key, label, region: rect });
+  };
+
+  const baseRects = [];
+  const addBase = (key, region) => {
+    if (!region) return;
+    const rect = regionToRect(region, width, height, frame);
+    if (rect.width < 40 || rect.height < 12) return;
+    baseRects.push({ key, rect });
+  };
+  addBase(preset?.key || "selected", preset?.regions?.meso);
+  for (const [key, row] of Object.entries(OCR_REGION_PRESETS)) {
+    addBase(`preset-${key}`, row.meso);
   }
-  return [
-    { key: "top-left", label: "左上", region: makeRect(leftX, topY) },
-    { key: "top-right", label: "右上", region: makeRect(rightX, topY) },
-    ...bottomCandidates,
-  ];
+
+  for (const { key, rect: base } of baseRects) {
+    addCandidate(`${key}-direct`, "推估", base);
+    const mesoTopOffset = Math.max(0, base.y - frame.y);
+    const mesoLeftOffset = Math.max(2, Math.round(base.height * 0.16));
+    const inventoryWidth = Math.min(frame.width, Math.max(base.width, Math.round(base.width * 1.38)));
+    const inventoryHeight = Math.min(frame.height, Math.max(base.height, Math.round(mesoTopOffset + base.height * 2.35)));
+    const topY = frame.y + mesoTopOffset;
+    const bottomY = frame.y + frame.height - inventoryHeight + mesoTopOffset;
+    const leftX = frame.x + mesoLeftOffset;
+    const rightX = frame.x + frame.width - inventoryWidth + mesoLeftOffset;
+    const makeRect = (x, y) => ({
+      x: clamp(Math.round(x), 0, Math.max(0, width - base.width)),
+      y: clamp(Math.round(y), 0, Math.max(0, height - base.height)),
+      width: base.width,
+      height: base.height,
+    });
+    const bottomOffsets = [0, Math.round(base.height * 0.45), Math.round(base.height * 0.9), Math.round(base.height * 1.35)];
+    addCandidate(`${key}-top-left`, "左上", makeRect(leftX, topY));
+    addCandidate(`${key}-top-right`, "右上", makeRect(rightX, topY));
+    for (const offset of bottomOffsets) {
+      addCandidate(`${key}-bottom-left-${offset}`, "左下", makeRect(leftX, bottomY + offset));
+      addCandidate(`${key}-bottom-right-${offset}`, "右下", makeRect(rightX, bottomY + offset));
+    }
+  }
+  return candidates;
 }
 
 function regionImageData(sourceCanvas, region) {
   const ctx = sourceCanvas.getContext("2d", { willReadFrequently: true });
   return ctx.getImageData(region.x, region.y, region.width, region.height);
+}
+
+function jobRegionVisualScore(sourceCanvas, region) {
+  const image = regionImageData(sourceCanvas, region);
+  let brightText = 0;
+  let blueGrayText = 0;
+  let darkUi = 0;
+  let greenScene = 0;
+  const total = image.width * image.height;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = (y * image.width + x) * 4;
+      const r = image.data[index];
+      const g = image.data[index + 1];
+      const b = image.data[index + 2];
+      const brightness = (r + g + b) / 3;
+      const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+      if (brightness > 150 && saturation < 95) brightText += 1;
+      if (b > 95 && g > 80 && r < 150 && saturation > 18 && brightness > 85 && brightness < 180) blueGrayText += 1;
+      if (brightness < 75 && saturation < 95) darkUi += 1;
+      if (g > 85 && g > r * 1.18 && g > b * 1.08) greenScene += 1;
+    }
+  }
+  const brightRatio = total ? brightText / total : 0;
+  const blueGrayRatio = total ? blueGrayText / total : 0;
+  const darkRatio = total ? darkUi / total : 0;
+  const greenRatio = total ? greenScene / total : 0;
+  return brightRatio * 4.2
+    + blueGrayRatio * 1.3
+    + Math.min(0.45, darkRatio) * 1.1
+    - greenRatio * 2.6;
 }
 
 function mesoRegionVisualScore(sourceCanvas, region) {
@@ -1328,7 +1417,7 @@ function findMesoRegion(sourceCanvas) {
   const best = candidates[0] || null;
   if (!best) return null;
   const hasReliableShape = best.visualScore >= 1.35;
-  const hasReadableValue = best.meso !== null && best.meso !== undefined && best.score >= 1.8;
+  const hasReadableValue = best.meso !== null && best.meso !== undefined && best.score >= 1.2;
   if (!hasReliableShape && !hasReadableValue) {
     state.pendingMesoCandidate = {
       found: false,
@@ -2356,6 +2445,7 @@ async function ensureScreenShare() {
     el.video.srcObject = stream;
     await el.video.play();
     updateRegionPresetStatus();
+    refreshShareIdentityFromCanvas(currentScreenCanvas(), true);
     stream.getVideoTracks().forEach(track => {
       track.addEventListener("ended", stopAnalysis);
     });
@@ -2403,6 +2493,7 @@ async function captureFrame(addToTimeline = true) {
   drawRegion(sourceCanvas, mesoRegion, el.mesoCrop);
   if (el.mapCrop) drawRegion(sourceCanvas, currentMapRegion, el.mapCrop);
   if (el.jobCrop) drawRegion(sourceCanvas, currentJobRegion, el.jobCrop);
+  refreshShareIdentityFromCanvas(sourceCanvas);
 
   const lvRawCanvas = cropRegionCanvas(sourceCanvas, lvRegion, 8);
   const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
@@ -2446,8 +2537,11 @@ async function captureFrame(addToTimeline = true) {
   );
   const exp = expResult.exp;
   const percent = expResult.percent;
+  const mesoTemplateConfidence = mesoCandidate?.meso === null || mesoCandidate?.meso === undefined
+    ? 0
+    : Math.min(0.68, mesoCandidate.confidence || 0.5);
   const mesoResult = resolveMesoValue(mesoCandidate ? [
-    { value: mesoCandidate.meso, source: `楓幣圖樣 ${mesoCandidate.label}`, confidence: mesoCandidate.confidence },
+    { value: mesoCandidate.meso, source: `楓幣圖樣 ${mesoCandidate.label}`, confidence: mesoTemplateConfidence },
     ...normalizeMesoTextCandidates(mesoDetection.text).map(row => ({
       ...row,
       source: `${row.source} ${mesoCandidate.label}`,
@@ -2880,38 +2974,78 @@ function updateShareDetectionLabels() {
   if (el.shareMapValue) el.shareMapValue.textContent = state.shareMapName || "尚未偵測";
 }
 
-async function readShareJobFromScreen() {
-  if (!state.stream) {
-    await ensureScreenShare();
+function cloneCanvas(sourceCanvas) {
+  if (!sourceCanvas) {
+    return null;
   }
-  const sourceCanvas = currentScreenCanvas();
+  const canvas = document.createElement("canvas");
+  canvas.width = sourceCanvas.width;
+  canvas.height = sourceCanvas.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(sourceCanvas, 0, 0);
+  return canvas;
+}
+
+async function readShareJobFromCanvas(sourceCanvas) {
   if (!sourceCanvas) {
     return { job: state.shareJob || "", rawText: "", score: 0, source: "none" };
   }
-  const region = jobNameRegion(sourceCanvas.width, sourceCanvas.height);
-  if (el.jobCrop) drawRegion(sourceCanvas, region, el.jobCrop);
-  const ocrCanvas = cropRegionCanvas(sourceCanvas, region, 5);
-  const detection = await detectJobText(ocrCanvas);
-  const rawText = normalizeOcrText(detection.text);
-  const matched = resolveJobFromText(rawText);
-  const job = matched?.job?.label || "";
+  const candidates = jobNameRegionCandidates(sourceCanvas.width, sourceCanvas.height)
+    .map(candidate => ({
+      ...candidate,
+      visualScore: jobRegionVisualScore(sourceCanvas, candidate.region),
+    }))
+    .sort((a, b) => b.visualScore - a.visualScore);
+  const fallbackRegion = candidates[0]?.region || jobNameRegion(sourceCanvas.width, sourceCanvas.height);
+  let bestResult = {
+    job: "",
+    rawText: "",
+    score: 0,
+    source: "none",
+    region: fallbackRegion,
+  };
+
+  for (const candidate of candidates.slice(0, 6)) {
+    const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 5);
+    const detection = await detectJobText(ocrCanvas);
+    const rawText = normalizeOcrText(detection.text);
+    const matched = resolveJobFromText(rawText);
+    const score = matched?.score || 0;
+    if (score > bestResult.score || (!bestResult.rawText && rawText)) {
+      bestResult = {
+        job: matched?.job?.label || "",
+        rawText,
+        score,
+        source: detection.supported ? "ocr" : "none",
+        region: candidate.region,
+      };
+    }
+    if (score >= 860) break;
+  }
+
+  if (el.jobCrop) drawRegion(sourceCanvas, bestResult.region, el.jobCrop);
+  const job = bestResult.job;
   if (job) {
     state.shareJob = job;
     updateShareDetectionLabels();
   }
   return {
     job,
-    rawText,
-    score: matched?.score || 0,
-    source: detection.supported ? "ocr" : "none",
+    rawText: bestResult.rawText,
+    score: bestResult.score,
+    source: bestResult.source,
   };
 }
 
-async function readShareMapFromScreen() {
+async function readShareJobFromScreen() {
   if (!state.stream) {
     await ensureScreenShare();
   }
   const sourceCanvas = currentScreenCanvas();
+  return readShareJobFromCanvas(sourceCanvas);
+}
+
+async function readShareMapFromCanvas(sourceCanvas) {
   if (!sourceCanvas) {
     const cached = state.shareMapName || "";
     const cachedMatch = cached ? resolveMapFromText(cached) : null;
@@ -2937,6 +3071,31 @@ async function readShareMapFromScreen() {
     score: matched?.score || 0,
     source: detection.supported ? "ocr" : "none",
   };
+}
+
+async function readShareMapFromScreen() {
+  if (!state.stream) {
+    await ensureScreenShare();
+  }
+  const sourceCanvas = currentScreenCanvas();
+  return readShareMapFromCanvas(sourceCanvas);
+}
+
+function refreshShareIdentityFromCanvas(sourceCanvas, force = false) {
+  if (!sourceCanvas) return;
+  const now = Date.now();
+  const needsInitialDetection = !state.shareJob || !state.shareMapName;
+  if (state.identityScanPromise || (!force && !needsInitialDetection && now - state.lastIdentityScanAt < 60000)) return;
+  if (!force && now - state.lastIdentityScanAt < 25000) return;
+  const snapshotCanvas = cloneCanvas(sourceCanvas);
+  if (!snapshotCanvas) return;
+  state.lastIdentityScanAt = now;
+  state.identityScanPromise = Promise.all([
+    readShareJobFromCanvas(snapshotCanvas),
+    readShareMapFromCanvas(snapshotCanvas),
+  ]).catch(() => null).finally(() => {
+    state.identityScanPromise = null;
+  });
 }
 
 function roundRectPath(ctx, x, y, width, height, radius) {
@@ -3141,9 +3300,10 @@ async function generateShareImage() {
   }
   setShareStatus("正在生成分享圖。");
   if (!state.stream) await ensureScreenShare();
+  const sourceCanvas = currentScreenCanvas();
   const [jobResult, mapResult] = await Promise.all([
-    readShareJobFromScreen(),
-    readShareMapFromScreen(),
+    readShareJobFromCanvas(sourceCanvas),
+    readShareMapFromCanvas(sourceCanvas),
   ]);
   const map = mapResult.map || resolveMapFromText(mapResult.input)?.map || null;
   const monster = representativeMonsterForMap(map);
@@ -3242,7 +3402,10 @@ function initialize() {
   el.downloadShare?.addEventListener("click", downloadShareImage);
   el.exportReport?.addEventListener("click", exportReportDataset);
   el.emailReport?.addEventListener("click", emailReportDataset);
-  el.video?.addEventListener("loadedmetadata", () => updateRegionPresetStatus());
+  el.video?.addEventListener("loadedmetadata", () => {
+    updateRegionPresetStatus();
+    refreshShareIdentityFromCanvas(currentScreenCanvas(), true);
+  });
   updateRegionPresetStatus();
   render();
   updateAnalysisToggleButton();
