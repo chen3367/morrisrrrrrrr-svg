@@ -222,6 +222,34 @@
       font-size: 15px;
       font-weight: 850;
     }
+    .combatDetectedGrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .combatDetectedItem {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: var(--control-soft);
+    }
+    .combatDetectedItem span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .combatDetectedItem strong {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--plain-text);
+      font-size: 15px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .combatHero {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -509,6 +537,7 @@
       }
       .combatActionGrid,
       .combatFormGrid,
+      .combatDetectedGrid,
       .combatCropGrid {
         grid-template-columns: 1fr;
       }
@@ -616,33 +645,25 @@
               地圖
               <canvas id="mapCropCanvas"></canvas>
             </label>
+            <label class="combatCropCard">
+              職業
+              <canvas id="jobCropCanvas"></canvas>
+            </label>
           </div>
           <div class="combatStatus" id="regionPresetStatus"></div>
         </section>
 
         <section class="combatSection">
           <h3>分享圖</h3>
-          <div class="combatFormGrid">
-            <label class="combatField">玩家職業
-              <select id="shareJobSelect">
-                <option value="">未設定</option>
-                <option value="英雄">英雄</option>
-                <option value="聖騎士">聖騎士</option>
-                <option value="黑騎士">黑騎士</option>
-                <option value="大魔導士（火、毒）">大魔導士（火、毒）</option>
-                <option value="大魔導士（冰、雷）">大魔導士（冰、雷）</option>
-                <option value="主教">主教</option>
-                <option value="箭神">箭神</option>
-                <option value="神射手">神射手</option>
-                <option value="夜使者">夜使者</option>
-                <option value="暗影神偷">暗影神偷</option>
-                <option value="拳霸">拳霸</option>
-                <option value="槍神">槍神</option>
-              </select>
-            </label>
-            <label class="combatField">所在地圖
-              <input id="shareMapInput" type="text" placeholder="自動偵測，可手動修正" />
-            </label>
+          <div class="combatDetectedGrid">
+            <div class="combatDetectedItem">
+              <span>玩家職業</span>
+              <strong id="shareJobValue">尚未偵測</strong>
+            </div>
+            <div class="combatDetectedItem">
+              <span>所在地圖</span>
+              <strong id="shareMapValue">尚未偵測</strong>
+            </div>
           </div>
           <div class="combatActionGrid">
             <button class="combatButton" type="button" id="generateShareImageButton">生成分享圖</button>
@@ -652,7 +673,7 @@
             <canvas id="shareImageCanvas" width="1200" height="630"></canvas>
           </div>
           <div class="combatStatus" id="shareImageStatus"></div>
-          <p class="combatHint">生成時會讀取左上角小地圖名稱；若 OCR 不準，可手動輸入地圖名稱後重新生成。</p>
+          <p class="combatHint">生成時會讀取左下角職業與左上角小地圖名稱；若 OCR 不準，請重新分享清楚的遊戲視窗後再生成。</p>
         </section>
 
         <section class="combatSection">
