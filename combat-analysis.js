@@ -1198,17 +1198,47 @@ function rectFor(type, width, height) {
   return { x: 0, y: 0, width, height };
 }
 
-function mapNameRegion(width, height) {
+function mapTextBandRegion(frame, width, height, yRatio) {
+  const regionWidth = Math.min(frame.width, Math.max(240, Math.round(frame.width * 0.24)));
+  const regionHeight = Math.min(frame.height, Math.max(58, Math.round(frame.height * 0.085)));
+  const x = frame.x;
+  const y = frame.y + Math.max(24, Math.round(frame.height * yRatio));
+  const clampedX = clamp(x, 0, Math.max(0, width - regionWidth));
+  const clampedY = clamp(y, 0, Math.max(0, height - regionHeight));
+  return {
+    x: clampedX,
+    y: clampedY,
+    width: Math.min(regionWidth, Math.max(1, width - clampedX)),
+    height: Math.min(regionHeight, Math.max(1, height - clampedY)),
+  };
+}
+
+function mapNameRegionCandidates(width, height) {
   const preset = selectedRegionPreset(width, height);
   const frame = preset?.frame || defaultFrame(width, height);
-  const baseWidth = Math.min(frame.width, Math.max(180, Math.round(frame.width * 0.18)));
-  const baseHeight = Math.min(frame.height, Math.max(70, Math.round(frame.height * 0.13)));
-  return {
-    x: clamp(frame.x, 0, Math.max(0, width - baseWidth)),
-    y: clamp(frame.y, 0, Math.max(0, height - baseHeight)),
-    width: baseWidth,
-    height: baseHeight,
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (key, label, region) => {
+    const rect = {
+      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
+      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
+      width: Math.max(1, Math.round(region.width)),
+      height: Math.max(1, Math.round(region.height)),
+    };
+    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push({ key, label, region: rect });
   };
+
+  [0.025, 0.045, 0.065, 0.085, 0.105, 0.125].forEach((yRatio, index) => {
+    addCandidate(`map-text-${index}`, "下方文字", mapTextBandRegion(frame, width, height, yRatio));
+  });
+  return candidates;
+}
+
+function mapNameRegion(width, height) {
+  return mapNameRegionCandidates(width, height)[0]?.region || { x: 0, y: 0, width, height };
 }
 
 function jobRegionFromLevelRect(lvRegion, width, height) {
@@ -2974,6 +3004,16 @@ function updateShareDetectionLabels() {
   if (el.shareMapValue) el.shareMapValue.textContent = state.shareMapName || "尚未偵測";
 }
 
+function sanitizeMapOcrText(text) {
+  return normalizeOcrText(text)
+    .split(/[\n\r]+/)
+    .map(line => line.replace(/小地圖|大地圖|mini\s*map/gi, "").trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function cloneCanvas(sourceCanvas) {
   if (!sourceCanvas) {
     return null;
@@ -3051,25 +3091,50 @@ async function readShareMapFromCanvas(sourceCanvas) {
     const cachedMatch = cached ? resolveMapFromText(cached) : null;
     return { input: cached, rawText: "", map: cachedMatch?.map || null, score: cachedMatch?.score || 0, source: "none" };
   }
-  const region = mapNameRegion(sourceCanvas.width, sourceCanvas.height);
-  if (el.mapCrop) drawRegion(sourceCanvas, region, el.mapCrop);
-  const ocrCanvas = cropRegionCanvas(sourceCanvas, region, 3);
-  const detection = await detectMapText(ocrCanvas);
-  const rawText = normalizeOcrText(detection.text);
-  const matched = resolveMapFromText(rawText);
-  if (matched?.map) {
-    state.shareMapName = matched.map.name || "";
+  const candidates = mapNameRegionCandidates(sourceCanvas.width, sourceCanvas.height);
+  let bestResult = {
+    input: "",
+    rawText: "",
+    map: null,
+    score: 0,
+    source: "none",
+    region: candidates[0]?.region || mapNameRegion(sourceCanvas.width, sourceCanvas.height),
+  };
+
+  for (const candidate of candidates.slice(0, 6)) {
+    const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 3);
+    const detection = await detectMapText(ocrCanvas);
+    const rawText = normalizeOcrText(detection.text);
+    const input = sanitizeMapOcrText(rawText);
+    const matched = resolveMapFromText(input);
+    const score = matched?.score || 0;
+    if (score > bestResult.score || (!bestResult.input && input)) {
+      bestResult = {
+        input: matched?.map?.name || input,
+        rawText,
+        map: matched?.map || null,
+        score,
+        source: detection.supported ? "ocr" : "none",
+        region: candidate.region,
+      };
+    }
+    if (score >= 72) break;
+  }
+
+  if (el.mapCrop) drawRegion(sourceCanvas, bestResult.region, el.mapCrop);
+  if (bestResult.map) {
+    state.shareMapName = bestResult.map.name || "";
     updateShareDetectionLabels();
-  } else if (rawText) {
-    state.shareMapName = rawText;
+  } else if (bestResult.input) {
+    state.shareMapName = bestResult.input;
     updateShareDetectionLabels();
   }
   return {
-    input: matched?.map?.name || rawText,
-    rawText,
-    map: matched?.map || null,
-    score: matched?.score || 0,
-    source: detection.supported ? "ocr" : "none",
+    input: bestResult.input,
+    rawText: bestResult.rawText,
+    map: bestResult.map,
+    score: bestResult.score,
+    source: bestResult.source,
   };
 }
 
