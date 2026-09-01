@@ -51,6 +51,7 @@ const CAPTURE_INTERVAL_MS = 10000;
 const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
+const MAP_MATCH_MIN_SCORE = 72;
 const OCR_REGION_PRESETS = {
   "1366x768": {
     lv: { x: 0.211973, y: 0.96, width: 0.051542, height: 0.038541 },
@@ -842,9 +843,22 @@ function normalizeOcrText(text) {
 }
 
 function normalizeMapSearchText(text) {
+  const romanMap = {
+    "Ⅰ": "I",
+    "Ⅱ": "II",
+    "Ⅲ": "III",
+    "Ⅳ": "IV",
+    "Ⅴ": "V",
+    "Ⅵ": "VI",
+    "Ⅶ": "VII",
+    "Ⅷ": "VIII",
+    "Ⅸ": "IX",
+    "Ⅹ": "X",
+  };
   return normalizeOcrText(text)
+    .replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g, char => romanMap[char] || char)
     .replace(/小地圖|地圖|MINI\s*MAP|MAP/gi, "")
-    .replace(/[^\u3400-\u9fff\wⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g, "")
+    .replace(/[^\u3400-\u9fff\w]/g, "")
     .toLowerCase();
 }
 
@@ -882,6 +896,7 @@ function overlapRatio(a, b) {
 function mapMatchScore(query, map) {
   const compact = normalizeMapSearchText(query);
   if (!compact) return 0;
+  const compactLength = Array.from(compact).length;
   const id = String(map?.id || "");
   if (id && compact === id) return 1000;
   const name = normalizeMapSearchText(map?.name || "");
@@ -891,12 +906,13 @@ function mapMatchScore(query, map) {
   if (name && compact === name) return 950;
   if (label && compact === label) return 930;
   if (name && compact.includes(name)) return 860 + Math.min(40, name.length);
-  if (name && name.includes(compact) && compact.length >= 2) return 740 + compact.length;
+  if (name && name.includes(compact) && compactLength >= 3) return 740 + compactLength;
   if (label && compact.includes(label)) return 700;
   if (street && compact.includes(street) && name && compact.includes(name)) return 690;
+  if (compactLength < 3) return 0;
   const nameLcs = name ? lcsLength(compact, name) / Math.max(compact.length, name.length, 1) : 0;
   const labelLcs = label ? lcsLength(compact, label) / Math.max(compact.length, label.length, 1) : 0;
-  const overlap = Math.max(overlapRatio(name, compact), overlapRatio(compact, name));
+  const overlap = name.length >= 3 ? Math.max(overlapRatio(name, compact), overlapRatio(compact, name)) : 0;
   const regionBonus = region && compact.includes(region) ? 25 : 0;
   return Math.max(nameLcs * 100, labelLcs * 75, overlap * 70) + regionBonus;
 }
@@ -924,9 +940,12 @@ function resolveMapFromText(text) {
   if (!query || !mapRows.length) return null;
   const candidates = mapRows
     .map(map => ({ map, score: mapMatchScore(query, map) }))
-    .filter(row => row.score >= 46)
+    .filter(row => row.score >= MAP_MATCH_MIN_SCORE)
     .sort((a, b) => b.score - a.score || String(a.map.name || "").localeCompare(String(b.map.name || ""), "zh-Hant"));
-  return candidates[0] || null;
+  const best = candidates[0] || null;
+  const second = candidates[1] || null;
+  if (best && best.score < 700 && second && best.score - second.score < 8) return null;
+  return best;
 }
 
 function resolveJobFromText(text) {
@@ -1198,9 +1217,115 @@ function rectFor(type, width, height) {
   return { x: 0, y: 0, width, height };
 }
 
+function regionPixel(image, x, y) {
+  const index = (y * image.width + x) * 4;
+  return [image.data[index], image.data[index + 1], image.data[index + 2]];
+}
+
+function miniMapTitlePixel(r, g, b) {
+  const brightness = (r + g + b) / 3;
+  const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+  return brightness > 135 && (saturation < 86 || (r > 185 && g > 100 && b < 95));
+}
+
+function miniMapInfoPixel(r, g, b) {
+  return r >= 118 && r <= 214
+    && g >= 142 && g <= 220
+    && b >= 155 && b <= 235
+    && g >= r - 14
+    && b >= g - 12;
+}
+
+function miniMapDarkPixel(r, g, b) {
+  return (r + g + b) / 3 < 78;
+}
+
+function miniMapPixelRatio(image, panelWidth, y, predicate) {
+  if (!image || y < 0 || y >= image.height || panelWidth <= 0) return 0;
+  let hits = 0;
+  for (let x = 0; x < panelWidth; x += 1) {
+    const [r, g, b] = regionPixel(image, x, y);
+    if (predicate(r, g, b)) hits += 1;
+  }
+  return hits / panelWidth;
+}
+
+function findMiniMapHeader(image) {
+  const maxY = Math.min(image.height, 64);
+  for (let y = 1; y < maxY; y += 1) {
+    let start = null;
+    for (let x = 0; x < image.width; x += 1) {
+      const [r, g, b] = regionPixel(image, x, y);
+      const hit = miniMapTitlePixel(r, g, b);
+      if (hit) {
+        if (start === null) start = x;
+      } else if (start !== null) {
+        const length = x - start;
+        if (start <= 10 && length >= 80) return { x1: start, x2: x - 1, length, y };
+        start = null;
+      }
+    }
+    if (start !== null) {
+      const length = image.width - start;
+      if (start <= 10 && length >= 80) return { x1: start, x2: image.width - 1, length, y };
+    }
+  }
+  return null;
+}
+
+function detectMiniMapTextRegion(sourceCanvas, frame) {
+  if (!sourceCanvas) return null;
+  const scanWidth = Math.min(frame.width, Math.max(260, Math.round(frame.width * 0.22)));
+  const scanHeight = Math.min(frame.height, Math.max(120, Math.round(frame.height * 0.16)));
+  if (scanWidth < 96 || scanHeight < 70) return null;
+  const ctx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  let image = null;
+  try {
+    image = ctx.getImageData(frame.x, frame.y, scanWidth, scanHeight);
+  } catch (_error) {
+    return null;
+  }
+  const header = findMiniMapHeader(image);
+  if (!header) return null;
+  const panelWidth = clamp(header.x2 + 2, 96, scanWidth);
+  let bodyStart = null;
+  for (let y = 12; y < Math.min(scanHeight - 2, 86); y += 1) {
+    const ratio = (
+      miniMapPixelRatio(image, panelWidth, y, miniMapInfoPixel)
+      + miniMapPixelRatio(image, panelWidth, y + 1, miniMapInfoPixel)
+      + miniMapPixelRatio(image, panelWidth, y + 2, miniMapInfoPixel)
+    ) / 3;
+    if (ratio > 0.76) {
+      bodyStart = y;
+      break;
+    }
+  }
+  if (bodyStart === null) bodyStart = panelWidth >= 260 ? 36 : 20;
+  const uiScale = clamp(bodyStart / 20, 1, 2.2);
+  const bodyTop = clamp(bodyStart + Math.round(4 * uiScale), 18, scanHeight - 32);
+  let bodyBottom = clamp(bodyTop + Math.round(40 * uiScale), bodyTop + 20, scanHeight);
+  for (let y = bodyTop + Math.round(25 * uiScale); y < scanHeight - 1; y += 1) {
+    const infoRatio = miniMapPixelRatio(image, panelWidth, y, miniMapInfoPixel);
+    const darkRatio = miniMapPixelRatio(image, panelWidth, y, miniMapDarkPixel);
+    if (infoRatio < 0.16 && darkRatio < 0.25) {
+      bodyBottom = y;
+      break;
+    }
+  }
+  const textX = clamp(Math.round(43 * uiScale) + (uiScale > 1.35 ? 4 : 0), 6, Math.max(6, panelWidth - 48));
+  const textRight = clamp(panelWidth - Math.round(3 * uiScale), textX + 42, panelWidth);
+  const textHeight = clamp(bodyBottom - bodyTop, 18, Math.round(52 * uiScale));
+  return {
+    x: frame.x + textX,
+    y: frame.y + bodyTop,
+    width: Math.min(textRight - textX, Math.max(1, sourceCanvas.width - frame.x - textX)),
+    height: Math.min(textHeight, Math.max(1, sourceCanvas.height - frame.y - bodyTop)),
+  };
+}
+
 function mapTextBandRegion(frame, width, height, yRatio) {
-  const regionWidth = Math.min(frame.width, Math.max(240, Math.round(frame.width * 0.24)));
-  const regionHeight = Math.min(frame.height, Math.max(58, Math.round(frame.height * 0.085)));
+  const regionWidth = Math.min(frame.width, Math.max(160, Math.min(360, Math.round(frame.width * 0.16))));
+  const regionHeight = Math.min(frame.height, Math.max(42, Math.min(88, Math.round(frame.height * 0.055))));
   const x = frame.x;
   const y = frame.y + Math.max(24, Math.round(frame.height * yRatio));
   const clampedX = clamp(x, 0, Math.max(0, width - regionWidth));
@@ -1213,7 +1338,7 @@ function mapTextBandRegion(frame, width, height, yRatio) {
   };
 }
 
-function mapNameRegionCandidates(width, height) {
+function mapNameRegionCandidates(width, height, sourceCanvas = null) {
   const preset = selectedRegionPreset(width, height);
   const frame = preset?.frame || defaultFrame(width, height);
   const candidates = [];
@@ -1231,7 +1356,19 @@ function mapNameRegionCandidates(width, height) {
     candidates.push({ key, label, region: rect });
   };
 
-  [0.025, 0.045, 0.065, 0.085, 0.105, 0.125].forEach((yRatio, index) => {
+  const miniMapText = detectMiniMapTextRegion(sourceCanvas, frame);
+  if (miniMapText) {
+    addCandidate("minimap-text", "小地圖文字", miniMapText);
+    const looseX = Math.max(frame.x, miniMapText.x - 2);
+    const looseY = Math.max(frame.y, miniMapText.y - 2);
+    addCandidate("minimap-text-loose", "小地圖文字", {
+      x: looseX,
+      y: looseY,
+      width: Math.min(width - looseX, miniMapText.width + 6),
+      height: Math.min(height - looseY, miniMapText.height + 4),
+    });
+  }
+  [0.022, 0.034, 0.046, 0.058, 0.07, 0.085].forEach((yRatio, index) => {
     addCandidate(`map-text-${index}`, "下方文字", mapTextBandRegion(frame, width, height, yRatio));
   });
   return candidates;
@@ -3005,10 +3142,13 @@ function updateShareDetectionLabels() {
 }
 
 function sanitizeMapOcrText(text) {
-  return normalizeOcrText(text)
+  const lines = normalizeOcrText(text)
     .split(/[\n\r]+/)
     .map(line => line.replace(/小地圖|大地圖|mini\s*map/gi, "").trim())
     .filter(Boolean)
+    .filter(line => normalizeMapSearchText(line).length >= 2);
+  return lines
+    .slice(-2)
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
@@ -3091,7 +3231,7 @@ async function readShareMapFromCanvas(sourceCanvas) {
     const cachedMatch = cached ? resolveMapFromText(cached) : null;
     return { input: cached, rawText: "", map: cachedMatch?.map || null, score: cachedMatch?.score || 0, source: "none" };
   }
-  const candidates = mapNameRegionCandidates(sourceCanvas.width, sourceCanvas.height);
+  const candidates = mapNameRegionCandidates(sourceCanvas.width, sourceCanvas.height, sourceCanvas);
   let bestResult = {
     input: "",
     rawText: "",
@@ -3101,8 +3241,8 @@ async function readShareMapFromCanvas(sourceCanvas) {
     region: candidates[0]?.region || mapNameRegion(sourceCanvas.width, sourceCanvas.height),
   };
 
-  for (const candidate of candidates.slice(0, 6)) {
-    const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 3);
+  for (const candidate of candidates.slice(0, 8)) {
+    const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 4);
     const detection = await detectMapText(ocrCanvas);
     const rawText = normalizeOcrText(detection.text);
     const input = sanitizeMapOcrText(rawText);
@@ -3118,15 +3258,15 @@ async function readShareMapFromCanvas(sourceCanvas) {
         region: candidate.region,
       };
     }
-    if (score >= 72) break;
+    if (score >= 860) break;
   }
 
   if (el.mapCrop) drawRegion(sourceCanvas, bestResult.region, el.mapCrop);
   if (bestResult.map) {
     state.shareMapName = bestResult.map.name || "";
     updateShareDetectionLabels();
-  } else if (bestResult.input) {
-    state.shareMapName = bestResult.input;
+  } else {
+    state.shareMapName = "";
     updateShareDetectionLabels();
   }
   return {
