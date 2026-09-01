@@ -2,13 +2,56 @@ const db = window.MS_COMBAT_ANALYSIS_DB || {};
 const mapDb = window.MS_MAP_DB || {};
 const levelRows = Array.isArray(db.levels) ? db.levels : [];
 const mapRows = Array.isArray(mapDb.maps) ? mapDb.maps : [];
+const COMBAT_JOB_CANDIDATES = [
+  { id: 0, label: "初心者" },
+  { id: 100, label: "劍士" },
+  { id: 110, label: "狂戰士" },
+  { id: 120, label: "見習騎士" },
+  { id: 130, label: "槍騎兵" },
+  { id: 111, label: "十字軍" },
+  { id: 121, label: "騎士" },
+  { id: 131, label: "龍騎士" },
+  { id: 112, label: "英雄" },
+  { id: 122, label: "聖騎士" },
+  { id: 132, label: "黑騎士" },
+  { id: 200, label: "法師" },
+  { id: 210, label: "巫師（火、毒）", aliases: ["巫師火毒"] },
+  { id: 220, label: "巫師（冰、雷）", aliases: ["巫師冰雷"] },
+  { id: 230, label: "僧侶" },
+  { id: 211, label: "魔導士（火、毒）", aliases: ["魔導士火毒"] },
+  { id: 221, label: "魔導士（冰、雷）", aliases: ["魔導士冰雷"] },
+  { id: 231, label: "祭司" },
+  { id: 212, label: "大魔導士（火、毒）", aliases: ["大魔導士火毒"] },
+  { id: 222, label: "大魔導士（冰、雷）", aliases: ["大魔導士冰雷"] },
+  { id: 232, label: "主教" },
+  { id: 300, label: "弓箭手" },
+  { id: 310, label: "獵人" },
+  { id: 320, label: "弩弓手" },
+  { id: 311, label: "遊俠" },
+  { id: 321, label: "狙擊手" },
+  { id: 312, label: "箭神" },
+  { id: 322, label: "神射手" },
+  { id: 400, label: "盜賊" },
+  { id: 410, label: "刺客" },
+  { id: 420, label: "俠盜" },
+  { id: 411, label: "暗殺者" },
+  { id: 421, label: "神偷" },
+  { id: 412, label: "夜使者" },
+  { id: 422, label: "暗影神偷" },
+  { id: 500, label: "海盜" },
+  { id: 510, label: "打手" },
+  { id: 520, label: "槍手" },
+  { id: 511, label: "格鬥家" },
+  { id: 521, label: "神槍手" },
+  { id: 512, label: "拳霸" },
+  { id: 522, label: "槍神" },
+];
 const COOKIE_DAYS = 180;
 const CAPTURE_INTERVAL_MS = 10000;
 const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
-const SHARE_JOB_COOKIE = "ms_combat_share_job";
-const SHARE_MAP_COOKIE = "ms_combat_share_map";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
+const MAP_MATCH_MIN_SCORE = 72;
 const OCR_REGION_PRESETS = {
   "1366x768": {
     lv: { x: 0.211973, y: 0.96, width: 0.051542, height: 0.038541 },
@@ -103,9 +146,11 @@ const state = {
   tesseractFailed: false,
   pendingCalibration: null,
   pendingMesoCandidate: null,
+  identityScanPromise: null,
+  lastIdentityScanAt: 0,
   lastReportFilename: "",
-  shareJob: readCookie(SHARE_JOB_COOKIE),
-  shareMapName: readCookie(SHARE_MAP_COOKIE),
+  shareJob: "",
+  shareMapName: "",
   shareImageReady: false,
 };
 
@@ -125,8 +170,9 @@ const el = {
   expCrop: document.getElementById("expCropCanvas"),
   mesoCrop: document.getElementById("mesoCropCanvas"),
   mapCrop: document.getElementById("mapCropCanvas"),
-  shareJob: document.getElementById("shareJobSelect"),
-  shareMap: document.getElementById("shareMapInput"),
+  jobCrop: document.getElementById("jobCropCanvas"),
+  shareJobValue: document.getElementById("shareJobValue"),
+  shareMapValue: document.getElementById("shareMapValue"),
   generateShare: document.getElementById("generateShareImageButton"),
   downloadShare: document.getElementById("downloadShareImageButton"),
   shareCanvas: document.getElementById("shareImageCanvas"),
@@ -353,6 +399,7 @@ function buildReportDataset() {
       exp: canvasReport(el.expCrop),
       meso: canvasReport(el.mesoCrop),
       map: canvasReport(el.mapCrop),
+      job: canvasReport(el.jobCrop),
     },
     privacy: {
       containsFullScreenshot: false,
@@ -467,6 +514,40 @@ function expPercentTolerance(expToNext) {
   if (!expToNext) return 0.12;
   const expFloor = Math.max(40, Math.ceil(expToNext * 0.0002));
   return Math.max(0.12, Math.round((expFloor / expToNext) * 10000) / 100);
+}
+
+function inferLevelFromExpPercent(expValue, percentValue, source = "EXP 推算等級", baseConfidence = 0.72) {
+  const exp = sanitizeExpCandidate(expValue, 0);
+  const percent = sanitizePercentCandidate(percentValue);
+  if (exp === null || percent === null || percent <= 0) return null;
+  const rows = levelRows
+    .map(row => ({
+      level: Number(row.level),
+      expToNext: Number(row.expToNextLevel || 0),
+    }))
+    .filter(row => Number.isFinite(row.level)
+      && row.level >= 1
+      && row.level <= 200
+      && row.expToNext > 0
+      && exp <= row.expToNext)
+    .map(row => ({
+      ...row,
+      expectedPercent: percentFromExp(exp, row.expToNext),
+    }))
+    .map(row => ({
+      ...row,
+      delta: Math.abs(row.expectedPercent - percent),
+    }))
+    .sort((a, b) => a.delta - b.delta || a.level - b.level);
+  const best = rows[0];
+  if (!best) return null;
+  const tolerance = Math.max(0.18, Math.min(1.2, percent * 0.1));
+  if (best.delta > tolerance) return null;
+  return {
+    value: best.level,
+    source,
+    confidence: Math.max(0.5, Math.min(0.96, baseConfidence - best.delta * 0.2)),
+  };
 }
 
 function resolveExpPercent(level, expCandidates = [], percentCandidates = []) {
@@ -584,6 +665,62 @@ function latestKnownExpSnapshot() {
     }
   }
   return null;
+}
+
+function latestKnownLevel() {
+  for (let index = state.snapshots.length - 1; index >= 0; index -= 1) {
+    const level = Number(state.snapshots[index]?.level);
+    if (Number.isFinite(level) && level >= 1 && level <= 200) return Math.round(level);
+  }
+  const latest = Number(state.latest?.level);
+  return Number.isFinite(latest) && latest >= 1 && latest <= 200 ? Math.round(latest) : null;
+}
+
+function normalizeLevelCandidate(value) {
+  const level = Number(value);
+  if (!Number.isFinite(level)) return null;
+  const rounded = Math.round(level);
+  return rounded >= 1 && rounded <= 200 ? rounded : null;
+}
+
+function resolveLevelValue(candidates = [], allowPreviousFallback = false) {
+  const previous = latestKnownLevel();
+  const rows = [];
+  const seen = new Set();
+  for (const candidate of candidates) {
+    const value = normalizeLevelCandidate(candidate?.value);
+    if (value === null) continue;
+    const source = candidate?.source || "等級辨識";
+    const key = `${value}:${source}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rows.push({
+      value,
+      source,
+      confidence: Number(candidate?.confidence || 0.5),
+    });
+  }
+
+  if (rows.length) {
+    if (previous !== null) {
+      const plausible = rows.filter(row => {
+        const distance = Math.abs(row.value - previous);
+        return distance <= 1 || (row.value > previous && row.value <= previous + 3 && row.confidence >= 0.82);
+      });
+      if (plausible.length) {
+        plausible.sort((a, b) => Math.abs(a.value - previous) - Math.abs(b.value - previous) || b.confidence - a.confidence);
+        return { level: plausible[0].value, source: plausible[0].source, reused: false };
+      }
+      if (allowPreviousFallback) return { level: previous, source: "上一筆等級", reused: true };
+    }
+    rows.sort((a, b) => b.confidence - a.confidence);
+    return { level: rows[0].value, source: rows[0].source, reused: false };
+  }
+
+  if (allowPreviousFallback && previous !== null) {
+    return { level: previous, source: "上一筆等級", reused: true };
+  }
+  return { level: null, source: "", reused: false };
 }
 
 function expMovesBackward(snapshot) {
@@ -706,9 +843,29 @@ function normalizeOcrText(text) {
 }
 
 function normalizeMapSearchText(text) {
+  const romanMap = {
+    "Ⅰ": "I",
+    "Ⅱ": "II",
+    "Ⅲ": "III",
+    "Ⅳ": "IV",
+    "Ⅴ": "V",
+    "Ⅵ": "VI",
+    "Ⅶ": "VII",
+    "Ⅷ": "VIII",
+    "Ⅸ": "IX",
+    "Ⅹ": "X",
+  };
   return normalizeOcrText(text)
+    .replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g, char => romanMap[char] || char)
     .replace(/小地圖|地圖|MINI\s*MAP|MAP/gi, "")
-    .replace(/[^\u3400-\u9fff\wⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]/g, "")
+    .replace(/[^\u3400-\u9fff\w]/g, "")
+    .toLowerCase();
+}
+
+function normalizeJobSearchText(text) {
+  return normalizeOcrText(text)
+    .replace(/[（(][^）)]*[）)]/g, value => value.replace(/[（）(),，、\s]/g, ""))
+    .replace(/[^\u3400-\u9fffA-Za-z0-9]/g, "")
     .toLowerCase();
 }
 
@@ -739,6 +896,7 @@ function overlapRatio(a, b) {
 function mapMatchScore(query, map) {
   const compact = normalizeMapSearchText(query);
   if (!compact) return 0;
+  const compactLength = Array.from(compact).length;
   const id = String(map?.id || "");
   if (id && compact === id) return 1000;
   const name = normalizeMapSearchText(map?.name || "");
@@ -748,14 +906,33 @@ function mapMatchScore(query, map) {
   if (name && compact === name) return 950;
   if (label && compact === label) return 930;
   if (name && compact.includes(name)) return 860 + Math.min(40, name.length);
-  if (name && name.includes(compact) && compact.length >= 2) return 740 + compact.length;
+  if (name && name.includes(compact) && compactLength >= 3) return 740 + compactLength;
   if (label && compact.includes(label)) return 700;
   if (street && compact.includes(street) && name && compact.includes(name)) return 690;
+  if (compactLength < 3) return 0;
   const nameLcs = name ? lcsLength(compact, name) / Math.max(compact.length, name.length, 1) : 0;
   const labelLcs = label ? lcsLength(compact, label) / Math.max(compact.length, label.length, 1) : 0;
-  const overlap = Math.max(overlapRatio(name, compact), overlapRatio(compact, name));
+  const overlap = name.length >= 3 ? Math.max(overlapRatio(name, compact), overlapRatio(compact, name)) : 0;
   const regionBonus = region && compact.includes(region) ? 25 : 0;
   return Math.max(nameLcs * 100, labelLcs * 75, overlap * 70) + regionBonus;
+}
+
+function jobMatchScore(query, job) {
+  const compact = normalizeJobSearchText(query);
+  if (!compact) return 0;
+  const aliases = [job?.label, ...(job?.aliases || [])]
+    .map(normalizeJobSearchText)
+    .filter(Boolean);
+  let best = 0;
+  for (const alias of aliases) {
+    if (compact === alias) best = Math.max(best, 1000 + alias.length);
+    if (compact.includes(alias)) best = Math.max(best, 860 + alias.length);
+    if (alias.includes(compact) && compact.length >= 2) best = Math.max(best, 650 + compact.length);
+    const lcs = lcsLength(compact, alias) / Math.max(compact.length, alias.length, 1);
+    const overlap = Math.max(overlapRatio(alias, compact), overlapRatio(compact, alias));
+    best = Math.max(best, lcs * 100, overlap * 80);
+  }
+  return best;
 }
 
 function resolveMapFromText(text) {
@@ -763,8 +940,21 @@ function resolveMapFromText(text) {
   if (!query || !mapRows.length) return null;
   const candidates = mapRows
     .map(map => ({ map, score: mapMatchScore(query, map) }))
-    .filter(row => row.score >= 46)
+    .filter(row => row.score >= MAP_MATCH_MIN_SCORE)
     .sort((a, b) => b.score - a.score || String(a.map.name || "").localeCompare(String(b.map.name || ""), "zh-Hant"));
+  const best = candidates[0] || null;
+  const second = candidates[1] || null;
+  if (best && best.score < 700 && second && best.score - second.score < 8) return null;
+  return best;
+}
+
+function resolveJobFromText(text) {
+  const query = normalizeJobSearchText(text);
+  if (!query) return null;
+  const candidates = COMBAT_JOB_CANDIDATES
+    .map(job => ({ job, score: jobMatchScore(query, job) }))
+    .filter(row => row.score >= 52)
+    .sort((a, b) => b.score - a.score || String(b.job.label || "").length - String(a.job.label || "").length);
   return candidates[0] || null;
 }
 
@@ -1027,55 +1217,304 @@ function rectFor(type, width, height) {
   return { x: 0, y: 0, width, height };
 }
 
-function mapNameRegion(width, height) {
+function regionPixel(image, x, y) {
+  const index = (y * image.width + x) * 4;
+  return [image.data[index], image.data[index + 1], image.data[index + 2]];
+}
+
+function miniMapTitlePixel(r, g, b) {
+  const brightness = (r + g + b) / 3;
+  const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+  return brightness > 135 && (saturation < 86 || (r > 185 && g > 100 && b < 95));
+}
+
+function miniMapInfoPixel(r, g, b) {
+  return r >= 118 && r <= 214
+    && g >= 142 && g <= 220
+    && b >= 155 && b <= 235
+    && g >= r - 14
+    && b >= g - 12;
+}
+
+function miniMapDarkPixel(r, g, b) {
+  return (r + g + b) / 3 < 78;
+}
+
+function miniMapPixelRatio(image, panelWidth, y, predicate) {
+  if (!image || y < 0 || y >= image.height || panelWidth <= 0) return 0;
+  let hits = 0;
+  for (let x = 0; x < panelWidth; x += 1) {
+    const [r, g, b] = regionPixel(image, x, y);
+    if (predicate(r, g, b)) hits += 1;
+  }
+  return hits / panelWidth;
+}
+
+function findMiniMapHeader(image) {
+  const maxY = Math.min(image.height, 64);
+  for (let y = 1; y < maxY; y += 1) {
+    let start = null;
+    for (let x = 0; x < image.width; x += 1) {
+      const [r, g, b] = regionPixel(image, x, y);
+      const hit = miniMapTitlePixel(r, g, b);
+      if (hit) {
+        if (start === null) start = x;
+      } else if (start !== null) {
+        const length = x - start;
+        if (start <= 10 && length >= 80) return { x1: start, x2: x - 1, length, y };
+        start = null;
+      }
+    }
+    if (start !== null) {
+      const length = image.width - start;
+      if (start <= 10 && length >= 80) return { x1: start, x2: image.width - 1, length, y };
+    }
+  }
+  return null;
+}
+
+function detectMiniMapTextRegion(sourceCanvas, frame) {
+  if (!sourceCanvas) return null;
+  const scanWidth = Math.min(frame.width, Math.max(260, Math.round(frame.width * 0.22)));
+  const scanHeight = Math.min(frame.height, Math.max(120, Math.round(frame.height * 0.16)));
+  if (scanWidth < 96 || scanHeight < 70) return null;
+  const ctx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  let image = null;
+  try {
+    image = ctx.getImageData(frame.x, frame.y, scanWidth, scanHeight);
+  } catch (_error) {
+    return null;
+  }
+  const header = findMiniMapHeader(image);
+  if (!header) return null;
+  const panelWidth = clamp(header.x2 + 2, 96, scanWidth);
+  let bodyStart = null;
+  for (let y = 12; y < Math.min(scanHeight - 2, 86); y += 1) {
+    const ratio = (
+      miniMapPixelRatio(image, panelWidth, y, miniMapInfoPixel)
+      + miniMapPixelRatio(image, panelWidth, y + 1, miniMapInfoPixel)
+      + miniMapPixelRatio(image, panelWidth, y + 2, miniMapInfoPixel)
+    ) / 3;
+    if (ratio > 0.76) {
+      bodyStart = y;
+      break;
+    }
+  }
+  if (bodyStart === null) bodyStart = panelWidth >= 260 ? 36 : 20;
+  const uiScale = clamp(bodyStart / 20, 1, 2.2);
+  const bodyTop = clamp(bodyStart + Math.round(4 * uiScale), 18, scanHeight - 32);
+  let bodyBottom = clamp(bodyTop + Math.round(40 * uiScale), bodyTop + 20, scanHeight);
+  for (let y = bodyTop + Math.round(25 * uiScale); y < scanHeight - 1; y += 1) {
+    const infoRatio = miniMapPixelRatio(image, panelWidth, y, miniMapInfoPixel);
+    const darkRatio = miniMapPixelRatio(image, panelWidth, y, miniMapDarkPixel);
+    if (infoRatio < 0.16 && darkRatio < 0.25) {
+      bodyBottom = y;
+      break;
+    }
+  }
+  const textX = clamp(Math.round(43 * uiScale) + (uiScale > 1.35 ? 4 : 0), 6, Math.max(6, panelWidth - 48));
+  const textRight = clamp(panelWidth - Math.round(3 * uiScale), textX + 42, panelWidth);
+  const textHeight = clamp(bodyBottom - bodyTop, 18, Math.round(52 * uiScale));
+  return {
+    x: frame.x + textX,
+    y: frame.y + bodyTop,
+    width: Math.min(textRight - textX, Math.max(1, sourceCanvas.width - frame.x - textX)),
+    height: Math.min(textHeight, Math.max(1, sourceCanvas.height - frame.y - bodyTop)),
+  };
+}
+
+function mapTextBandRegion(frame, width, height, yRatio) {
+  const regionWidth = Math.min(frame.width, Math.max(160, Math.min(360, Math.round(frame.width * 0.16))));
+  const regionHeight = Math.min(frame.height, Math.max(42, Math.min(88, Math.round(frame.height * 0.055))));
+  const x = frame.x;
+  const y = frame.y + Math.max(24, Math.round(frame.height * yRatio));
+  const clampedX = clamp(x, 0, Math.max(0, width - regionWidth));
+  const clampedY = clamp(y, 0, Math.max(0, height - regionHeight));
+  return {
+    x: clampedX,
+    y: clampedY,
+    width: Math.min(regionWidth, Math.max(1, width - clampedX)),
+    height: Math.min(regionHeight, Math.max(1, height - clampedY)),
+  };
+}
+
+function mapNameRegionCandidates(width, height, sourceCanvas = null) {
   const preset = selectedRegionPreset(width, height);
   const frame = preset?.frame || defaultFrame(width, height);
-  const baseWidth = Math.min(frame.width, Math.max(180, Math.round(frame.width * 0.18)));
-  const baseHeight = Math.min(frame.height, Math.max(70, Math.round(frame.height * 0.13)));
-  return {
-    x: clamp(frame.x, 0, Math.max(0, width - baseWidth)),
-    y: clamp(frame.y, 0, Math.max(0, height - baseHeight)),
-    width: baseWidth,
-    height: baseHeight,
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (key, label, region) => {
+    const rect = {
+      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
+      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
+      width: Math.max(1, Math.round(region.width)),
+      height: Math.max(1, Math.round(region.height)),
+    };
+    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push({ key, label, region: rect });
   };
+
+  const miniMapText = detectMiniMapTextRegion(sourceCanvas, frame);
+  if (miniMapText) {
+    addCandidate("minimap-text", "小地圖文字", miniMapText);
+    const looseX = Math.max(frame.x, miniMapText.x - 2);
+    const looseY = Math.max(frame.y, miniMapText.y - 2);
+    addCandidate("minimap-text-loose", "小地圖文字", {
+      x: looseX,
+      y: looseY,
+      width: Math.min(width - looseX, miniMapText.width + 6),
+      height: Math.min(height - looseY, miniMapText.height + 4),
+    });
+  }
+  [0.022, 0.034, 0.046, 0.058, 0.07, 0.085].forEach((yRatio, index) => {
+    addCandidate(`map-text-${index}`, "下方文字", mapTextBandRegion(frame, width, height, yRatio));
+  });
+  return candidates;
+}
+
+function mapNameRegion(width, height) {
+  return mapNameRegionCandidates(width, height)[0]?.region || { x: 0, y: 0, width, height };
+}
+
+function jobRegionFromLevelRect(lvRegion, width, height) {
+  const regionWidth = Math.max(88, Math.round(width * 0.07));
+  const regionHeight = Math.max(16, Math.round(lvRegion.height * 0.56));
+  const x = Math.round(lvRegion.x + lvRegion.width * 0.92);
+  const y = Math.round(lvRegion.y + lvRegion.height * 0.02);
+  const clampedX = clamp(x, 0, Math.max(0, width - regionWidth));
+  const clampedY = clamp(y, 0, Math.max(0, height - regionHeight));
+  return {
+    x: clampedX,
+    y: clampedY,
+    width: Math.min(regionWidth, Math.max(1, width - clampedX)),
+    height: Math.min(regionHeight, Math.max(1, height - clampedY)),
+  };
+}
+
+function jobNameRegion(width, height) {
+  return jobRegionFromLevelRect(rectFor("lv", width, height), width, height);
+}
+
+function jobNameRegionCandidates(width, height) {
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (key, label, region) => {
+    const rect = {
+      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
+      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
+      width: Math.max(1, Math.round(region.width)),
+      height: Math.max(1, Math.round(region.height)),
+    };
+    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push({ key, label, region: rect });
+  };
+
+  addCandidate("selected", "目前", jobNameRegion(width, height));
+  for (const [key, row] of Object.entries(OCR_REGION_PRESETS)) {
+    if (!row.lv) continue;
+    const size = presetDimensions(key);
+    const frame = frameForPresetSize(size, width, height) || defaultFrame(width, height);
+    const lvRegion = regionToRect(row.lv, width, height, frame);
+    addCandidate(`preset-${key}`, key, jobRegionFromLevelRect(lvRegion, width, height));
+  }
+  return candidates;
 }
 
 function mesoCornerCandidateRects(width, height) {
   const preset = selectedRegionPreset(width, height);
-  const region = preset?.regions?.meso;
-  if (!region) return [];
-  const frame = preset.frame || defaultFrame(width, height);
-  const base = regionToRect(region, width, height, frame);
-  const mesoTopOffset = Math.max(0, base.y - frame.y);
-  const mesoLeftOffset = Math.max(2, Math.round(base.height * 0.16));
-  const inventoryWidth = Math.min(frame.width, Math.max(base.width, Math.round(base.width * 1.38)));
-  const inventoryHeight = Math.min(frame.height, Math.max(base.height, Math.round(mesoTopOffset + base.height * 2.35)));
-  const topY = frame.y + mesoTopOffset;
-  const bottomY = frame.y + frame.height - inventoryHeight + mesoTopOffset;
-  const leftX = frame.x + mesoLeftOffset;
-  const rightX = frame.x + frame.width - inventoryWidth + mesoLeftOffset;
-  const makeRect = (x, y) => ({
-    x: clamp(Math.round(x), 0, Math.max(0, width - base.width)),
-    y: clamp(Math.round(y), 0, Math.max(0, height - base.height)),
-    width: base.width,
-    height: base.height,
-  });
-  const bottomOffsets = [0, Math.round(base.height * 0.45), Math.round(base.height * 0.9)];
-  const bottomCandidates = [];
-  for (const offset of bottomOffsets) {
-    bottomCandidates.push({ key: `bottom-left-${offset}`, label: "左下", region: makeRect(leftX, bottomY + offset) });
-    bottomCandidates.push({ key: `bottom-right-${offset}`, label: "右下", region: makeRect(rightX, bottomY + offset) });
+  const frame = preset?.frame || defaultFrame(width, height);
+  const candidates = [];
+  const seen = new Set();
+  const addCandidate = (key, label, region) => {
+    const rect = {
+      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
+      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
+      width: Math.max(1, Math.round(region.width)),
+      height: Math.max(1, Math.round(region.height)),
+    };
+    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push({ key, label, region: rect });
+  };
+
+  const baseRects = [];
+  const addBase = (key, region) => {
+    if (!region) return;
+    const rect = regionToRect(region, width, height, frame);
+    if (rect.width < 40 || rect.height < 12) return;
+    baseRects.push({ key, rect });
+  };
+  addBase(preset?.key || "selected", preset?.regions?.meso);
+  for (const [key, row] of Object.entries(OCR_REGION_PRESETS)) {
+    addBase(`preset-${key}`, row.meso);
   }
-  return [
-    { key: "top-left", label: "左上", region: makeRect(leftX, topY) },
-    { key: "top-right", label: "右上", region: makeRect(rightX, topY) },
-    ...bottomCandidates,
-  ];
+
+  for (const { key, rect: base } of baseRects) {
+    addCandidate(`${key}-direct`, "推估", base);
+    const mesoTopOffset = Math.max(0, base.y - frame.y);
+    const mesoLeftOffset = Math.max(2, Math.round(base.height * 0.16));
+    const inventoryWidth = Math.min(frame.width, Math.max(base.width, Math.round(base.width * 1.38)));
+    const inventoryHeight = Math.min(frame.height, Math.max(base.height, Math.round(mesoTopOffset + base.height * 2.35)));
+    const topY = frame.y + mesoTopOffset;
+    const bottomY = frame.y + frame.height - inventoryHeight + mesoTopOffset;
+    const leftX = frame.x + mesoLeftOffset;
+    const rightX = frame.x + frame.width - inventoryWidth + mesoLeftOffset;
+    const makeRect = (x, y) => ({
+      x: clamp(Math.round(x), 0, Math.max(0, width - base.width)),
+      y: clamp(Math.round(y), 0, Math.max(0, height - base.height)),
+      width: base.width,
+      height: base.height,
+    });
+    const bottomOffsets = [0, Math.round(base.height * 0.45), Math.round(base.height * 0.9), Math.round(base.height * 1.35)];
+    addCandidate(`${key}-top-left`, "左上", makeRect(leftX, topY));
+    addCandidate(`${key}-top-right`, "右上", makeRect(rightX, topY));
+    for (const offset of bottomOffsets) {
+      addCandidate(`${key}-bottom-left-${offset}`, "左下", makeRect(leftX, bottomY + offset));
+      addCandidate(`${key}-bottom-right-${offset}`, "右下", makeRect(rightX, bottomY + offset));
+    }
+  }
+  return candidates;
 }
 
 function regionImageData(sourceCanvas, region) {
   const ctx = sourceCanvas.getContext("2d", { willReadFrequently: true });
   return ctx.getImageData(region.x, region.y, region.width, region.height);
+}
+
+function jobRegionVisualScore(sourceCanvas, region) {
+  const image = regionImageData(sourceCanvas, region);
+  let brightText = 0;
+  let blueGrayText = 0;
+  let darkUi = 0;
+  let greenScene = 0;
+  const total = image.width * image.height;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const index = (y * image.width + x) * 4;
+      const r = image.data[index];
+      const g = image.data[index + 1];
+      const b = image.data[index + 2];
+      const brightness = (r + g + b) / 3;
+      const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+      if (brightness > 150 && saturation < 95) brightText += 1;
+      if (b > 95 && g > 80 && r < 150 && saturation > 18 && brightness > 85 && brightness < 180) blueGrayText += 1;
+      if (brightness < 75 && saturation < 95) darkUi += 1;
+      if (g > 85 && g > r * 1.18 && g > b * 1.08) greenScene += 1;
+    }
+  }
+  const brightRatio = total ? brightText / total : 0;
+  const blueGrayRatio = total ? blueGrayText / total : 0;
+  const darkRatio = total ? darkUi / total : 0;
+  const greenRatio = total ? greenScene / total : 0;
+  return brightRatio * 4.2
+    + blueGrayRatio * 1.3
+    + Math.min(0.45, darkRatio) * 1.1
+    - greenRatio * 2.6;
 }
 
 function mesoRegionVisualScore(sourceCanvas, region) {
@@ -1145,7 +1584,7 @@ function findMesoRegion(sourceCanvas) {
   const best = candidates[0] || null;
   if (!best) return null;
   const hasReliableShape = best.visualScore >= 1.35;
-  const hasReadableValue = best.meso !== null && best.meso !== undefined && best.score >= 1.8;
+  const hasReadableValue = best.meso !== null && best.meso !== undefined && best.score >= 1.2;
   if (!hasReliableShape && !hasReadableValue) {
     state.pendingMesoCandidate = {
       found: false,
@@ -1227,7 +1666,7 @@ function thresholdRegionCanvas(sourceCanvas, region, type, scale = 8) {
     const saturation = Math.max(r, g, b) - Math.min(r, g, b);
     let ink = false;
     if (type === "lv") {
-      ink = r > 150 && g > 45 && g < 190 && b < 85;
+      ink = levelOrangeInkPixel(r, g, b) || levelDigitInkPixel(r, g, b);
     } else if (type === "meso") {
       ink = brightness < 125 && saturation < 95;
     } else {
@@ -1256,7 +1695,7 @@ function expBracketInkPixel(r, g, b) {
 function levelWhiteInkPixel(r, g, b) {
   const brightness = (r + g + b) / 3;
   const saturation = Math.max(r, g, b) - Math.min(r, g, b);
-  return brightness > 180 && saturation < 90 && r > 150 && g > 150 && b > 145;
+  return brightness > 158 && saturation < 125 && r > 125 && g > 125 && b > 120;
 }
 
 function levelOrangeInkPixel(r, g, b) {
@@ -1264,7 +1703,7 @@ function levelOrangeInkPixel(r, g, b) {
 }
 
 function levelDigitInkPixel(r, g, b) {
-  return levelWhiteInkPixel(r, g, b);
+  return levelOrangeInkPixel(r, g, b);
 }
 
 function mesoInkPixel(r, g, b) {
@@ -1649,14 +2088,32 @@ function readLevelFromDigitGroups(image, digitGroups, maxScore = 0.28) {
   };
 }
 
+function normalizeImageBand(image, band) {
+  const source = band || { minX: 0, minY: 0, maxX: image.width - 1, maxY: image.height - 1 };
+  const minX = clamp(Math.floor(source.minX), 0, image.width - 1);
+  const minY = clamp(Math.floor(source.minY), 0, image.height - 1);
+  const maxX = clamp(Math.ceil(source.maxX), minX, image.width - 1);
+  const maxY = clamp(Math.ceil(source.maxY), minY, image.height - 1);
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+    source: source.source || "",
+  };
+}
+
 function extractLevelDigitGroups(image, band) {
-  if (!band) return [];
-  const insetX = Math.max(2, Math.round(band.width * 0.07));
-  const insetY = Math.max(1, Math.round(band.height * 0.12));
-  const minX = Math.min(image.width - 1, band.minX + insetX);
-  const maxX = Math.max(minX, band.maxX - insetX);
-  const minY = Math.min(image.height - 1, band.minY + insetY);
-  const maxY = Math.max(minY, band.maxY - insetY);
+  const normalizedBand = normalizeImageBand(image, band);
+  const insetX = Math.max(1, Math.round(normalizedBand.width * 0.035));
+  const insetY = Math.max(0, Math.round(normalizedBand.height * 0.08));
+  const minX = Math.min(image.width - 1, normalizedBand.minX + insetX);
+  const maxX = Math.max(minX, normalizedBand.maxX - insetX);
+  const minY = Math.min(image.height - 1, normalizedBand.minY + insetY);
+  const maxY = Math.max(minY, normalizedBand.maxY - insetY);
+  const bandHeight = maxY - minY + 1;
   const minColumnPixels = Math.max(1, Math.round((maxY - minY + 1) * 0.12));
   const columns = [];
   for (let x = minX; x <= maxX; x += 1) {
@@ -1717,18 +2174,95 @@ function extractLevelDigitGroups(image, band) {
       width: glyphMaxX - glyphMinX + 1,
       height: glyphMaxY - glyphMinY + 1,
     };
-  }).filter(Boolean);
+  }).filter(group => group
+    && group.height >= Math.max(4, Math.round(bandHeight * 0.28))
+    && group.height <= Math.max(8, Math.round(bandHeight * 0.94))
+    && group.width <= Math.max(20, Math.round(bandHeight * 1.15)));
+}
+
+function levelSearchBands(image) {
+  const bands = [];
+  const seen = new Set();
+  const addBand = source => {
+    const band = normalizeImageBand(image, source);
+    if (band.width < 4 || band.height < 4) return;
+    const key = `${band.minX}:${band.minY}:${band.maxX}:${band.maxY}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    bands.push(band);
+  };
+
+  const orangeGroups = extractExpGlyphGroups(image, levelOrangeInkPixel, 2)
+    .filter(group => group.height >= Math.max(4, Math.round(image.height * 0.14)) && group.width >= Math.max(4, Math.round(image.width * 0.035)))
+    .sort((a, b) => (b.width * b.height) - (a.width * a.height));
+
+  for (const group of orangeGroups.slice(0, 3)) {
+    const padY = Math.max(3, Math.round(group.height * 0.9));
+    addBand({
+      minX: Math.max(0, group.minX - Math.round(image.width * 0.06)),
+      maxX: image.width - 1,
+      minY: Math.max(0, group.minY - padY),
+      maxY: Math.min(image.height - 1, group.maxY + padY),
+      source: "lv-label",
+    });
+  }
+
+  addBand({
+    minX: Math.floor(image.width * 0.2),
+    maxX: image.width - 1,
+    minY: 0,
+    maxY: image.height - 1,
+    source: "right-side",
+  });
+  addBand({
+    minX: 0,
+    maxX: image.width - 1,
+    minY: 0,
+    maxY: image.height - 1,
+    source: "full",
+  });
+  return bands;
+}
+
+function readLevelCandidatesFromGroups(image, digitGroups, maxScore = 0.34) {
+  const groups = [...digitGroups].sort((a, b) => a.minX - b.minX);
+  const candidates = [];
+  for (let start = 0; start < groups.length; start += 1) {
+    for (let length = 1; length <= 3 && start + length <= groups.length; length += 1) {
+      const windowGroups = groups.slice(start, start + length);
+      const result = readLevelFromDigitGroups(image, windowGroups, maxScore);
+      if (!result) continue;
+      candidates.push({
+        ...result,
+        minX: windowGroups[0].minX,
+        maxX: windowGroups[windowGroups.length - 1].maxX,
+      });
+    }
+  }
+  return candidates;
 }
 
 function readLevelFromCanvas(canvas) {
   if (!canvas) return { level: null };
   const rawImage = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height);
   const image = downsampleImageData(rawImage, 8);
-  const orangeGroups = extractExpGlyphGroups(image, levelOrangeInkPixel, 2)
-    .filter(group => group.height >= 5 && group.width >= 8 && group.minX > image.width * 0.35)
-    .sort((a, b) => (b.width * b.height) - (a.width * a.height));
-  const badgeLevel = readLevelFromDigitGroups(image, extractLevelDigitGroups(image, orangeGroups[0]), 0.28);
-  return badgeLevel ? { level: badgeLevel.level } : { level: null };
+  const candidates = [];
+  for (const band of levelSearchBands(image)) {
+    const digitGroups = extractLevelDigitGroups(image, band);
+    for (const candidate of readLevelCandidatesFromGroups(image, digitGroups, 0.34)) {
+      candidates.push({ ...candidate, band: band.source });
+    }
+  }
+  if (!candidates.length) return { level: null };
+  candidates.sort((a, b) => b.digits - a.digits || a.score - b.score || b.maxX - a.maxX);
+  const best = candidates[0];
+  return {
+    level: best.level,
+    score: best.score,
+    digits: best.digits,
+    confidence: Math.max(0.55, Math.min(0.98, 1 - best.score)),
+    source: `LV 圖樣 ${best.band || ""}`.trim(),
+  };
 }
 
 function isLikelyMesoIconGroup(group, image) {
@@ -1942,6 +2476,42 @@ async function detectMapText(canvas) {
   }
 }
 
+async function detectJobText(canvas) {
+  if (!canvas) return { text: "", supported: false };
+  if (state.ocrAvailable) {
+    try {
+      const detector = new window.TextDetector();
+      const detections = await detector.detect(canvas);
+      const text = detections.map(row => row.rawValue || "").join(" ");
+      if (text.trim()) return { text, supported: true };
+    } catch (_error) {
+      state.ocrAvailable = false;
+    }
+  }
+  const tesseract = await ensureTesseract();
+  if (!tesseract) return { text: "", supported: false };
+  try {
+    const result = await tesseract.recognize(canvas, "chi_tra+eng", {
+      logger(message) {
+        if (message?.status === "recognizing text" && typeof message.progress === "number") {
+          setShareStatus(`職業 OCR 辨識中 ${Math.round(message.progress * 100)}%`);
+        }
+      },
+      tessedit_pageseg_mode: "7",
+    });
+    return { text: result?.data?.text || "", supported: true };
+  } catch (_error) {
+    try {
+      const fallback = await tesseract.recognize(canvas, "eng", {
+        tessedit_pageseg_mode: "7",
+      });
+      return { text: fallback?.data?.text || "", supported: true };
+    } catch (__error) {
+      return { text: "", supported: false };
+    }
+  }
+}
+
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${src}"]`);
@@ -2042,6 +2612,7 @@ async function ensureScreenShare() {
     el.video.srcObject = stream;
     await el.video.play();
     updateRegionPresetStatus();
+    refreshShareIdentityFromCanvas(currentScreenCanvas(), true);
     stream.getVideoTracks().forEach(track => {
       track.addEventListener("ended", stopAnalysis);
     });
@@ -2083,25 +2654,42 @@ async function captureFrame(addToTimeline = true) {
   const mesoCandidate = findMesoRegion(sourceCanvas);
   const mesoRegion = mesoCandidate?.region || rectFor("meso", sourceCanvas.width, sourceCanvas.height);
   const currentMapRegion = mapNameRegion(sourceCanvas.width, sourceCanvas.height);
+  const currentJobRegion = jobNameRegion(sourceCanvas.width, sourceCanvas.height);
   drawRegion(sourceCanvas, lvRegion, el.lvCrop);
   drawRegion(sourceCanvas, expRegion, el.expCrop);
   drawRegion(sourceCanvas, mesoRegion, el.mesoCrop);
   if (el.mapCrop) drawRegion(sourceCanvas, currentMapRegion, el.mapCrop);
+  if (el.jobCrop) drawRegion(sourceCanvas, currentJobRegion, el.jobCrop);
+  refreshShareIdentityFromCanvas(sourceCanvas);
 
   const lvRawCanvas = cropRegionCanvas(sourceCanvas, lvRegion, 8);
   const expRawCanvas = cropRegionCanvas(sourceCanvas, expRegion, 8);
   const templateLevel = readLevelFromCanvas(lvRawCanvas);
   const templateExp = readExpFromCanvas(expRawCanvas);
+  const shouldRunExpOcr = templateExp.exp === null || templateExp.percent === null || !templateLevel.level;
 
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
     templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
-    templateExp.exp !== null ? Promise.resolve({ text: "" }) : detectTextFromCanvas(el.expCrop),
+    shouldRunExpOcr ? detectTextFromCanvas(el.expCrop) : Promise.resolve({ text: "" }),
     mesoCandidate ? detectMesoText(mesoOcrCanvas(el.mesoCrop)) : Promise.resolve({ text: "" }),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
-  const level = templateLevel.level || parsedLevel || parsedExp.level || null;
+  const hasExpClue = templateExp.exp !== null
+    || templateExp.percent !== null
+    || parsedExp.exp !== null
+    || parsedExp.percent !== null;
+  const levelResult = resolveLevelValue([
+    { value: templateLevel.level, source: templateLevel.source || "LV 圖樣", confidence: templateLevel.confidence || 0.9 },
+    inferLevelFromExpPercent(templateExp.exp, parsedExp.percent, "EXP 圖樣 + OCR% 推算", 0.86),
+    inferLevelFromExpPercent(templateExp.exp, templateExp.percent, "EXP 圖樣推算", 0.72),
+    inferLevelFromExpPercent(parsedExp.exp, parsedExp.percent, "OCR EXP 推算", 0.62),
+    inferLevelFromExpPercent(parsedExp.exp, templateExp.percent, "OCR EXP + EXP% 圖樣推算", 0.58),
+    { value: parsedLevel, source: "OCR LV", confidence: 0.54 },
+    { value: parsedExp.level, source: "OCR EXP", confidence: 0.42 },
+  ], hasExpClue);
+  const level = levelResult.level;
   const expToNext = getExpToNext(level);
   const expResult = resolveExpPercent(
     level,
@@ -2116,8 +2704,11 @@ async function captureFrame(addToTimeline = true) {
   );
   const exp = expResult.exp;
   const percent = expResult.percent;
+  const mesoTemplateConfidence = mesoCandidate?.meso === null || mesoCandidate?.meso === undefined
+    ? 0
+    : Math.min(0.68, mesoCandidate.confidence || 0.5);
   const mesoResult = resolveMesoValue(mesoCandidate ? [
-    { value: mesoCandidate.meso, source: `楓幣圖樣 ${mesoCandidate.label}`, confidence: mesoCandidate.confidence },
+    { value: mesoCandidate.meso, source: `楓幣圖樣 ${mesoCandidate.label}`, confidence: mesoTemplateConfidence },
     ...normalizeMesoTextCandidates(mesoDetection.text).map(row => ({
       ...row,
       source: `${row.source} ${mesoCandidate.label}`,
@@ -2141,6 +2732,8 @@ async function captureFrame(addToTimeline = true) {
       exp,
       percent,
       meso: meso ?? mesoResult.rejected ?? null,
+      levelSource: levelResult.source,
+      reusedLevel: levelResult.reused,
     };
   } else {
     state.pendingCalibration = null;
@@ -2160,7 +2753,8 @@ async function captureFrame(addToTimeline = true) {
     const mesoText = snapshot.meso === null || snapshot.meso === undefined ? "楓幣未讀取" : `楓幣 ${formatNumber(snapshot.meso)}`;
     const mesoNote = mesoResult.reason === "outlier" ? " · 楓幣讀值離群已略過" : "";
     const mesoCorner = mesoCandidate?.label ? ` · 道具欄${mesoCandidate.label}` : "";
-    setStatus(`已讀取 Lv.${snapshot.level} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoCorner}${mesoNote}`);
+    const levelNote = levelResult.reused ? "（沿用上一筆）" : "";
+    setStatus(`已讀取 Lv.${snapshot.level}${levelNote} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoCorner}${mesoNote}`);
   }
   if (snapshot && addToTimeline) {
     addSnapshot(snapshot);
@@ -2542,44 +3136,171 @@ function currentScreenCanvas() {
   return sourceCanvas;
 }
 
-async function readShareMapFromScreen() {
-  const manual = (el.shareMap?.value || "").trim();
-  if (manual) {
-    const matched = resolveMapFromText(manual);
-    return {
-      input: manual,
-      rawText: "",
-      map: matched?.map || null,
-      score: matched?.score || 0,
-      source: "manual",
-    };
+function updateShareDetectionLabels() {
+  if (el.shareJobValue) el.shareJobValue.textContent = state.shareJob || "尚未偵測";
+  if (el.shareMapValue) el.shareMapValue.textContent = state.shareMapName || "尚未偵測";
+}
+
+function sanitizeMapOcrText(text) {
+  const lines = normalizeOcrText(text)
+    .split(/[\n\r]+/)
+    .map(line => line.replace(/小地圖|大地圖|mini\s*map/gi, "").trim())
+    .filter(Boolean)
+    .filter(line => normalizeMapSearchText(line).length >= 2);
+  return lines
+    .slice(-2)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cloneCanvas(sourceCanvas) {
+  if (!sourceCanvas) {
+    return null;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = sourceCanvas.width;
+  canvas.height = sourceCanvas.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(sourceCanvas, 0, 0);
+  return canvas;
+}
+
+async function readShareJobFromCanvas(sourceCanvas) {
+  if (!sourceCanvas) {
+    return { job: state.shareJob || "", rawText: "", score: 0, source: "none" };
+  }
+  const candidates = jobNameRegionCandidates(sourceCanvas.width, sourceCanvas.height)
+    .map(candidate => ({
+      ...candidate,
+      visualScore: jobRegionVisualScore(sourceCanvas, candidate.region),
+    }))
+    .sort((a, b) => b.visualScore - a.visualScore);
+  const fallbackRegion = candidates[0]?.region || jobNameRegion(sourceCanvas.width, sourceCanvas.height);
+  let bestResult = {
+    job: "",
+    rawText: "",
+    score: 0,
+    source: "none",
+    region: fallbackRegion,
+  };
+
+  for (const candidate of candidates.slice(0, 6)) {
+    const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 5);
+    const detection = await detectJobText(ocrCanvas);
+    const rawText = normalizeOcrText(detection.text);
+    const matched = resolveJobFromText(rawText);
+    const score = matched?.score || 0;
+    if (score > bestResult.score || (!bestResult.rawText && rawText)) {
+      bestResult = {
+        job: matched?.job?.label || "",
+        rawText,
+        score,
+        source: detection.supported ? "ocr" : "none",
+        region: candidate.region,
+      };
+    }
+    if (score >= 860) break;
   }
 
+  if (el.jobCrop) drawRegion(sourceCanvas, bestResult.region, el.jobCrop);
+  const job = bestResult.job;
+  if (job) {
+    state.shareJob = job;
+    updateShareDetectionLabels();
+  }
+  return {
+    job,
+    rawText: bestResult.rawText,
+    score: bestResult.score,
+    source: bestResult.source,
+  };
+}
+
+async function readShareJobFromScreen() {
   if (!state.stream) {
     await ensureScreenShare();
   }
   const sourceCanvas = currentScreenCanvas();
+  return readShareJobFromCanvas(sourceCanvas);
+}
+
+async function readShareMapFromCanvas(sourceCanvas) {
   if (!sourceCanvas) {
-    return { input: "", rawText: "", map: null, score: 0, source: "none" };
+    const cached = state.shareMapName || "";
+    const cachedMatch = cached ? resolveMapFromText(cached) : null;
+    return { input: cached, rawText: "", map: cachedMatch?.map || null, score: cachedMatch?.score || 0, source: "none" };
   }
-  const region = mapNameRegion(sourceCanvas.width, sourceCanvas.height);
-  if (el.mapCrop) drawRegion(sourceCanvas, region, el.mapCrop);
-  const ocrCanvas = cropRegionCanvas(sourceCanvas, region, 3);
-  const detection = await detectMapText(ocrCanvas);
-  const rawText = normalizeOcrText(detection.text);
-  const matched = resolveMapFromText(rawText);
-  if (matched?.map && el.shareMap) {
-    el.shareMap.value = matched.map.name || "";
-    state.shareMapName = matched.map.name || "";
-    writeCookie(SHARE_MAP_COOKIE, state.shareMapName);
+  const candidates = mapNameRegionCandidates(sourceCanvas.width, sourceCanvas.height, sourceCanvas);
+  let bestResult = {
+    input: "",
+    rawText: "",
+    map: null,
+    score: 0,
+    source: "none",
+    region: candidates[0]?.region || mapNameRegion(sourceCanvas.width, sourceCanvas.height),
+  };
+
+  for (const candidate of candidates.slice(0, 8)) {
+    const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 4);
+    const detection = await detectMapText(ocrCanvas);
+    const rawText = normalizeOcrText(detection.text);
+    const input = sanitizeMapOcrText(rawText);
+    const matched = resolveMapFromText(input);
+    const score = matched?.score || 0;
+    if (score > bestResult.score || (!bestResult.input && input)) {
+      bestResult = {
+        input: matched?.map?.name || input,
+        rawText,
+        map: matched?.map || null,
+        score,
+        source: detection.supported ? "ocr" : "none",
+        region: candidate.region,
+      };
+    }
+    if (score >= 860) break;
+  }
+
+  if (el.mapCrop) drawRegion(sourceCanvas, bestResult.region, el.mapCrop);
+  if (bestResult.map) {
+    state.shareMapName = bestResult.map.name || "";
+    updateShareDetectionLabels();
+  } else {
+    state.shareMapName = "";
+    updateShareDetectionLabels();
   }
   return {
-    input: matched?.map?.name || rawText,
-    rawText,
-    map: matched?.map || null,
-    score: matched?.score || 0,
-    source: detection.supported ? "ocr" : "none",
+    input: bestResult.input,
+    rawText: bestResult.rawText,
+    map: bestResult.map,
+    score: bestResult.score,
+    source: bestResult.source,
   };
+}
+
+async function readShareMapFromScreen() {
+  if (!state.stream) {
+    await ensureScreenShare();
+  }
+  const sourceCanvas = currentScreenCanvas();
+  return readShareMapFromCanvas(sourceCanvas);
+}
+
+function refreshShareIdentityFromCanvas(sourceCanvas, force = false) {
+  if (!sourceCanvas) return;
+  const now = Date.now();
+  const needsInitialDetection = !state.shareJob || !state.shareMapName;
+  if (state.identityScanPromise || (!force && !needsInitialDetection && now - state.lastIdentityScanAt < 60000)) return;
+  if (!force && now - state.lastIdentityScanAt < 25000) return;
+  const snapshotCanvas = cloneCanvas(sourceCanvas);
+  if (!snapshotCanvas) return;
+  state.lastIdentityScanAt = now;
+  state.identityScanPromise = Promise.all([
+    readShareJobFromCanvas(snapshotCanvas),
+    readShareMapFromCanvas(snapshotCanvas),
+  ]).catch(() => null).finally(() => {
+    state.identityScanPromise = null;
+  });
 }
 
 function roundRectPath(ctx, x, y, width, height, radius) {
@@ -2783,10 +3504,15 @@ async function generateShareImage() {
     return;
   }
   setShareStatus("正在生成分享圖。");
-  const mapResult = await readShareMapFromScreen();
+  if (!state.stream) await ensureScreenShare();
+  const sourceCanvas = currentScreenCanvas();
+  const [jobResult, mapResult] = await Promise.all([
+    readShareJobFromCanvas(sourceCanvas),
+    readShareMapFromCanvas(sourceCanvas),
+  ]);
   const map = mapResult.map || resolveMapFromText(mapResult.input)?.map || null;
   const monster = representativeMonsterForMap(map);
-  const job = (el.shareJob?.value || "").trim();
+  const job = jobResult.job || state.shareJob || "";
   await drawShareImage({
     level: latest.level,
     job,
@@ -2797,7 +3523,8 @@ async function generateShareImage() {
     stats,
   });
   const mapText = map ? mapDisplayName(map) : (mapResult.input ? `未能對上資料庫：${mapResult.input}` : "未偵測到小地圖名稱");
-  setShareStatus(`${mapText}${monster ? " · 已套用地圖怪物背景" : ""}`);
+  const jobText = job ? `職業 ${job}` : (jobResult.rawText ? `未能對上職業：${jobResult.rawText}` : "未偵測到職業");
+  setShareStatus(`${jobText} · ${mapText}${monster ? " · 已套用地圖怪物背景" : ""}`);
 }
 
 function downloadShareImage() {
@@ -2858,7 +3585,6 @@ function initialize() {
   const meta = db.metadata || {};
   const parts = [];
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
-  if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
   if (el.buildMeta) el.buildMeta.textContent = parts.join(" · ");
 
   el.themeToggle?.addEventListener("click", () => {
@@ -2875,27 +3601,15 @@ function initialize() {
       updateRegionPresetStatus();
     });
   }
-  if (el.shareJob) {
-    el.shareJob.value = state.shareJob || "";
-    el.shareJob.addEventListener("change", () => {
-      state.shareJob = el.shareJob.value || "";
-      writeCookie(SHARE_JOB_COOKIE, state.shareJob);
-    });
-  }
-  if (el.shareMap) {
-    el.shareMap.value = state.shareMapName || "";
-    el.shareMap.addEventListener("input", () => {
-      state.shareMapName = el.shareMap.value || "";
-      writeCookie(SHARE_MAP_COOKIE, state.shareMapName);
-      state.shareImageReady = false;
-      if (el.downloadShare) el.downloadShare.disabled = true;
-    });
-  }
+  updateShareDetectionLabels();
   el.generateShare?.addEventListener("click", generateShareImage);
   el.downloadShare?.addEventListener("click", downloadShareImage);
   el.exportReport?.addEventListener("click", exportReportDataset);
   el.emailReport?.addEventListener("click", emailReportDataset);
-  el.video?.addEventListener("loadedmetadata", () => updateRegionPresetStatus());
+  el.video?.addEventListener("loadedmetadata", () => {
+    updateRegionPresetStatus();
+    refreshShareIdentityFromCanvas(currentScreenCanvas(), true);
+  });
   updateRegionPresetStatus();
   render();
   updateAnalysisToggleButton();

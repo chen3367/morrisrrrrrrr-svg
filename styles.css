@@ -197,11 +197,11 @@ h1 {
   height: 40px;
   flex: 0 0 40px;
   object-fit: contain;
-  border: 1px solid var(--control-border);
-  border-radius: 8px;
-  background: var(--nav-bg);
-  padding: 3px;
-  box-shadow: 0 6px 14px rgba(37, 58, 79, 0.12);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
 }
 .siteBrandText {
   display: grid;

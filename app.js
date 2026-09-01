@@ -194,7 +194,6 @@ function renderBuildMeta() {
   const meta = db.metadata || {};
   const parts = [];
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);
-  if (meta.generatedAtText) parts.push(`更新 ${meta.generatedAtText}`);
   els.meta.textContent = parts.join(" · ");
 }
 

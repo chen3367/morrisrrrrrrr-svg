@@ -755,7 +755,6 @@ function renderBuildMeta() {
   const metadata = db.metadata || {};
   const parts = [];
   if (metadata.gameVersion) parts.push(`遊戲版本 ${metadata.gameVersion}`);
-  if (metadata.generatedAtText) parts.push(`更新 ${metadata.generatedAtText}`);
   buildMetaEl.textContent = parts.join(" · ");
 }
 

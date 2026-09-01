@@ -887,8 +887,7 @@ function renderHeaderMeta() {
   const officialRows = new Set(selectablePools.flatMap(pool => pool.prizes.map(prize => `${pool.eventAdId}:${prize.id}`))).size;
   if (els.resultCount) els.resultCount.textContent = `${formatInt(selectablePools.length)} 商品 · ${formatInt(count)} 列獎項`;
   if (els.buildMeta) {
-    const generatedAt = gachaDb.metadata?.generatedAt ? gachaDb.metadata.generatedAt.replace("T", " ") : "";
-    els.buildMeta.textContent = `官方活動資料 · 更新 ${generatedAt}`;
+    els.buildMeta.textContent = "官方活動資料";
   }
 }
 
