@@ -1298,15 +1298,15 @@ function undeadCell(isUndead) {
 
 function renderMaps(monster) {
   return `
-    <section class="sectionBlock">
-      <div class="sectionTitle">
+    <details class="sectionBlock collapsibleSection monsterMapSection" open>
+      <summary class="sectionTitle collapsibleSectionTitle">
         <h3>出現地圖</h3>
         <span>${monster.maps.length.toLocaleString()} 張</span>
-      </div>
+      </summary>
       <div class="mapGrid">
         ${monster.maps.map(mapCard).join("") || `<div class="empty">沒有地圖資料</div>`}
       </div>
-    </section>
+    </details>
   `;
 }
 
@@ -1337,25 +1337,25 @@ function renderQuestRequirements(monster) {
   const rows = monster.questRequirements || [];
   if (!rows.length) return "";
   return `
-    <section class="sectionBlock">
-      <div class="sectionTitle">
-        <h3>任務狩獵需求</h3>
+    <details class="sectionBlock collapsibleSection monsterQuestRequirementSection" open>
+      <summary class="sectionTitle collapsibleSectionTitle">
+        <h3>任務需求狩獵</h3>
         <span>${rows.length.toLocaleString()} 筆</span>
-      </div>
-      <div class="sourceList">
+      </summary>
+      <div class="sourceList sourceChipList questRequirementSourceList monsterQuestRequirementSourceList">
         ${rows.map(row => `
-          <a class="sourceRow sourceLinkRow sourceQuestRow" href="${questUrl(row.questId)}">
+          <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow monsterQuestRequirementRow" href="${questUrl(row.questId)}">
             ${questNpcImage(row)}
             <div>
               <strong>${escapeHtml(row.questName)}</strong>
               <span>${escapeHtml(row.category || "任務")}${row.minLevel ? ` · Lv.${escapeHtml(row.minLevel)}+` : ""}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
               <p>${escapeHtml(row.stageLabel || "任務條件")}${row.parent ? ` · ${escapeHtml(row.parent)}` : ""}</p>
             </div>
-            <small>狩獵 ${formatNumber(row.count)} 隻</small>
+            <small class="sourceChipBadge">狩獵 ${formatNumber(row.count)} 隻</small>
           </a>
         `).join("")}
       </div>
-    </section>
+    </details>
   `;
 }
 
