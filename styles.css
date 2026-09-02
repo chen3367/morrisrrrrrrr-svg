@@ -1352,6 +1352,31 @@ h3 {
 .sectionTitle a:hover {
   text-decoration: underline;
 }
+.collapsibleSection > summary.sectionTitle {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+.collapsibleSection > summary.sectionTitle::-webkit-details-marker {
+  display: none;
+}
+.collapsibleSection > summary.sectionTitle::before {
+  content: "▸";
+  color: var(--accent);
+  font-weight: 950;
+  line-height: 1;
+}
+.collapsibleSection[open] > summary.sectionTitle::before {
+  content: "▾";
+}
+.collapsibleSection:not([open]) > summary.sectionTitle {
+  padding-bottom: 12px;
+}
+.collapsibleSection > summary.sectionTitle h3 {
+  min-width: 0;
+}
 .accuracyPanel {
   padding: 0;
 }
@@ -1704,6 +1729,10 @@ h3 {
   gap: 8px;
   padding: 12px 14px 14px;
 }
+.monsterSourceList {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: stretch;
+}
 .sourceRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1718,6 +1747,80 @@ h3 {
 .monsterSourceRow, .sourceQuestRow, .craftSourceRow, .shopSourceRow {
   grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
+}
+.monsterSourceList .monsterSourceRow {
+  position: relative;
+  grid-template-columns: 38px minmax(0, 1fr);
+  min-height: 72px;
+  padding-right: 94px;
+}
+.monsterSourceList .sourceMonsterImage {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+}
+.monsterSourceList .monsterSourceRow strong,
+.monsterSourceList .monsterSourceRow span,
+.monsterSourceList .monsterSourceRow p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.monsterSourceList .monsterSourceRow small {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 72px;
+  max-width: none;
+  white-space: nowrap;
+  padding: 3px 5px;
+  font-size: 11px;
+  text-align: center;
+}
+.sourceChipList {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: stretch;
+}
+.sourceChipList .sourceChipRow {
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  min-height: 72px;
+  align-items: center;
+}
+.sourceChipList .sourceMonsterImage {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+}
+.sourceChipList .sourceChipRow strong,
+.sourceChipList .sourceChipRow span,
+.sourceChipList .sourceChipRow p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sourceChipList .sourceChipBadge {
+  align-self: start;
+  justify-self: end;
+  min-width: 72px;
+  max-width: none;
+  white-space: nowrap;
+  padding: 3px 5px;
+  font-size: 11px;
+  text-align: center;
+}
+.shopSourceList .sourceChipBadge {
+  min-width: 90px;
+}
+.monsterQuestRequirementSourceList {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.monsterQuestRequirementSourceList .sourceChipBadge {
+  min-width: 86px;
+}
+.sourceIconFallback {
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
 }
 .sourceMonsterImage {
   width: 38px;

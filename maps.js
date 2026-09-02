@@ -1048,15 +1048,13 @@ function groupedSpawns(map) {
   (map.monsterSpawns || []).forEach(spawn => {
     const key = String(spawn.monsterId);
     if (!groups.has(key)) {
-      groups.set(key, { ...spawn, count: 0, listedOnlyCount: 0, sourceLabels: [] });
+      groups.set(key, { ...spawn, count: 0, listedOnlyCount: 0 });
     }
     const group = groups.get(key);
     if (hasSpawnCoordinates(spawn)) {
       group.count += 1;
     } else {
       group.listedOnlyCount += 1;
-      const label = spawn.sourceLabel || "未提供座標";
-      if (!group.sourceLabels.includes(label)) group.sourceLabels.push(label);
     }
   });
   return [...groups.values()].sort((a, b) => {
@@ -1086,7 +1084,7 @@ function renderSpawnList(map) {
           const hidden = isSpawnMonsterHidden(map, spawn.monsterId);
           const label = hidden ? "顯示" : "隱藏";
           const href = `./index.html?monster=${encodeURIComponent(spawn.monsterId)}`;
-          const countText = spawn.count > 0 ? `${formatNumber(spawn.count)} 點` : (spawn.listedOnlyCount ? "圖鑑標註" : "0 點");
+          const countText = spawn.count > 0 ? `${formatNumber(spawn.count)} 點` : "";
           return `
           <article class="sourceRow monsterSourceRow spawnControlRow ${hidden ? "isMuted" : ""}">
             <button class="layerIconButton spawnVisibilityToggle" type="button" data-map-id="${escapeHtml(map.id)}" data-monster-id="${escapeHtml(spawn.monsterId)}" aria-pressed="${String(!hidden)}" aria-label="${escapeHtml(label)} ${escapeHtml(spawn.name)}" title="${escapeHtml(label)} ${escapeHtml(spawn.name)}">${visibilityIcon(hidden)}</button>
@@ -1098,7 +1096,7 @@ function renderSpawnList(map) {
               <span>${spawn.level ? `Lv.${escapeHtml(spawn.level)}` : "等級未知"}${idMeta(spawn.monsterId)}</span>
               <p>${escapeHtml(spawnCoordinateText(map, spawn.monsterId))}</p>
             </a>
-            <small>${escapeHtml(countText)}</small>
+            ${countText ? `<small>${escapeHtml(countText)}</small>` : ""}
           </article>
         `}).join("") || `<div class="empty">沒有怪物重生資料</div>`}
       </div>
@@ -1114,8 +1112,8 @@ function spawnCoordinateText(map, monsterId) {
     .slice(0, 8)
     .map(spawn => `(${formatNumber(spawn.x)}, ${formatNumber(spawn.y)})`);
   if (coordinates.length) return coordinates.join("、");
-  if (rows.some(spawn => spawn.source === "monsterBook" && spawn.coordinateMissing)) {
-    return "怪物圖鑑標註此地圖，但資料庫未提供重生座標";
+  if (rows.some(spawn => spawn.coordinateMissing)) {
+    return "未提供重生座標";
   }
   return "座標未標註";
 }

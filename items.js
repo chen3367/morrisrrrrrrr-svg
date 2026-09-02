@@ -897,17 +897,89 @@ function itemByName(name) {
 function formatQuestRewardJob(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return "";
+  const labels = [];
   const groups = [
+    ["初心者", [0, 10, 20, 30]],
     ["劍士", [1, 11, 21, 31]],
     ["法師", [2, 12, 22, 32]],
     ["弓箭手", [3, 13, 23, 33]],
     ["盜賊", [4, 14, 24, 34]],
     ["海盜", [5, 15, 25, 35]],
   ];
-  return groups
-    .filter(([, bits]) => bits.some(bit => n & (2 ** bit)))
-    .map(([label]) => label)
-    .join(" / ");
+  groups.forEach(([label, bits]) => {
+    if (bits.some(bit => n & (2 ** bit))) labels.push(label);
+  });
+  return compactQuestJobLabels(labels);
+}
+
+function formatQuestJobs(jobs) {
+  if (!jobs?.length) return "";
+  const labels = [];
+  jobs.forEach(job => {
+    const n = Number(job);
+    if (n === 0) labels.push("初心者");
+    else if (n >= 100 && n < 200) labels.push("劍士");
+    else if (n >= 200 && n < 300) labels.push("法師");
+    else if (n >= 300 && n < 400) labels.push("弓箭手");
+    else if (n >= 400 && n < 500) labels.push("盜賊");
+    else if (n >= 500 && n < 600) labels.push("海盜");
+    else if (n >= 1000 && n < 2000) labels.push("皇家騎士團");
+    else if (n >= 2000) labels.push("英雄");
+    else if (Number.isFinite(n)) labels.push(String(n));
+  });
+  return compactQuestJobLabels(labels);
+}
+
+function compactQuestJobLabels(labels) {
+  const set = new Set(labels.filter(Boolean));
+  const adventurers = ["劍士", "法師", "弓箭手", "盜賊", "海盜"];
+  if (adventurers.every(label => set.has(label))) {
+    adventurers.forEach(label => set.delete(label));
+    set.add("冒險家");
+  }
+  if (set.has("冒險家")) {
+    adventurers.forEach(label => set.delete(label));
+  }
+  if (set.has("冒險家") && set.has("皇家騎士團") && set.has("英雄")) {
+    set.delete("冒險家");
+    set.delete("皇家騎士團");
+    set.delete("英雄");
+    set.add("全職");
+  }
+  if (set.has("冒險家") || adventurers.some(label => set.has(label))) {
+    set.delete("皇家騎士團");
+    set.delete("英雄");
+  }
+  const order = ["全職", "初心者", "冒險家", ...adventurers, "皇家騎士團", "英雄"];
+  const ordered = order.filter(label => set.has(label));
+  set.forEach(label => {
+    if (!ordered.includes(label)) ordered.push(label);
+  });
+  return ordered.join(" / ");
+}
+
+function questLevelRequirementText(row) {
+  const min = Number(row?.minLevel ?? row?.reqLevel);
+  const max = Number(row?.maxLevel);
+  if (Number.isFinite(min) && min > 0 && Number.isFinite(max) && max > 0) return `Lv.${formatNumber(min)}~${formatNumber(max)}`;
+  if (Number.isFinite(min) && min > 0) return `Lv.${formatNumber(min)}+`;
+  if (Number.isFinite(max) && max > 0) return `Lv.${formatNumber(max)} 以下`;
+  return "";
+}
+
+function questConditionBadge(row) {
+  const itemJob = formatQuestRewardJob(row?.job);
+  const parts = [];
+  const jobText = itemJob || formatQuestJobs(row?.jobs);
+  if (jobText) parts.push(jobText);
+  const levelText = questLevelRequirementText(row);
+  if (levelText) parts.push(levelText);
+  return parts.join(" · ");
+}
+
+function questConditionBadgeHtml(row) {
+  const text = questConditionBadge(row);
+  return text ? `<small class="sourceChipBadge questConditionBadge">${escapeHtml(text)}</small>` : "";
 }
 
 function itemRequiredLevel(item) {
@@ -1169,6 +1241,7 @@ function renderDetail() {
 
 function renderSellPrice(item) {
   if (item.sellPrice === null || item.sellPrice === undefined) return "";
+  if (hasEquipValue("price", item.equipStats?.price)) return "";
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
@@ -1227,12 +1300,24 @@ function renderEquipmentStats(item) {
 
 function renderMonsterSources(item) {
   const rows = sourceRows(item).monsterDrops;
-  return sourceBlock("怪物掉落", rows, row => {
+  if (!rows.length) return "";
+  const noteHtml = renderMonsterDropRateReferenceNote(rows);
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <div class="sectionHeading">
+          <h3>怪物掉落</h3>
+          ${noteHtml || ""}
+        </div>
+        <span>${rows.length.toLocaleString()} 筆</span>
+      </div>
+      <div class="sourceList monsterSourceList">
+        ${rows.map(row => {
     const meta = [];
     if (row.level) meta.push(`Lv.${row.level}`);
     if (state.showIds) meta.push(`ID ${row.monsterId}`);
     if (row.continents?.length) meta.push(row.continents.join("、"));
-    const maps = (row.maps || []).slice(0, 3).map(map => map.name || map.id).filter(Boolean);
+    const maps = (row.maps || []).slice(0, 2).map(map => map.name || map.id).filter(Boolean);
     const questNote = row.source === "quest" && row.questNames?.length
       ? `<p>任務線索：${escapeHtml(row.questNames.slice(0, 3).join("、"))}</p>`
       : "";
@@ -1248,29 +1333,34 @@ function renderMonsterSources(item) {
         <small>${escapeHtml(monsterDropSourceLabel(row))}</small>
       </a>
     `;
-  }, renderMonsterDropRateReferenceNote(rows));
+        }).join("")}
+      </div>
+    </section>
+  `;
 }
 
 function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
-  return sourceBlock("任務獲取", rows, row => {
+  return sourceChipBlock("任務獲取", rows, "questSourceList", row => {
+    const summary = [questStateLabel(row.state)];
+    if (row.category) summary.push(row.category);
+    if (state.showIds) summary.push(`ID ${row.questId}`);
     const meta = [`${formatNumber(row.count)} 個`];
     if (row.choice) meta.push("自選獎勵");
     else if (row.random) meta.push("隨機獎勵");
-    const jobLabel = formatQuestRewardJob(row.job);
-    if (jobLabel) meta.push(`職業 ${jobLabel}`);
     if (row.sourceLabel && row.sourceLabel !== "任務獎勵") meta.push(row.sourceLabel);
     const sourceNpc = row.sourceNpc || row.rewardNpc || null;
     if (sourceNpc?.name) meta.push(sourceNpc.name);
+    const badge = questConditionBadgeHtml(row);
     return `
-    <a class="sourceRow sourceLinkRow sourceQuestRow" href="${questUrl(row.questId)}">
+    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow" href="${questUrl(row.questId)}">
       ${questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
-        <span>${questStateLabel(row.state)}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
+        <span>${escapeHtml(summary.join(" · "))}</span>
         <p>${escapeHtml(meta.join(" · "))}</p>
       </div>
-      <small>任務</small>
+      ${badge}
     </a>
   `;
   });
@@ -1283,27 +1373,34 @@ function shopPriceHtml(row) {
   return `${formatNumber(row.price)} ${escapeHtml(currency)}`;
 }
 
+function shopPriceText(row) {
+  if (row.price === null || row.price === undefined) return "價格未知";
+  const currency = row.currency || "";
+  if (!currency || currency === "楓幣" || currency === "meso") return formatMeso(row.price);
+  return `${formatNumber(row.price)} ${currency}`;
+}
+
 function renderShopSources(item) {
   const rows = sourceRows(item).shops;
-  return sourceBlock("商人購買", rows, row => {
+  return sourceChipBlock("商店購買", rows, "shopSourceList", row => {
     const isNpcShop = row.sourceType === "npcShop";
     const questText = requiredQuestText(row);
     const meta = [];
     if (row.locationText) meta.push(row.locationText);
-    if (row.sourceLabel) meta.push(row.sourceLabel);
+    if (row.count && Number(row.count) > 1) meta.push(`${formatNumber(row.count)} 個`);
     if (state.showIds && row.shopId) meta.push(`Shop ${row.shopId}`);
     if (state.showIds && row.merchantId && isNpcShop) meta.push(`NPC ${row.merchantId}`);
     if (state.showIds && row.sn) meta.push(`SN ${row.sn}`);
+    const image = isNpcShop ? assetImage(row.merchantImage || row.npc?.image, row.merchantName, String(row.merchantName || "?").slice(0, 1), "sourceMonsterImage") : `<span class="sourceMonsterImage sourceIconFallback">$</span>`;
     return `
-    <article class="sourceRow ${isNpcShop ? "shopSourceRow" : ""}">
-      ${isNpcShop ? assetImage(row.merchantImage || row.npc?.image, row.merchantName, String(row.merchantName || "?").slice(0, 1), "sourceMonsterImage") : ""}
+    <article class="sourceRow sourceChipRow shopSourceRow">
+      ${image}
       <div>
         <strong>${escapeHtml(row.merchantName)}</strong>
-        <span>${shopPriceHtml(row)}</span>
-        <p>${meta.map(escapeHtml).join(" · ") || `${formatNumber(row.count || 1)} 個`}</p>
+        <span>${escapeHtml(meta.join(" · ") || "可購買")}</span>
         ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
       </div>
-      <small>${row.sourceType === "cashShop" ? "商城" : "商店"}</small>
+      <small class="sourceChipBadge">${escapeHtml(shopPriceText(row))}</small>
     </article>
   `;
   });
@@ -1478,14 +1575,14 @@ function renderBoxChoiceSources(item) {
 
 function renderGachaSources(item) {
   const rows = sourceRows(item).gachaSources;
-  return sourceBlock("轉蛋取得", rows, row => {
+  return sourceChipBlock("轉蛋取得", rows, "gachaSourceList", row => {
     const sourceItem = row.sourceItem || {};
     const sourceName = sourceItem.name || row.poolName || "轉蛋";
     const sourceImage = sourceItem.image || row.itemImage || item.image;
+    const chanceText = Number.isFinite(Number(row.chance)) ? `${formatNumber(row.chance)}%` : "機率未知";
     const meta = [];
     if (row.poolName) meta.push(row.poolName);
     if (row.tier) meta.push(`${row.tier}賞`);
-    if (Number.isFinite(Number(row.chance))) meta.push(`${formatNumber(row.chance)}%`);
     if (state.showIds && row.itemId) meta.push(`ID ${row.itemId}`);
     const body = `
         ${assetImage(sourceImage, sourceName, String(sourceName || "?").slice(0, 1), "sourceMonsterImage")}
@@ -1494,13 +1591,13 @@ function renderGachaSources(item) {
           <span>${escapeHtml(meta.join(" · ") || "轉蛋")}</span>
           ${row.itemName && row.itemName !== item.name ? `<p>獎項：${escapeHtml(row.itemName)}</p>` : ""}
         </div>
-        <small>轉蛋</small>
+        <small class="sourceChipBadge">${escapeHtml(chanceText)}</small>
     `;
     if (sourceItem.id) {
-      return `<a class="sourceRow sourceLinkRow" href="${itemUrl(sourceItem.id)}">${body}</a>`;
+      return `<a class="sourceRow sourceLinkRow sourceChipRow gachaSourceRow" href="${itemUrl(sourceItem.id)}">${body}</a>`;
     }
     return `
-      <article class="sourceRow">
+      <article class="sourceRow sourceChipRow gachaSourceRow">
         ${body}
       </article>
     `;
@@ -1509,17 +1606,24 @@ function renderGachaSources(item) {
 
 function renderQuestRequirementSources(item) {
   const rows = questRequirementRows(item);
-  return sourceBlock("任務需求", rows, row => `
-    <a class="sourceRow sourceLinkRow sourceQuestRow" href="${questUrl(row.questId)}">
+  return sourceChipBlock("任務需求", rows, "questSourceList questRequirementSourceList", row => {
+    const summary = [row.category || "任務"];
+    if (state.showIds) summary.push(`ID ${row.questId}`);
+    const meta = [row.stageLabel || "任務條件", `需要 ${formatNumber(row.count)} 個`];
+    if (row.parent) meta.push(row.parent);
+    const badge = questConditionBadgeHtml(row);
+    return `
+    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow" href="${questUrl(row.questId)}">
       ${questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
-        <span>${escapeHtml(row.category || "任務")}${row.minLevel ? ` · Lv.${escapeHtml(row.minLevel)}+` : ""}${state.showIds ? ` · ID ${escapeHtml(row.questId)}` : ""}</span>
-        <p>${escapeHtml(row.stageLabel || "任務條件")}${row.parent ? ` · ${escapeHtml(row.parent)}` : ""}</p>
+        <span>${escapeHtml(summary.join(" · "))}</span>
+        <p>${escapeHtml(meta.join(" · "))}</p>
       </div>
-      <small>需要 ${formatNumber(row.count)} 個</small>
+      ${badge}
     </a>
-  `);
+  `;
+  });
 }
 
 function renderCraftRequirementSources(item) {
@@ -1566,6 +1670,24 @@ function sourceBlock(title, rows, renderRow, noteHtml = "") {
         <span>${rows.length.toLocaleString()} 筆</span>
       </div>
       <div class="sourceList">
+        ${rows.map(renderRow).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function sourceChipBlock(title, rows, listClass, renderRow, noteHtml = "") {
+  if (!rows.length) return "";
+  return `
+    <section class="sectionBlock">
+      <div class="sectionTitle">
+        <div class="sectionHeading">
+          <h3>${escapeHtml(title)}</h3>
+          ${noteHtml || ""}
+        </div>
+        <span>${rows.length.toLocaleString()} 筆</span>
+      </div>
+      <div class="sourceList sourceChipList ${listClass}">
         ${rows.map(renderRow).join("")}
       </div>
     </section>
