@@ -1,14 +1,14 @@
 {
   "summary": {
-    "targets": 100,
-    "downloaded": 23,
-    "resolved": 23,
-    "failed": 77,
+    "targets": 98,
+    "downloaded": 22,
+    "resolved": 22,
+    "failed": 76,
     "skipped": 0,
     "byKind": {
       "monster": {
-        "targets": 21,
-        "downloaded": 20,
+        "targets": 20,
+        "downloaded": 19,
         "failed": 1
       },
       "skill": {
@@ -22,9 +22,9 @@
         "failed": 1
       },
       "item": {
-        "targets": 2,
+        "targets": 1,
         "downloaded": 0,
-        "failed": 2
+        "failed": 1
       }
     },
     "mode": "missing",
@@ -249,25 +249,11 @@
     },
     {
       "kind": "monster",
-      "localId": "8220000",
-      "name": "艾利傑",
-      "resourceId": "mob/8220000.img",
-      "output": "assets/monster_frames/8220000.png",
-      "index": 16,
-      "relPath": "stand",
-      "ruid": "d458879e2e2949f2bb2e915ff67fbc64",
-      "spriteRuid": "29183d65fa0a496092b69534f5e86a6a",
-      "method": "monster_animation_first_frame",
-      "image": "https://mod-resource-search-images.dn.nexoncdn.co.kr/maplestory_world/29183d65fa0a496092b69534f5e86a6a.png",
-      "status": "downloaded"
-    },
-    {
-      "kind": "monster",
       "localId": "8220009",
       "name": "怪物 8220009",
       "resourceId": "mob/8220009.img",
       "output": "assets/monster_frames/8220009.png",
-      "index": 17,
+      "index": 16,
       "relPath": "stand",
       "ruid": "9b3ccc7552c148aabfa4618037336382",
       "spriteRuid": "d49d8fe6aa95489896c9e7ab9a992045",
@@ -281,7 +267,7 @@
       "name": "闇黑龍王",
       "resourceId": "mob/8810018.img",
       "output": "assets/monster_frames/8810018.png",
-      "index": 18,
+      "index": 17,
       "relPath": "info/default",
       "ruid": "add148db3a344de9ab8a30dc67b953a3",
       "spriteRuid": "bf00aebae8764f309fa4397bc5d969bb",
@@ -295,7 +281,7 @@
       "name": "巴洛古",
       "resourceId": "mob/8830000.img",
       "output": "assets/monster_frames/8830000.png",
-      "index": 19,
+      "index": 18,
       "relPath": "stand",
       "ruid": "dd23a55ad6a246b6afe37162434723e0",
       "spriteRuid": "78c410e4b2fb4c5e837a7e535bc5fd63",
@@ -309,7 +295,7 @@
       "name": "法郎肯洛伊德",
       "resourceId": "mob/9300139.img",
       "output": "assets/monster_frames/9300139.png",
-      "index": 20,
+      "index": 19,
       "relPath": "stand",
       "ruid": "9ce4c9e51d7d40da906953424b89d930",
       "spriteRuid": "857156e5b9ac48cbbbfbdbf246bfbcb0",
@@ -323,7 +309,7 @@
       "name": "怪物 9300274",
       "resourceId": "mob/9300274.img",
       "output": "assets/monster_frames/9300274.png",
-      "index": 21,
+      "index": 20,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -333,7 +319,7 @@
       "name": "弩術精通",
       "resourceId": "skill/322.img/skill/3220004",
       "output": "assets/skills/3220004.png",
-      "index": 22,
+      "index": 21,
       "relPath": "icon",
       "ruid": "23c7a92a59c5483493d40110e07f2911",
       "method": "skill_icon_sprite",
@@ -346,7 +332,7 @@
       "name": "三重斬",
       "resourceId": "skill/430.img/skill/4301001",
       "output": "assets/skills/4301001.png",
-      "index": 23,
+      "index": 22,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -356,7 +342,7 @@
       "name": "神速雙刀",
       "resourceId": "skill/430.img/skill/4301002",
       "output": "assets/skills/4301002.png",
-      "index": 24,
+      "index": 23,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -366,7 +352,7 @@
       "name": "自我速度激發",
       "resourceId": "skill/431.img/skill/4311001",
       "output": "assets/skills/4311001.png",
-      "index": 25,
+      "index": 24,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -376,7 +362,7 @@
       "name": "分身斬",
       "resourceId": "skill/431.img/skill/4311002",
       "output": "assets/skills/4311002.png",
-      "index": 26,
+      "index": 25,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -386,7 +372,7 @@
       "name": "狂刃風暴",
       "resourceId": "skill/431.img/skill/4311003",
       "output": "assets/skills/4311003.png",
-      "index": 27,
+      "index": 26,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -396,7 +382,7 @@
       "name": "雙刃旋",
       "resourceId": "skill/432.img/skill/4321000",
       "output": "assets/skills/4321000.png",
-      "index": 28,
+      "index": 27,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -406,7 +392,7 @@
       "name": "[TW]토네이도 스핀(어택)",
       "resourceId": "skill/432.img/skill/4321001",
       "output": "assets/skills/4321001.png",
-      "index": 29,
+      "index": 28,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -416,7 +402,7 @@
       "name": "閃光彈",
       "resourceId": "skill/432.img/skill/4321002",
       "output": "assets/skills/4321002.png",
-      "index": 30,
+      "index": 29,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -426,7 +412,7 @@
       "name": "進階隱身術",
       "resourceId": "skill/433.img/skill/4330001",
       "output": "assets/skills/4330001.png",
-      "index": 31,
+      "index": 30,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -436,7 +422,7 @@
       "name": "血雨暴風狂斬",
       "resourceId": "skill/433.img/skill/4331000",
       "output": "assets/skills/4331000.png",
-      "index": 32,
+      "index": 31,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -446,7 +432,7 @@
       "name": "貓頭鷹召喚",
       "resourceId": "skill/433.img/skill/4331003",
       "output": "assets/skills/4331003.png",
-      "index": 33,
+      "index": 32,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -456,7 +442,7 @@
       "name": "躍空斬",
       "resourceId": "skill/433.img/skill/4331004",
       "output": "assets/skills/4331004.png",
-      "index": 34,
+      "index": 33,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -466,7 +452,7 @@
       "name": "翔空落葉斬",
       "resourceId": "skill/433.img/skill/4331005",
       "output": "assets/skills/4331005.png",
-      "index": 35,
+      "index": 34,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -476,7 +462,7 @@
       "name": "絕殺刃",
       "resourceId": "skill/434.img/skill/4341002",
       "output": "assets/skills/4341002.png",
-      "index": 36,
+      "index": 35,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -486,7 +472,7 @@
       "name": "怪物大爆炸",
       "resourceId": "skill/434.img/skill/4341003",
       "output": "assets/skills/4341003.png",
-      "index": 37,
+      "index": 36,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -496,7 +482,7 @@
       "name": "[TW]써든 레이드",
       "resourceId": "skill/434.img/skill/4341004",
       "output": "assets/skills/4341004.png",
-      "index": 38,
+      "index": 37,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -506,7 +492,7 @@
       "name": "隱‧鎖鏈地獄",
       "resourceId": "skill/434.img/skill/4341005",
       "output": "assets/skills/4341005.png",
-      "index": 39,
+      "index": 38,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -516,7 +502,7 @@
       "name": "荊棘特效",
       "resourceId": "skill/434.img/skill/4341007",
       "output": "assets/skills/4341007.png",
-      "index": 40,
+      "index": 39,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -526,7 +512,7 @@
       "name": "[TW]엘리먼트 엠플리피케이션",
       "resourceId": "skill/1211.img/skill/12110001",
       "output": "assets/skills/12110001.png",
-      "index": 41,
+      "index": 40,
       "relPath": "icon",
       "ruid": "09e9c62a1c534c5390d2b0cfea17ad00",
       "method": "skill_icon_sprite",
@@ -539,7 +525,7 @@
       "name": "火圈",
       "resourceId": "skill/2210.img/skill/22101000",
       "output": "assets/skills/22101000.png",
-      "index": 42,
+      "index": 41,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -549,7 +535,7 @@
       "name": "閃電球",
       "resourceId": "skill/2211.img/skill/22111000",
       "output": "assets/skills/22111000.png",
-      "index": 43,
+      "index": 42,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -559,7 +545,7 @@
       "name": "雪嵐陣",
       "resourceId": "skill/2212.img/skill/22121000",
       "output": "assets/skills/22121000.png",
-      "index": 44,
+      "index": 43,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -569,7 +555,7 @@
       "name": "魔光殺",
       "resourceId": "skill/2213.img/skill/22131000",
       "output": "assets/skills/22131000.png",
-      "index": 45,
+      "index": 44,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -579,7 +565,7 @@
       "name": "守護之力",
       "resourceId": "skill/2213.img/skill/22131001",
       "output": "assets/skills/22131001.png",
-      "index": 46,
+      "index": 45,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -589,7 +575,7 @@
       "name": "魔力爆擊",
       "resourceId": "skill/2214.img/skill/22140000",
       "output": "assets/skills/22140000.png",
-      "index": 47,
+      "index": 46,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -599,7 +585,7 @@
       "name": "龍神閃",
       "resourceId": "skill/2214.img/skill/22141001",
       "output": "assets/skills/22141001.png",
-      "index": 48,
+      "index": 47,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -609,7 +595,7 @@
       "name": "[TW]매직 엠플리피케이션",
       "resourceId": "skill/2215.img/skill/22150000",
       "output": "assets/skills/22150000.png",
-      "index": 49,
+      "index": 48,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -619,7 +605,7 @@
       "name": "火焰殺",
       "resourceId": "skill/2215.img/skill/22151001",
       "output": "assets/skills/22151001.png",
-      "index": 50,
+      "index": 49,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -629,7 +615,7 @@
       "name": "襲殺翼",
       "resourceId": "skill/2215.img/skill/22151002",
       "output": "assets/skills/22151002.png",
-      "index": 51,
+      "index": 50,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -639,7 +625,7 @@
       "name": "龍神的護佑",
       "resourceId": "skill/2216.img/skill/22160000",
       "output": "assets/skills/22160000.png",
-      "index": 52,
+      "index": 51,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -649,7 +635,7 @@
       "name": "大地震盪",
       "resourceId": "skill/2216.img/skill/22161001",
       "output": "assets/skills/22161001.png",
-      "index": 53,
+      "index": 52,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -659,7 +645,7 @@
       "name": "鬼神詛咒",
       "resourceId": "skill/2216.img/skill/22161002",
       "output": "assets/skills/22161002.png",
-      "index": 54,
+      "index": 53,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -669,7 +655,7 @@
       "name": "聖療之光",
       "resourceId": "skill/2216.img/skill/22161003",
       "output": "assets/skills/22161003.png",
-      "index": 55,
+      "index": 54,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -679,7 +665,7 @@
       "name": "魔法激發",
       "resourceId": "skill/2217.img/skill/22170001",
       "output": "assets/skills/22170001.png",
-      "index": 56,
+      "index": 55,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -689,7 +675,7 @@
       "name": "四連殺",
       "resourceId": "skill/2217.img/skill/22171002",
       "output": "assets/skills/22171002.png",
-      "index": 57,
+      "index": 56,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -699,7 +685,7 @@
       "name": "火輪舞",
       "resourceId": "skill/2217.img/skill/22171003",
       "output": "assets/skills/22171003.png",
-      "index": 58,
+      "index": 57,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -709,7 +695,7 @@
       "name": "歐尼斯的祝福",
       "resourceId": "skill/2218.img/skill/22181000",
       "output": "assets/skills/22181000.png",
-      "index": 59,
+      "index": 58,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -719,7 +705,7 @@
       "name": "烈焰爆擊",
       "resourceId": "skill/2218.img/skill/22181001",
       "output": "assets/skills/22181001.png",
-      "index": 60,
+      "index": 59,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -729,7 +715,7 @@
       "name": "[TW]다크포그",
       "resourceId": "skill/2218.img/skill/22181002",
       "output": "assets/skills/22181002.png",
-      "index": 61,
+      "index": 60,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -739,7 +725,7 @@
       "name": "靈魂之石",
       "resourceId": "skill/2218.img/skill/22181003",
       "output": "assets/skills/22181003.png",
-      "index": 62,
+      "index": 61,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -749,7 +735,7 @@
       "name": "Lv.3邪惡哈多卡",
       "resourceId": "skill/8000.img/skill/80000100",
       "output": "assets/skills/80000100.png",
-      "index": 63,
+      "index": 62,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -759,7 +745,7 @@
       "name": "萬能雲朵 Lv.1",
       "resourceId": "skill/8000.img/skill/80000528",
       "output": "assets/skills/80000528.png",
-      "index": 64,
+      "index": 63,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -769,7 +755,7 @@
       "name": "萬能雲朵 Lv.2",
       "resourceId": "skill/8000.img/skill/80000529",
       "output": "assets/skills/80000529.png",
-      "index": 65,
+      "index": 64,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -779,7 +765,7 @@
       "name": "萬能雲朵 Lv.3",
       "resourceId": "skill/8000.img/skill/80000530",
       "output": "assets/skills/80000530.png",
-      "index": 66,
+      "index": 65,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -789,7 +775,7 @@
       "name": "借過噗噗！Lv.1",
       "resourceId": "skill/8000.img/skill/80000531",
       "output": "assets/skills/80000531.png",
-      "index": 67,
+      "index": 66,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -799,7 +785,7 @@
       "name": "借過噗噗！Lv.2",
       "resourceId": "skill/8000.img/skill/80000532",
       "output": "assets/skills/80000532.png",
-      "index": 68,
+      "index": 67,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -809,7 +795,7 @@
       "name": "借過噗噗！Lv.3",
       "resourceId": "skill/8000.img/skill/80000533",
       "output": "assets/skills/80000533.png",
-      "index": 69,
+      "index": 68,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -819,7 +805,7 @@
       "name": "月光可愛 Lv.1",
       "resourceId": "skill/8000.img/skill/80000547",
       "output": "assets/skills/80000547.png",
-      "index": 70,
+      "index": 69,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -829,7 +815,7 @@
       "name": "月光可愛 Lv.2",
       "resourceId": "skill/8000.img/skill/80000548",
       "output": "assets/skills/80000548.png",
-      "index": 71,
+      "index": 70,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -839,7 +825,7 @@
       "name": "月光可愛 Lv.3",
       "resourceId": "skill/8000.img/skill/80000549",
       "output": "assets/skills/80000549.png",
-      "index": 72,
+      "index": 71,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -849,7 +835,7 @@
       "name": "月光夢幻 Lv.1",
       "resourceId": "skill/8000.img/skill/80000550",
       "output": "assets/skills/80000550.png",
-      "index": 73,
+      "index": 72,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -859,7 +845,7 @@
       "name": "月光夢幻 Lv.2",
       "resourceId": "skill/8000.img/skill/80000551",
       "output": "assets/skills/80000551.png",
-      "index": 74,
+      "index": 73,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -869,7 +855,7 @@
       "name": "月光夢幻 Lv.3",
       "resourceId": "skill/8000.img/skill/80000552",
       "output": "assets/skills/80000552.png",
-      "index": 75,
+      "index": 74,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -879,7 +865,7 @@
       "name": "月光可愛 Lv.1",
       "resourceId": "skill/8000.img/skill/80000561",
       "output": "assets/skills/80000561.png",
-      "index": 76,
+      "index": 75,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -889,7 +875,7 @@
       "name": "月光可愛 Lv.1",
       "resourceId": "skill/8000.img/skill/80000562",
       "output": "assets/skills/80000562.png",
-      "index": 77,
+      "index": 76,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -899,7 +885,7 @@
       "name": "月光夢幻 Lv.1",
       "resourceId": "skill/8000.img/skill/80000563",
       "output": "assets/skills/80000563.png",
-      "index": 78,
+      "index": 77,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -909,7 +895,7 @@
       "name": "月光夢幻 Lv.1",
       "resourceId": "skill/8000.img/skill/80000564",
       "output": "assets/skills/80000564.png",
-      "index": 79,
+      "index": 78,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -919,7 +905,7 @@
       "name": "這是什麼東東 Lv.1",
       "resourceId": "skill/8000.img/skill/80000593",
       "output": "assets/skills/80000593.png",
-      "index": 80,
+      "index": 79,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -929,7 +915,7 @@
       "name": "這是什麼東東 Lv.2",
       "resourceId": "skill/8000.img/skill/80000594",
       "output": "assets/skills/80000594.png",
-      "index": 81,
+      "index": 80,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -939,7 +925,7 @@
       "name": "這是什麼東東 Lv.3",
       "resourceId": "skill/8000.img/skill/80000595",
       "output": "assets/skills/80000595.png",
-      "index": 82,
+      "index": 81,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -949,7 +935,7 @@
       "name": "區區怪物卻很強！Lv.1",
       "resourceId": "skill/8000.img/skill/80000606",
       "output": "assets/skills/80000606.png",
-      "index": 83,
+      "index": 82,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -959,7 +945,7 @@
       "name": "區區怪物卻很強！ Lv.2",
       "resourceId": "skill/8000.img/skill/80000607",
       "output": "assets/skills/80000607.png",
-      "index": 84,
+      "index": 83,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -969,7 +955,7 @@
       "name": "區區怪物卻很強！ Lv.3",
       "resourceId": "skill/8000.img/skill/80000608",
       "output": "assets/skills/80000608.png",
-      "index": 85,
+      "index": 84,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -979,7 +965,7 @@
       "name": "手舉高 Lv.1",
       "resourceId": "skill/8000.img/skill/80000746",
       "output": "assets/skills/80000746.png",
-      "index": 86,
+      "index": 85,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -989,7 +975,7 @@
       "name": "手舉高 Lv.2",
       "resourceId": "skill/8000.img/skill/80000747",
       "output": "assets/skills/80000747.png",
-      "index": 87,
+      "index": 86,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -999,7 +985,7 @@
       "name": "手舉高 Lv.3",
       "resourceId": "skill/8000.img/skill/80000748",
       "output": "assets/skills/80000748.png",
-      "index": 88,
+      "index": 87,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1009,7 +995,7 @@
       "name": "Lv1.活著的金幣寵物之神秘力量",
       "resourceId": "skill/8001.img/skill/80010188",
       "output": "assets/skills/80010188.png",
-      "index": 89,
+      "index": 88,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1019,7 +1005,7 @@
       "name": "Lv2. 活著的金幣寵物之神秘力量",
       "resourceId": "skill/8001.img/skill/80010189",
       "output": "assets/skills/80010189.png",
-      "index": 90,
+      "index": 89,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1029,7 +1015,7 @@
       "name": "Lv3. 活著的金幣寵物之神秘力量",
       "resourceId": "skill/8001.img/skill/80010190",
       "output": "assets/skills/80010190.png",
-      "index": 91,
+      "index": 90,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1039,7 +1025,7 @@
       "name": "迷你島 Lv.3",
       "resourceId": "skill/8001.img/skill/80010463",
       "output": "assets/skills/80010463.png",
-      "index": 92,
+      "index": 91,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1049,7 +1035,7 @@
       "name": "氣絕",
       "resourceId": "skill/9000.img/skill/90001001",
       "output": "assets/skills/90001001.png",
-      "index": 93,
+      "index": 92,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1059,7 +1045,7 @@
       "name": "毒",
       "resourceId": "skill/9000.img/skill/90001003",
       "output": "assets/skills/90001003.png",
-      "index": 94,
+      "index": 93,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1069,7 +1055,7 @@
       "name": "黑暗",
       "resourceId": "skill/9000.img/skill/90001004",
       "output": "assets/skills/90001004.png",
-      "index": 95,
+      "index": 94,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1079,7 +1065,7 @@
       "name": "封印",
       "resourceId": "skill/9000.img/skill/90001005",
       "output": "assets/skills/90001005.png",
-      "index": 96,
+      "index": 95,
       "error": "skill_icon_not_found",
       "status": "skill_icon_not_found"
     },
@@ -1089,7 +1075,7 @@
       "name": "唐唐",
       "resourceId": "npc/1052116.img",
       "output": "assets/npcs/1052116.png",
-      "index": 97,
+      "index": 96,
       "relPath": "stand",
       "ruid": "e6e73f51d39b4f9ea13170f1c6f13743",
       "spriteRuid": "37767bed91154d8e8de28b289e5ff06c",
@@ -1103,7 +1089,7 @@
       "name": "NPC 9010017",
       "resourceId": "npc/9010017.img",
       "output": "assets/npcs/9010017.png",
-      "index": 98,
+      "index": 97,
       "error": "resource_not_found",
       "status": "resource_not_found"
     },
@@ -1113,17 +1099,7 @@
       "name": "未命名道具 5002258",
       "resourceId": "item/pet/5002258.img",
       "output": "assets/items/5002258.png",
-      "index": 99,
-      "error": "resource_not_found",
-      "status": "resource_not_found"
-    },
-    {
-      "kind": "item",
-      "localId": "5004011",
-      "name": "未命名道具 5004011",
-      "resourceId": "item/pet/5004011.img",
-      "output": "assets/items/5004011.png",
-      "index": 100,
+      "index": 98,
       "error": "resource_not_found",
       "status": "resource_not_found"
     }
