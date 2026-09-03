@@ -38,7 +38,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260901061829" />
+  <link rel="stylesheet" href="./styles.css?v=20260903160818" />
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -82,7 +82,11 @@
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="版本列表">
-      <a class="patchVersionRow active" href="#v1-14-6">
+      <a class="patchVersionRow active" href="#v1-14-7">
+        <strong>1.14.7</strong>
+        <span>2026-09-02</span>
+      </a>
+      <a class="patchVersionRow" href="#v1-14-6">
         <strong>1.14.6</strong>
         <span>2026-08-27</span>
       </a>
@@ -101,6 +105,79 @@
     </aside>
 
     <section class="detail patchNotesDetail">
+      <article id="v1-14-7" class="patchNoteArticle">
+        <header class="patchNoteHero">
+          <div>
+            <p class="patchEyebrow">資料版本更新</p>
+            <h2>遊戲資料 1.14.7</h2>
+            <p>本次為官方客戶端小型熱更新，資料 ID 沒有增刪，主要同步素材與網站推估資料。</p>
+          </div>
+          <div class="patchNoteDate">
+            <strong>2026-09-02</strong>
+            <span>GMT+8</span>
+          </div>
+        </header>
+
+        <section class="patchNoteSection">
+          <h3>資料變更總覽</h3>
+          <ul class="patchChangeList">
+            <li>網站資料更新至遊戲資料 <b>1.14.7</b>。</li>
+            <li>新增 <b>15</b> 張怪物圖示；修改 <b>8</b> 項玩家可見資料；未發現玩家可見資料移除。</li>
+            <li>怪物、掉落、任務、技能、地圖與道具 ID 筆數沒有變動。</li>
+          </ul>
+        </section>
+
+        <section class="patchNoteSection">
+          <h3>圖示資源</h3>
+          <ul class="patchChangeList">
+            <li>新增 <b>15</b> 張怪物圖示：怪物 1110130、怪物 1140130、怪物 2230131、九尾妖狐、哈維、回憶守護兵、回憶守護隊長、悔恨的神官、悔恨的守護兵、悔恨的守護隊長、忘卻的神官、忘卻的守護兵、忘卻的守護隊長、怪物 8220009、法郎肯洛伊德。</li>
+            <li>修改 <b>4</b> 張怪物圖示：黃獨角獅、厄運死神、黑格里芬、雪毛怪人。</li>
+            <li>修改 <b>2</b> 張道具圖示：小石球的石塊（4000083）、未命名道具 5004011。</li>
+          </ul>
+        </section>
+
+        <section class="patchNoteSection">
+          <h3>掉落率資料</h3>
+          <ul class="patchChangeList">
+            <li>修改 <b>2</b> 隻區域 Boss 的稀有掉落率選源：殭屍猴王、沼澤巨鱷的裝備與卷軸若 MapleLandHub 明顯高於 TMS113 對應表，改採較保守的 TMS113 數值。</li>
+          </ul>
+        </section>
+
+        <section class="patchNoteSection">
+          <h3>完整資料 diff</h3>
+          <details class="patchDiffPanel">
+            <summary>
+              <span>
+                <strong>1.14.6 → 1.14.7</strong>
+                <em>展開查看資料表差異細節</em>
+              </span>
+            </summary>
+            <div class="patchDiffBody">
+              <div class="patchDiffBlock">
+                <h4>新增 15 個</h4>
+                <ul class="patchChangeList">
+                  <li>怪物圖示 <b>15</b> 張：怪物 1110130、怪物 1140130、怪物 2230131、九尾妖狐（7220001）、哈維（8140001）、回憶守護兵（8200003）、回憶守護隊長（8200004）、悔恨的神官（8200006）、悔恨的守護兵（8200007）、悔恨的守護隊長（8200008）、忘卻的神官（8200010）、忘卻的守護兵（8200011）、忘卻的守護隊長（8200012）、怪物 8220009、法郎肯洛伊德（9300139）。</li>
+                </ul>
+              </div>
+              <div class="patchDiffBlock">
+                <h4>修改 8 個</h4>
+                <ul class="patchChangeList">
+                  <li>怪物圖示替換 <b>4</b> 張：黃獨角獅（5120002）、厄運死神（6090000）、黑格里芬（7130000）、雪毛怪人（8220001）。</li>
+                  <li>道具圖示替換 <b>2</b> 張：小石球的石塊（4000083）、未命名道具 5004011。</li>
+                  <li>掉落率選源校正 <b>2</b> 隻怪物：殭屍猴王（5220002）、沼澤巨鱷（6220000）。</li>
+                </ul>
+              </div>
+              <div class="patchDiffBlock">
+                <h4>移除 0 個</h4>
+                <ul class="patchChangeList">
+                  <li>玩家可見資料 ID 沒有移除；怪物、掉落、任務、技能、地圖與道具 ID 筆數沒有變動。</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+        </section>
+      </article>
+
       <article id="v1-14-6" class="patchNoteArticle">
         <header class="patchNoteHero">
           <div>
@@ -363,7 +440,7 @@
     </section>
   </main>
 
-  <script src="./patch-notes.js?v=20260901061115"></script>
-  <script src="./mobile.js?v=20260901061115"></script>
+  <script src="./patch-notes.js?v=20260903160818"></script>
+  <script src="./mobile.js?v=20260903160818"></script>
 </body>
 </html>
