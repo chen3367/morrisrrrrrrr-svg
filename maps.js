@@ -917,37 +917,50 @@ function renderMapCanvas(map) {
   const rendered = map.renderedMap || {};
   const usingRenderedMap = shouldUseRenderedMap(map);
   const mapImage = usingRenderedMap ? rendered.image : (map.miniMapImage || "");
-  const imageStyle = mapImage ? `background-image:url('${escapeHtml(mapImage)}');` : "";
-  const style = `aspect-ratio:${Math.max(320, Math.round(metrics.width))} / ${Math.max(180, Math.round(metrics.height))};${imageStyle}`;
+  const usingRegionPreview = !mapImage && Boolean(map.regionImage);
+  const previewImage = mapImage || (usingRegionPreview ? map.regionImage : "");
+  const imageStyle = previewImage ? `background-image:url('${escapeHtml(previewImage)}');` : "";
+  const aspectWidth = usingRegionPreview ? 480 : Math.max(320, Math.round(metrics.width));
+  const aspectHeight = usingRegionPreview ? 320 : Math.max(180, Math.round(metrics.height));
+  const style = `aspect-ratio:${aspectWidth} / ${aspectHeight};${imageStyle}`;
   const spawns = displayCoordinateSpawns(map);
   const npcs = displayNpcs(map);
   const portals = displayPortals(map);
-  const metricText = mapImage ? "" : (metrics.source === "miniMap" ? `${metrics.width} × ${metrics.height}` : "座標範圍");
-  const canvasClass = ["mapCanvas", mapImage ? "withMiniMapImage" : "", usingRenderedMap ? "withRenderedMapImage" : ""].filter(Boolean).join(" ");
+  const metricText = previewImage ? (usingRegionPreview ? "區域圖" : "") : (metrics.source === "miniMap" ? `${metrics.width} × ${metrics.height}` : "座標範圍");
+  const canvasClass = [
+    "mapCanvas",
+    previewImage ? "withMiniMapImage" : "",
+    usingRenderedMap ? "withRenderedMapImage" : "",
+    usingRegionPreview ? "withRegionPreviewImage" : "",
+  ].filter(Boolean).join(" ");
   return `
     <section class="sectionBlock">
       <div class="sectionTitle">
-        <h3>${usingRenderedMap ? "地圖預覽" : "小地圖"}</h3>
+        <h3>${usingRegionPreview ? "地圖預覽" : (usingRenderedMap ? "地圖預覽" : "小地圖")}</h3>
         ${metricText ? `<span>${escapeHtml(metricText)}</span>` : ""}
       </div>
       <div class="mapCanvasShell">
         <div class="${canvasClass}" style="${style}" aria-label="${escapeHtml(map.name)}">
-          <div class="mapAxisLabel mapAxisLabelX">${formatNumber(Math.round(metrics.x0))} → ${formatNumber(Math.round(metrics.x1))}</div>
-          <div class="mapAxisLabel mapAxisLabelY">${formatNumber(Math.round(metrics.y0))} → ${formatNumber(Math.round(metrics.y1))}</div>
-          ${terrainLayerHtml(metrics, map)}
-          ${portalArrowsHtml(metrics, portals, map.id)}
-          ${spawns.map(spawn => markerHtml(metrics, spawn, "spawn")).join("")}
-          ${npcs.map(npc => markerHtml(metrics, npc, "npc")).join("")}
-          ${portals.map(portal => markerHtml(metrics, portal, "portal", map.id)).join("")}
+          ${usingRegionPreview ? `<div class="mapPreviewNotice">目前資料包未包含單張小地圖，顯示所屬區域圖</div>` : `
+            <div class="mapAxisLabel mapAxisLabelX">${formatNumber(Math.round(metrics.x0))} → ${formatNumber(Math.round(metrics.x1))}</div>
+            <div class="mapAxisLabel mapAxisLabelY">${formatNumber(Math.round(metrics.y0))} → ${formatNumber(Math.round(metrics.y1))}</div>
+            ${terrainLayerHtml(metrics, map)}
+            ${portalArrowsHtml(metrics, portals, map.id)}
+            ${spawns.map(spawn => markerHtml(metrics, spawn, "spawn")).join("")}
+            ${npcs.map(npc => markerHtml(metrics, npc, "npc")).join("")}
+            ${portals.map(portal => markerHtml(metrics, portal, "portal", map.id)).join("")}
+          `}
         </div>
-        <div class="mapLegend">
-          <span><i class="legendDot spawnDot"></i>怪物重生點</span>
-          <span><i class="legendDot npcDot"></i>NPC</span>
-          <span><i class="legendDot portalDot"></i>跨地圖傳送</span>
-          <span><i class="legendDot sameMapDot"></i>同地圖傳送</span>
-          ${hasTerrainLines(map) ? `<span><i class="legendLine terrainLegendLine"></i>地形線</span>` : ""}
-        </div>
-        ${mapLayerControlsHtml(map)}
+        ${usingRegionPreview ? "" : `
+          <div class="mapLegend">
+            <span><i class="legendDot spawnDot"></i>怪物重生點</span>
+            <span><i class="legendDot npcDot"></i>NPC</span>
+            <span><i class="legendDot portalDot"></i>跨地圖傳送</span>
+            <span><i class="legendDot sameMapDot"></i>同地圖傳送</span>
+            ${hasTerrainLines(map) ? `<span><i class="legendLine terrainLegendLine"></i>地形線</span>` : ""}
+          </div>
+          ${mapLayerControlsHtml(map)}
+        `}
       </div>
     </section>
   `;

@@ -3669,6 +3669,12 @@ h3 {
   max-height: none;
   background-color: #94cfe8;
 }
+.mapCanvas.withRegionPreviewImage {
+  min-height: 240px;
+  max-height: min(58vh, 520px);
+  background-color: #eef7fb;
+  background-size: contain;
+}
 :root[data-theme="dark"] .mapCanvas {
   background:
     linear-gradient(rgba(86, 213, 143, 0.08), rgba(86, 213, 143, 0.02)),
@@ -3684,6 +3690,23 @@ h3 {
 }
 :root[data-theme="dark"] .mapCanvas.withRenderedMapImage {
   background-color: #1f4255;
+}
+:root[data-theme="dark"] .mapCanvas.withRegionPreviewImage {
+  background-color: #172033;
+}
+.mapPreviewNotice {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  max-width: min(460px, calc(100% - 24px));
+  padding: 6px 9px;
+  border: 1px solid var(--mini-border);
+  border-radius: 6px;
+  background: var(--hero-bg);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: var(--shadow-soft);
 }
 .mapAxisLabel {
   position: absolute;
