@@ -1,15 +1,15 @@
 {
-  "targets": 333,
-  "available": 333,
-  "exported": 333,
+  "targets": 366,
+  "available": 366,
+  "exported": 366,
   "bundles": [
     {
-      "bundle": "spritesheet_ef97f1e56f7745b1091fead913c65555.bundle",
-      "targets": 333,
-      "exported": 333,
-      "cropped": 333,
-      "wzssSizeMatches": 333,
-      "wzssSizes": 337,
+      "bundle": "spritesheet_ef97f1e56f7745b1a9a11b2f38eb4d09.bundle",
+      "targets": 366,
+      "exported": 366,
+      "cropped": 366,
+      "wzssSizeMatches": 366,
+      "wzssSizes": 1625,
       "missing": 0
     }
   ]
