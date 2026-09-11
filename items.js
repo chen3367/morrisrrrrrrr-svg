@@ -380,6 +380,11 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
+function itemDescriptionHtml(value, className = "itemDescription") {
+  const text = String(value || "").replace(/\\r\\n|\\r|\\n/g, "\n").trim();
+  return text ? `<p class="${className}">${escapeHtml(text)}</p>` : "";
+}
+
 function assetImage(src, alt, fallback, className) {
   if (src) {
     return `<img class="${className} assetImage" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
@@ -795,7 +800,8 @@ function monsterDropSourceLabel(row) {
 
 function shopSourceRows(item) {
   const rows = item.sources?.shops || [];
-  return state.showUnnamedMapMonsters ? rows : rows.filter(row => !row.onlyUnnamedMaps);
+  const visibleRows = rows.filter(row => !row.hiddenByDefault);
+  return state.showUnnamedMapMonsters ? visibleRows : visibleRows.filter(row => !row.onlyUnnamedMaps);
 }
 
 function npcOnlyUnnamedMaps(npc) {
@@ -1217,7 +1223,8 @@ function renderDetail() {
       ${assetImage(item.image, item.name, item.name.slice(0, 1) || "?", "itemMark")}
       <div class="heroText">
         <h2>${escapeHtml(item.name)}</h2>
-        <p>${escapeHtml(itemTypeText(item))}${idMeta(item)}${item.desc ? ` · ${escapeHtml(shorten(item.desc, 110))}` : ""}</p>
+        <p class="itemHeroMeta">${escapeHtml(itemTypeText(item))}${idMeta(item)}</p>
+        ${itemDescriptionHtml(item.desc, "itemHeroDescription")}
       </div>
       <div class="heroCounters">
         <div class="heroCounter"><strong>${formatNumber(totalSources(item))}</strong><span>${counts.boxChoices ? "來源/內容" : "來源"}</span></div>
@@ -1380,6 +1387,29 @@ function shopPriceText(row) {
   return `${formatNumber(row.price)} ${currency}`;
 }
 
+function cashShopTermDateText(value) {
+  const text = String(value || "");
+  if (!/^\d{10}$/.test(text)) return "";
+  return `${text.slice(0, 4)}/${text.slice(4, 6)}/${text.slice(6, 8)} ${text.slice(8, 10)}:00`;
+}
+
+function cashShopTermText(row) {
+  const start = cashShopTermDateText(row.termStart);
+  const end = cashShopTermDateText(row.termEnd);
+  if (start && end) return `${start} ~ ${end}`;
+  if (start) return `${start} 起`;
+  if (end) return `至 ${end}`;
+  return "";
+}
+
+function originalShopPriceText(row) {
+  if (row.originalPrice === null || row.originalPrice === undefined) return "";
+  if (row.price !== null && row.price !== undefined && Number(row.originalPrice) <= Number(row.price)) return "";
+  const currency = row.currency || "";
+  if (!currency || currency === "楓幣" || currency === "meso") return formatMeso(row.originalPrice);
+  return `${formatNumber(row.originalPrice)} ${currency}`;
+}
+
 function renderShopSources(item) {
   const rows = sourceRows(item).shops;
   return sourceChipBlock("商店購買", rows, "shopSourceList", row => {
@@ -1388,6 +1418,10 @@ function renderShopSources(item) {
     const meta = [];
     if (row.locationText) meta.push(row.locationText);
     if (row.count && Number(row.count) > 1) meta.push(`${formatNumber(row.count)} 個`);
+    const termText = cashShopTermText(row);
+    if (termText) meta.push(`限時 ${termText}`);
+    const originalPrice = originalShopPriceText(row);
+    if (originalPrice) meta.push(`原價 ${originalPrice}`);
     if (state.showIds && row.shopId) meta.push(`Shop ${row.shopId}`);
     if (state.showIds && row.merchantId && isNpcShop) meta.push(`NPC ${row.merchantId}`);
     if (state.showIds && row.sn) meta.push(`SN ${row.sn}`);
@@ -1528,7 +1562,7 @@ function renderCraftSources(item) {
 
 function renderBoxSources(item) {
   const rows = sourceRows(item).boxSources;
-  return sourceBlock("箱子取得", rows, row => {
+  return sourceBlock("使用/開啟取得", rows, row => {
     const itemName = row.item?.name || item.name || "道具";
     const meta = [];
     if (row.npcName) meta.push(row.npcName);
@@ -1551,7 +1585,7 @@ function renderBoxSources(item) {
 
 function renderBoxChoiceSources(item) {
   const rows = sourceRows(item).boxChoices;
-  return sourceBlock("開啟後可選擇", rows, row => {
+  return sourceBlock("使用/開啟後可取得", rows, row => {
     const reward = row.item || {};
     const name = reward.name || row.choiceLabel || `道具 ${reward.id || ""}`;
     const meta = [];

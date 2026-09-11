@@ -490,6 +490,11 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
+function itemDescriptionHtml(value, className = "itemDescription") {
+  const text = String(value || "").replace(/\\r\\n|\\r|\\n/g, "\n").trim();
+  return text ? `<p class="${className}">${escapeHtml(text)}</p>` : "";
+}
+
 function assetImage(src, alt, fallback, className) {
   if (src) {
     return `<img class="${className} assetImage" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />`;
@@ -1437,7 +1442,7 @@ function itemCard(item) {
   const rangeRows = equipRangeRowsHtml(item);
   const upgradeRows = equipUpgradeRowsHtml(item);
   const equipmentDetails = `${requirementRows}${rangeRows}${upgradeRows}`;
-  const fallbackDescription = item.desc ? `<p>${escapeHtml(shorten(item.desc, 92))}</p>` : "";
+  const fallbackDescription = itemDescriptionHtml(item.desc);
   const detailHtml = state.showDropItemDetails
     ? `<span>${meta}</span>${equipmentDetails || fallbackDescription}`
     : "";
