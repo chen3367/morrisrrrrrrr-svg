@@ -1562,7 +1562,7 @@ function renderCraftSources(item) {
 
 function renderBoxSources(item) {
   const rows = sourceRows(item).boxSources;
-  return sourceBlock("使用/開啟取得", rows, row => {
+  return sourceChipBlock("使用/開啟取得", rows, "boxSourceList", row => {
     const itemName = row.item?.name || item.name || "道具";
     const meta = [];
     if (row.npcName) meta.push(row.npcName);
@@ -1570,7 +1570,7 @@ function renderBoxSources(item) {
     if (row.choiceLabel && row.choiceLabel !== itemName) meta.push(`選項：${row.choiceLabel}`);
     if (state.showIds) meta.push(`ID ${row.boxId}`);
     return `
-      <a class="sourceRow sourceLinkRow" href="${itemUrl(row.boxId)}">
+      <a class="sourceRow sourceLinkRow sourceChipRow boxSourceRow" href="${itemUrl(row.boxId)}">
         ${assetImage(row.boxImage, row.boxName, String(row.boxName || "?").slice(0, 1), "sourceMonsterImage")}
         <div>
           <strong>${escapeHtml(row.boxName || "箱子")}</strong>
@@ -1585,7 +1585,7 @@ function renderBoxSources(item) {
 
 function renderBoxChoiceSources(item) {
   const rows = sourceRows(item).boxChoices;
-  return sourceBlock("使用/開啟後可取得", rows, row => {
+  return sourceChipBlock("使用/開啟後可取得", rows, "boxSourceList", row => {
     const reward = row.item || {};
     const name = reward.name || row.choiceLabel || `道具 ${reward.id || ""}`;
     const meta = [];
@@ -1593,7 +1593,7 @@ function renderBoxChoiceSources(item) {
     if (row.npcName) meta.push(row.npcName);
     if (state.showIds && reward.id) meta.push(`ID ${reward.id}`);
     return `
-      <a class="sourceRow sourceLinkRow" href="${itemUrl(reward.id)}">
+      <a class="sourceRow sourceLinkRow sourceChipRow boxSourceRow" href="${itemUrl(reward.id)}">
         ${assetImage(reward.image, name, String(name || "?").slice(0, 1), "sourceMonsterImage")}
         <div>
           <strong>${escapeHtml(name)}</strong>
@@ -1692,7 +1692,7 @@ function renderCraftRequirementSources(item) {
   ].join("");
 }
 
-function sourceBlock(title, rows, renderRow, noteHtml = "") {
+function sourceBlock(title, rows, renderRow, noteHtml = "", listClass = "") {
   if (!rows.length) return "";
   return `
     <section class="sectionBlock">
@@ -1703,7 +1703,7 @@ function sourceBlock(title, rows, renderRow, noteHtml = "") {
         </div>
         <span>${rows.length.toLocaleString()} 筆</span>
       </div>
-      <div class="sourceList">
+      <div class="sourceList ${listClass}">
         ${rows.map(renderRow).join("")}
       </div>
     </section>
