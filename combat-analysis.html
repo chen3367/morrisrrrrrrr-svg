@@ -45,6 +45,30 @@
       padding: 12px;
       background: var(--page);
     }
+    .combatUnavailableNotice {
+      max-width: 1680px;
+      margin: 0 auto 12px;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: color-mix(in srgb, var(--gold) 14%, var(--panel));
+      color: var(--plain-text);
+      box-shadow: var(--shadow);
+    }
+    .combatUnavailableNotice strong {
+      display: block;
+      color: var(--plain-text);
+      font-size: 16px;
+      font-weight: 950;
+      line-height: 1.35;
+    }
+    .combatUnavailableNotice p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.5;
+    }
     .combatAnalysisShell {
       display: grid;
       grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
@@ -569,6 +593,10 @@
 
 
   <main class="combatAnalysisPage">
+    <section class="combatUnavailableNotice" role="alert" aria-live="polite">
+      <strong>戰鬥分析暫時無法使用</strong>
+      <p>由於遊戲 UI 近期變動，EXP、楓幣、職業與所在地圖辨識結果可能不正確。修正完成前請先不要使用此工具作為紀錄依據。</p>
+    </section>
     <div class="combatAnalysisShell">
       <aside class="combatPanel combatControls" aria-label="戰鬥分析控制">
         <section class="combatSection">
