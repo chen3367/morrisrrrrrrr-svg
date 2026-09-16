@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="整理新楓之谷經典版冒險家的戒指任務流程、等待時間、需求道具、狩獵怪物與戒指獎勵。" />
+  <meta name="keywords" content="經典服, 楓之谷經典服, 經典服資料庫, 新楓之谷經典版, MapleStory Classic, 怪物掉落, 道具資料庫, 任務資料庫" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://morrisrrrrrrr-svg.github.io/adventure-ring-guide.html" />
+  <meta property="og:title" content="冒險家的戒指任務流程｜楓憶MapleMemory｜新楓之谷：經典版資料庫" />
+  <meta property="og:description" content="整理新楓之谷經典版冒險家的戒指任務流程、等待時間、需求道具、狩獵怪物與戒指獎勵。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/adventure-ring-guide.html" />
+  <meta property="og:image" content="https://morrisrrrrrrr-svg.github.io/assets/items/4031456.png" />
+  <meta name="twitter:card" content="summary" />
+  <title>冒險家的戒指任務流程｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
+  <link rel="icon" href="data:," />
+  <script>
+    (function () {
+      function readCookie(name) {
+        try {
+          var prefix = encodeURIComponent(name) + "=";
+          var rows = document.cookie ? document.cookie.split("; ") : [];
+          for (var i = 0; i < rows.length; i += 1) {
+            if (rows[i].indexOf(prefix) === 0) return decodeURIComponent(rows[i].slice(prefix.length));
+          }
+        } catch (_error) {}
+        return "";
+      }
+      try {
+        var cookieTheme = readCookie("ms_theme");
+        var storedTheme = cookieTheme || (localStorage.getItem("ms-theme") === "dark" ? "dark" : "light");
+        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
+      } catch (_error) {
+        document.documentElement.dataset.theme = readCookie("ms_theme") === "dark" ? "dark" : "light";
+      }
+    })();
+  </script>
+  <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
+  <link rel="stylesheet" href="./styles.css?v=20260916103303" />
+</head>
+<body>
+  <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
+  <header class="appHeader">
+    <div class="titleArea">
+      <h1 class="siteBrandTitle"><img class="siteBrandIcon" src="./assets/items/4031456.png" alt="" loading="lazy" /><span class="siteBrandText"><strong class="siteBrandMain">楓憶MapleMemory</strong><span class="siteBrandSubtitle">新楓之谷：經典版資料庫</span></span></h1>
+      <button id="navDrawerToggle" class="navDrawerToggle" type="button" aria-expanded="false" aria-controls="siteNavigation" aria-label="開啟選單" title="開啟選單">☰</button>
+      <div class="headerActions"><button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button></div>
+      <nav id="siteNavigation" class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup">
+          <summary>楓葉圖鑑</summary>
+          <div class="navMenuLinks">
+          <a href="./index.html">怪物</a>
+          <a href="./items.html">道具</a>
+          <a href="./quests.html">任務</a>
+          <a href="./maps.html">地圖</a>
+          <a href="./skills.html">技能</a>
+          </div>
+        </details>
+        <details class="navMenuGroup">
+          <summary>實用工具</summary>
+          <div class="navMenuLinks">
+          <a href="./scroll-simulator.html">卷軸模擬器</a>
+          <a href="./damage-calculator.html">戰鬥力計算機</a>
+          <a href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./boss-timer.html">Boss 計時器</a>
+          <a href="./gacha-simulator.html">轉蛋模擬器</a>
+          </div>
+        </details>
+        <details class="navMenuGroup">
+          <summary>其他</summary>
+          <div class="navMenuLinks">
+          <a href="./patch-notes.html">遊戲更新日誌</a>
+          <a href="./web-changelog.html">網頁更新日誌</a>
+          </div>
+        </details>
+      </nav>
+      <div class="buildMeta" id="buildMeta">Lv.30 以上冒險者任務</div>
+    </div>
+  </header>
+
+  <main id="guide-top" class="adventureGuidePage">
+    <div class="ringGuideLayout">
+      <aside class="ringGuideSideNav" aria-label="章節導覽">
+        <strong>章節</strong>
+        <a href="#guide-overview">概覽</a>
+        <details class="ringGuideNavGroup" open>
+          <summary>前置與生命能量</summary>
+          <div class="ringGuideSubLinks">
+            <a href="#step-01">01 師父的擔憂</a>
+            <a href="#step-02">02 妖精們的古書</a>
+            <a href="#step-03">03 生命能量①</a>
+            <a href="#step-04">04 生命能量②</a>
+            <a href="#step-05">05 生命能量③</a>
+          </div>
+        </details>
+        <details class="ringGuideNavGroup">
+          <summary>不屈執念</summary>
+          <div class="ringGuideSubLinks">
+            <a href="#step-06">06 尋找不屈的執念</a>
+            <a href="#step-07">07 堅不可摧的家</a>
+            <a href="#step-08">08 不屈的執念</a>
+            <a href="#step-09">09 第一個材料</a>
+          </div>
+        </details>
+        <details class="ringGuideNavGroup">
+          <summary>等待者祈禱</summary>
+          <div class="ringGuideSubLinks">
+            <a href="#step-10">10 等待者的祈禱</a>
+            <a href="#step-11">11 需要幫助的人們</a>
+            <a href="#step-12">12 遺失的藥</a>
+            <a href="#step-13">13 承載心意的珠子</a>
+          </div>
+        </details>
+        <details class="ringGuideNavGroup">
+          <summary>生命容器與意志</summary>
+          <div class="ringGuideSubLinks">
+            <a href="#step-14">14 承載生命的容器</a>
+            <a href="#step-15">15 達克魯的考試</a>
+            <a href="#step-16">16 純度極高的原石</a>
+            <a href="#step-17">17 不滅的生命意志①</a>
+            <a href="#step-18">18 不滅的生命意志②</a>
+            <a href="#step-19">19 最後的材料</a>
+          </div>
+        </details>
+        <details class="ringGuideNavGroup">
+          <summary>鯨魚號特餐</summary>
+          <div class="ringGuideSubLinks">
+            <a href="#step-20">20 前往鯨魚號</a>
+            <a href="#step-21">21 湯寶寶的特餐①</a>
+            <a href="#step-22">22 湯寶寶的特餐②</a>
+            <a href="#step-23">23 湯寶寶的特餐③</a>
+            <a href="#step-24">24 湯寶寶的特餐④</a>
+            <a href="#step-25">25 融合完成的消息</a>
+          </div>
+        </details>
+        <details class="ringGuideNavGroup">
+          <summary>隱藏研究室</summary>
+          <div class="ringGuideSubLinks">
+            <a href="#step-26">26 破損的圖書館</a>
+            <a href="#step-27">27 隱藏研究室</a>
+            <a href="#step-28">28 被污染的東西們</a>
+            <a href="#step-29">29 師父與徒弟</a>
+            <a href="#step-30">30 選擇冒險家的戒指</a>
+          </div>
+        </details>
+        <a href="#materials">總材料</a>
+        <a href="#dialogues">NPC 對話</a>
+      </aside>
+
+      <div class="ringGuideContent">
+    <section id="guide-overview" class="ringGuideHero">
+      <div class="ringGuideHeroCopy">
+        <h2>[冒險家的戒指] 完整任務路線</h2>
+      </div>
+      <div class="ringRewardPreview" aria-label="冒險家的戒指獎勵">
+        <img src="./assets/items/1113372.png" alt="冒險家的戒指-生命" loading="lazy" />
+        <img src="./assets/items/1113373.png" alt="冒險家的戒指-靈魂" loading="lazy" />
+        <img src="./assets/items/1113374.png" alt="冒險家的戒指-調和" loading="lazy" />
+      </div>
+    </section>
+
+    <section id="timeline" class="ringGuideSection">
+      <div class="sectionTitle">
+        <h2>任務流程</h2>
+      </div>
+      <ol class="ringTimeline">
+        <li id="step-01">
+          <div class="ringStepHeader"><span>01</span><strong>師父的擔憂</strong></div>
+          <p>等級 30 以上冒險者先找自己的職業師父，接著前往魔法森林找漢斯，開始調查古老戒指的線索。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1022000.png" alt="武術教練" loading="lazy"><strong>武術教練</strong><span class="ringMiniMap" title="勇士聖殿"><img src="./assets/map_renders/102000003.png" alt="勇士聖殿小地圖" loading="lazy"><span class="ringMapPin" style="left:13.0%;top:52.5%;" aria-hidden="true"></span><small>勇士聖殿</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012100.png" alt="赫麗娜" loading="lazy"><strong>赫麗娜</strong><span class="ringMiniMap" title="弓箭手培訓中心"><img src="./assets/map_renders/100000201.png" alt="弓箭手培訓中心小地圖" loading="lazy"><span class="ringMapPin" style="left:59.4%;top:65.8%;" aria-hidden="true"></span><small>弓箭手培訓中心</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1052001.png" alt="達克魯" loading="lazy"><strong>達克魯</strong><span class="ringMiniMap" title="墮落城市酒吧"><img src="./assets/map_renders/103000003.png" alt="墮落城市酒吧小地圖" loading="lazy"><span class="ringMapPin" style="left:61.3%;top:80.6%;" aria-hidden="true"></span><small>墮落城市酒吧</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1090000.png" alt="卡伊琳" loading="lazy"><strong>卡伊琳</strong><span class="ringMiniMap" title="鯨魚號航海室"><img src="./assets/map_renders/120000101.png" alt="鯨魚號航海室小地圖" loading="lazy"><span class="ringMapPin" style="left:52.3%;top:59.6%;" aria-hidden="true"></span><small>鯨魚號航海室</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-02">
+          <div class="ringStepHeader"><span>02</span><strong>妖精們的古書</strong></div>
+          <p>依序拜訪妖精艾溫、羅雯、瑪麗，進入廢棄的妖精圖書館取得妖精的古書，再回報漢斯。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032100.png" alt="妖精艾溫" loading="lazy"><strong>艾溫</strong><span class="ringMiniMap" title="魔法森林"><img src="./assets/map_renders/101000000.png" alt="魔法森林小地圖" loading="lazy"><span class="ringMapPin" style="left:14.9%;top:56.3%;" aria-hidden="true"></span><small>魔法森林</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032101.png" alt="羅雯" loading="lazy"><strong>羅雯</strong><span class="ringMiniMap" title="魔法森林"><img src="./assets/map_renders/101000000.png" alt="魔法森林小地圖" loading="lazy"><span class="ringMapPin" style="left:72.8%;top:58.2%;" aria-hidden="true"></span><small>魔法森林</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032102.png" alt="瑪麗" loading="lazy"><strong>瑪麗</strong><span class="ringMiniMap" title="生命之林"><img src="./assets/map_renders/101000200.png" alt="生命之林小地圖" loading="lazy"><span class="ringMapPin" style="left:49.6%;top:59.0%;" aria-hidden="true"></span><small>生命之林</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402758.png" alt="廢棄的古書" loading="lazy"><strong>古書</strong><span class="ringMiniMap" title="廢棄的妖精圖書館"><img src="./assets/map_renders/876009610.png" alt="廢棄的妖精圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:32.0%;top:83.8%;" aria-hidden="true"></span><small>廢棄的妖精圖書館</small></span><details class="ringRouteDetails"><summary>從魔法森林出發</summary><div class="ringRouteFlow"><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林：往魔法森林南郊"><img src="./assets/map_renders/101000000.png" alt="魔法森林：往魔法森林南郊" loading="lazy"><span class="ringPortalPin" style="left:9.4%;top:96.2%;" aria-hidden="true"></span></span><small>魔法森林：往魔法森林南郊</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林南郊：往智慧森林"><img src="./assets/map_renders/100050000.png" alt="魔法森林南郊：往智慧森林" loading="lazy"><span class="ringPortalPin" style="left:14.1%;top:94.2%;" aria-hidden="true"></span></span><small>魔法森林南郊：往智慧森林</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="智慧森林：進入樹林底層"><img src="./assets/map_renders/100040100.png" alt="智慧森林：進入樹林底層" loading="lazy"><span class="ringPortalPin" style="left:77.7%;top:94.0%;" aria-hidden="true"></span></span><small>智慧森林：進入樹林底層</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="樹林底層：進入廢棄的妖精圖書館"><img src="./assets/map_renders/100040110.png" alt="樹林底層：進入廢棄的妖精圖書館" loading="lazy"><span class="ringPortalPin" style="left:74.1%;top:87.2%;" aria-hidden="true"></span></span><small>樹林底層：進入廢棄的妖精圖書館</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="廢棄的妖精圖書館：廢棄的古書"><img src="./assets/map_renders/876009610.png" alt="廢棄的妖精圖書館：廢棄的古書" loading="lazy"><span class="ringMapPin" style="left:32.0%;top:83.8%;" aria-hidden="true"></span></span><small>廢棄的妖精圖書館：廢棄的古書</small></span></div></details></span>
+          </div>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037506.png" alt="" loading="lazy">妖精的古書 x1</span>
+          </div>
+        </li>
+
+        <li id="step-03">
+          <div class="ringStepHeader"><span>03</span><strong>生命能量①</strong><em class="ringStepExpBadge">EXP 30,000</em></div>
+          <p>找漢斯接第一段生命能量任務，打綠水靈收集生命氣息。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037512.png" alt="" loading="lazy">綠水靈的生命氣息 x30<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/210100.png" alt="" loading="lazy">綠水靈</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringAvatar"><img src="./assets/monster_frames/210100.png" alt="綠水靈" loading="lazy">綠水靈</span>
+          </div>
+          <p class="ringNote">完成後需等待 10 分鐘，才可接取生命能量②。</p>
+        </li>
+
+        <li id="step-04">
+          <div class="ringStepHeader"><span>04</span><strong>生命能量②</strong><em class="ringStepExpBadge">EXP 30,000</em></div>
+          <p>10 分鐘後再找漢斯接第二段生命能量任務，打黑肥肥收集生命氣息。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037517.png" alt="" loading="lazy">黑肥肥的生命氣息 x30<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/2230102.png" alt="" loading="lazy">黑肥肥</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringAvatar"><img src="./assets/monster_frames/2230102.png" alt="黑肥肥" loading="lazy">黑肥肥</span>
+          </div>
+          <p class="ringNote">完成後需等待 10 分鐘，才可接取生命能量③。</p>
+        </li>
+
+        <li id="step-05">
+          <div class="ringStepHeader"><span>05</span><strong>生命能量③</strong><em class="ringStepExpBadge">EXP 30,000</em></div>
+          <p>再等 10 分鐘後找漢斯接第三段生命能量任務，打刺菇菇收集生命氣息。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037518.png" alt="" loading="lazy">刺菇菇的生命氣息 x30<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/2110200.png" alt="" loading="lazy">刺菇菇</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringAvatar"><img src="./assets/monster_frames/2110200.png" alt="刺菇菇" loading="lazy">刺菇菇</span>
+          </div>
+          <p class="ringNote">完成後需等待 10 分鐘，才可接取「尋找不屈的執念」。</p>
+        </li>
+
+        <li id="step-06">
+          <div class="ringStepHeader"><span>06</span><strong>尋找不屈的執念</strong></div>
+          <p>漢斯指向大海，先到維多利亞港找坤、百京、特奧；之後轉往勇士之村找武術教練與酋長。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1002101.png" alt="坤" loading="lazy"><strong>坤</strong><span class="ringMiniMap" title="維多利亞港"><img src="./assets/map_renders/104000000.png" alt="維多利亞港小地圖" loading="lazy"><span class="ringMapPin" style="left:65.3%;top:78.7%;" aria-hidden="true"></span><small>維多利亞港</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9000009.png" alt="百京" loading="lazy"><strong>百京</strong><span class="ringMiniMap" title="維多利亞港"><img src="./assets/map_renders/104000000.png" alt="維多利亞港小地圖" loading="lazy"><span class="ringMapPin" style="left:33.1%;top:66.9%;" aria-hidden="true"></span><small>維多利亞港</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1002001.png" alt="特奧" loading="lazy"><strong>特奧</strong><span class="ringMiniMap" title="維多利亞港"><img src="./assets/map_renders/104000000.png" alt="維多利亞港小地圖" loading="lazy"><span class="ringMapPin" style="left:21.6%;top:66.7%;" aria-hidden="true"></span><small>維多利亞港</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1022000.png" alt="武術教練" loading="lazy"><strong>武術教練</strong><span class="ringMiniMap" title="勇士聖殿"><img src="./assets/map_renders/102000003.png" alt="勇士聖殿小地圖" loading="lazy"><span class="ringMapPin" style="left:13.0%;top:52.5%;" aria-hidden="true"></span><small>勇士聖殿</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1020000.png" alt="酋長" loading="lazy"><strong>酋長</strong><span class="ringMiniMap" title="勇士之村"><img src="./assets/map_renders/102000000.png" alt="勇士之村小地圖" loading="lazy"><span class="ringMapPin" style="left:41.9%;top:73.6%;" aria-hidden="true"></span><small>勇士之村</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-07">
+          <div class="ringStepHeader"><span>07</span><strong>堅不可摧的家</strong><em class="ringStepExpBadge">EXP 30,000</em></div>
+          <p>酋長先請你幫忙修復被旋風吹壞的房屋牆壁。這是修屋任務，和下一段收集執念是不同任務。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1020000.png" alt="酋長" loading="lazy"><strong>酋長</strong><span class="ringMiniMap" title="勇士之村"><img src="./assets/map_renders/102000000.png" alt="勇士之村小地圖" loading="lazy"><span class="ringMapPin" style="left:41.9%;top:73.6%;" aria-hidden="true"></span><small>勇士之村</small></span></span>
+          </div>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4000003.png" alt="" loading="lazy">樹枝 x50<br><small><img src="./assets/monster_frames/130100.png" alt="" loading="lazy">木妖、<img src="./assets/monster_frames/3220000.png" alt="" loading="lazy">樹妖王</small></span>
+            <span><img src="./assets/items/4000005.png" alt="" loading="lazy">葉子 x50<br><small><img src="./assets/monster_frames/1110101.png" alt="" loading="lazy">黑木妖、<img src="./assets/monster_frames/3220000.png" alt="" loading="lazy">樹妖王</small></span>
+            <span><img src="./assets/items/4000018.png" alt="" loading="lazy">木柴 x50<br><small><img src="./assets/monster_frames/1130100.png" alt="" loading="lazy">斧木妖、<img src="./assets/monster_frames/2130100.png" alt="" loading="lazy">黑斧木妖、<img src="./assets/monster_frames/3220000.png" alt="" loading="lazy">樹妖王</small></span>
+          </div>
+          <p class="ringNote">完成後要等待 1 天（24 小時），再回去找酋長接「不屈的執念」。</p>
+        </li>
+
+        <li id="step-08">
+          <div class="ringStepHeader"><span>08</span><strong>不屈的執念</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>24 小時後回去找酋長，接取真正的執念收集任務，打黑斧木妖取得永不折斷的執念。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037507.png" alt="" loading="lazy">永不折斷的執念 x50<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/2130100.png" alt="" loading="lazy">黑斧木妖</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1020000.png" alt="酋長" loading="lazy"><strong>酋長</strong><span class="ringMiniMap" title="勇士之村"><img src="./assets/map_renders/102000000.png" alt="勇士之村小地圖" loading="lazy"><span class="ringMapPin" style="left:41.9%;top:73.6%;" aria-hidden="true"></span><small>勇士之村</small></span></span>
+            <span class="ringAvatar"><img src="./assets/monster_frames/2130100.png" alt="黑斧木妖" loading="lazy">黑斧木妖</span>
+          </div>
+        </li>
+
+        <li id="step-09">
+          <div class="ringStepHeader"><span>09</span><strong>第一個材料</strong></div>
+          <p>將永不折斷的執念交給漢斯，完成第一個材料。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037507.png" alt="" loading="lazy">永不折斷的執念 x50<br><small>交給漢斯；<img src="./assets/monster_frames/2130100.png" alt="" loading="lazy">黑斧木妖</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-10">
+          <div class="ringStepHeader"><span>10</span><strong>等待者的祈禱</strong></div>
+          <p>回到漢斯後前往弓箭手村找赫麗娜。她需要時間思考，先去幫村民處理請求。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012100.png" alt="赫麗娜" loading="lazy"><strong>赫麗娜</strong><span class="ringMiniMap" title="弓箭手培訓中心"><img src="./assets/map_renders/100000201.png" alt="弓箭手培訓中心小地圖" loading="lazy"><span class="ringMapPin" style="left:59.4%;top:65.8%;" aria-hidden="true"></span><small>弓箭手培訓中心</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012003.png" alt="長老斯坦" loading="lazy"><strong>長老斯坦</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:58.7%;top:51.9%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1010100.png" alt="麗娜" loading="lazy"><strong>麗娜</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:31.1%;top:65.7%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012108.png" alt="卡蜜拉" loading="lazy"><strong>卡蜜拉</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:81.2%;top:35.6%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-11">
+          <div class="ringStepHeader"><span>11</span><strong>需要幫助的人們</strong><em class="ringStepExpBadge">EXP 60,000</em></div>
+          <p>先幫長老斯坦與麗娜準備給年輕冒險家的食物。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012003.png" alt="長老斯坦" loading="lazy"><strong>長老斯坦</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:58.7%;top:51.9%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1010100.png" alt="麗娜" loading="lazy"><strong>麗娜</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:31.1%;top:65.7%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+          </div>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4000001.png" alt="" loading="lazy">菇菇寶貝傘 x50<br><small><img src="./assets/monster_frames/1210102.png" alt="" loading="lazy">菇菇寶貝</small></span>
+            <span><img src="./assets/items/4000010.png" alt="" loading="lazy">綠水靈珠 x10<br><small><img src="./assets/monster_frames/210100.png" alt="" loading="lazy">綠水靈</small></span>
+            <span><img src="./assets/items/4000013.png" alt="" loading="lazy">風獨眼獸之尾巴 x50<br><small><img src="./assets/monster_frames/3230100.png" alt="" loading="lazy">風獨眼獸</small></span>
+          </div>
+        </li>
+
+        <li id="step-12">
+          <div class="ringStepHeader"><span>12</span><strong>遺失的藥</strong><em class="ringStepExpBadge">EXP 30,000</em></div>
+          <p>卡蜜拉說藥被藍菇菇搶走，接取此任務後去打藍菇菇找回遺失的藥。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037513.png" alt="" loading="lazy">卡蜜拉遺失的藥 x1<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012108.png" alt="卡蜜拉" loading="lazy"><strong>卡蜜拉</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:81.2%;top:35.6%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringAvatar"><img src="./assets/monster_frames/2220100.png" alt="藍菇菇" loading="lazy">藍菇菇</span>
+          </div>
+        </li>
+
+        <li id="step-13">
+          <div class="ringStepHeader"><span>13</span><strong>承載心意的珠子</strong></div>
+          <p>回到赫麗娜取得空珠子，拜訪長老斯坦、麗娜、卡蜜拉，把居民們的心意注入珠子，再交給漢斯完成第二個材料。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012100.png" alt="赫麗娜" loading="lazy"><strong>赫麗娜</strong><span class="ringMiniMap" title="弓箭手培訓中心"><img src="./assets/map_renders/100000201.png" alt="弓箭手培訓中心小地圖" loading="lazy"><span class="ringMapPin" style="left:59.4%;top:65.8%;" aria-hidden="true"></span><small>弓箭手培訓中心</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012003.png" alt="長老斯坦" loading="lazy"><strong>長老斯坦</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:58.7%;top:51.9%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1010100.png" alt="麗娜" loading="lazy"><strong>麗娜</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:31.1%;top:65.7%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1012108.png" alt="卡蜜拉" loading="lazy"><strong>卡蜜拉</strong><span class="ringMiniMap" title="弓箭手村"><img src="./assets/map_renders/100000000.png" alt="弓箭手村小地圖" loading="lazy"><span class="ringMapPin" style="left:81.2%;top:35.6%;" aria-hidden="true"></span><small>弓箭手村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+          </div>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037514.png" alt="" loading="lazy">承載心意的空珠子 x1<br><small>赫麗娜交付</small></span>
+            <span><img src="./assets/items/4037515.png" alt="" loading="lazy">承載心願的閃耀珠子 x1<br><small>交給漢斯</small></span>
+          </div>
+        </li>
+
+        <li id="step-14">
+          <div class="ringStepHeader"><span>14</span><strong>承載生命的容器</strong></div>
+          <p>漢斯需要能盛放生命氣息的容器，前往墮落城市找達克魯。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1052001.png" alt="達克魯" loading="lazy"><strong>達克魯</strong><span class="ringMiniMap" title="墮落城市酒吧"><img src="./assets/map_renders/103000003.png" alt="墮落城市酒吧小地圖" loading="lazy"><span class="ringMapPin" style="left:61.3%;top:80.6%;" aria-hidden="true"></span><small>墮落城市酒吧</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-15">
+          <div class="ringStepHeader"><span>15</span><strong>達克魯的考試</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>達克魯要確認你是否有資格持有戒指，到沼澤地帶打鱷魚取得牙齒。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037516.png" alt="" loading="lazy">鱷魚的牙齒 x100<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/3110100.png" alt="" loading="lazy">鱷魚</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1052001.png" alt="達克魯" loading="lazy"><strong>達克魯</strong><span class="ringMiniMap" title="墮落城市酒吧"><img src="./assets/map_renders/103000003.png" alt="墮落城市酒吧小地圖" loading="lazy"><span class="ringMapPin" style="left:61.3%;top:80.6%;" aria-hidden="true"></span><small>墮落城市酒吧</small></span></span>
+            <span class="ringAvatar"><img src="./assets/monster_frames/3110100.png" alt="鱷魚" loading="lazy">鱷魚</span>
+          </div>
+          <p class="ringNote">完成考試後，達克魯會請你等待 3 天。</p>
+        </li>
+
+        <li id="step-16">
+          <div class="ringStepHeader"><span>16</span><strong>純度極高的原石</strong></div>
+          <p>3 天後回去找達克魯，取得冒險家的戒指原石，再帶回去交給漢斯。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037509.png" alt="" loading="lazy">冒險家的戒指原石 x1<br><small>達克魯交付</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1052001.png" alt="達克魯" loading="lazy"><strong>達克魯</strong><span class="ringMiniMap" title="墮落城市酒吧"><img src="./assets/map_renders/103000003.png" alt="墮落城市酒吧小地圖" loading="lazy"><span class="ringMapPin" style="left:61.3%;top:80.6%;" aria-hidden="true"></span><small>墮落城市酒吧</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-17">
+          <div class="ringStepHeader"><span>17</span><strong>不滅的生命意志①</strong></div>
+          <p>漢斯將生命氣息注入原石後，前往奇幻村找薩比特拉瑪，再去找克利斯拉瑪詢問不滅的生命意志。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037509.png" alt="" loading="lazy">冒險家的戒指原石 x1</span>
+            <span><img src="./assets/items/4037508.png" alt="" loading="lazy">永不熄滅的生命意志 x1<br><small>下一段尋找；<img src="./assets/monster_frames/2230101.png" alt="" loading="lazy">殭屍菇菇</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1061005.png" alt="薩比特拉瑪" loading="lazy"><strong>薩比特拉瑪</strong><span class="ringMiniMap" title="奇幻村"><img src="./assets/map_renders/105040300.png" alt="奇幻村小地圖" loading="lazy"><span class="ringMapPin" style="left:49.7%;top:34.6%;" aria-hidden="true"></span><small>奇幻村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1061000.png" alt="克利斯拉瑪" loading="lazy"><strong>克利斯拉瑪</strong><span class="ringMiniMap" title="奇幻村"><img src="./assets/map_renders/105040300.png" alt="奇幻村小地圖" loading="lazy"><span class="ringMapPin" style="left:40.1%;top:34.6%;" aria-hidden="true"></span><small>奇幻村</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-18">
+          <div class="ringStepHeader"><span>18</span><strong>不滅的生命意志②</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>接取後到螞蟻洞深處打殭屍菇菇，取得永不熄滅的生命意志。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037508.png" alt="" loading="lazy">永不熄滅的生命意志 x1<br><small>任務道具，接取任務後才開始掉落；<img src="./assets/monster_frames/2230101.png" alt="" loading="lazy">殭屍菇菇</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringAvatar"><img src="./assets/monster_frames/2230101.png" alt="殭屍菇菇" loading="lazy">殭屍菇菇</span>
+          </div>
+          <p class="ringNote">此道具為任務道具，接取任務後才會開始掉落。</p>
+        </li>
+
+        <li id="step-19">
+          <div class="ringStepHeader"><span>19</span><strong>最後的材料</strong></div>
+          <p>將永不熄滅的生命意志交給克利斯拉瑪後，回到漢斯。漢斯會開始融合材料，並讓你前往鯨魚號。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4037508.png" alt="" loading="lazy">永不熄滅的生命意志 x1<br><small>交給克利斯拉瑪；<img src="./assets/monster_frames/2230101.png" alt="" loading="lazy">殭屍菇菇</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1061000.png" alt="克利斯拉瑪" loading="lazy"><strong>克利斯拉瑪</strong><span class="ringMiniMap" title="奇幻村"><img src="./assets/map_renders/105040300.png" alt="奇幻村小地圖" loading="lazy"><span class="ringMapPin" style="left:40.1%;top:34.6%;" aria-hidden="true"></span><small>奇幻村</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-20">
+          <div class="ringStepHeader"><span>20</span><strong>前往鯨魚號</strong></div>
+          <p>到鯨魚號找卡伊琳，再去找湯寶寶。融合期間需要完成四次特餐任務。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1090000.png" alt="卡伊琳" loading="lazy"><strong>卡伊琳</strong><span class="ringMiniMap" title="鯨魚號航海室"><img src="./assets/map_renders/120000101.png" alt="鯨魚號航海室小地圖" loading="lazy"><span class="ringMapPin" style="left:52.3%;top:59.6%;" aria-hidden="true"></span><small>鯨魚號航海室</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1092000.png" alt="湯寶寶" loading="lazy"><strong>湯寶寶</strong><span class="ringMiniMap" title="鯨魚號餐廳"><img src="./assets/map_renders/120000103.png" alt="鯨魚號餐廳小地圖" loading="lazy"><span class="ringMapPin" style="left:71.5%;top:72.2%;" aria-hidden="true"></span><small>鯨魚號餐廳</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-21">
+          <div class="ringStepHeader"><span>21</span><strong>湯寶寶的特餐①</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>第一次準備特餐材料。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4000009.png" alt="" loading="lazy">藍菇菇傘 x25<br><small><img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+            <span><img src="./assets/items/4000017.png" alt="" loading="lazy">肥肥頭 x10<br><small><img src="./assets/monster_frames/1210100.png" alt="" loading="lazy">肥肥</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1092000.png" alt="湯寶寶" loading="lazy"><strong>湯寶寶</strong><span class="ringMiniMap" title="鯨魚號餐廳"><img src="./assets/map_renders/120000103.png" alt="鯨魚號餐廳小地圖" loading="lazy"><span class="ringMapPin" style="left:71.5%;top:72.2%;" aria-hidden="true"></span><small>鯨魚號餐廳</small></span></span>
+          </div>
+          <p class="ringNote">完成後需等待 1 天，才可接取湯寶寶的特餐②。</p>
+        </li>
+
+        <li id="step-22">
+          <div class="ringStepHeader"><span>22</span><strong>湯寶寶的特餐②</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>文本寫「繼昨天之後」，第二次準備同樣材料。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4000009.png" alt="" loading="lazy">藍菇菇傘 x25<br><small><img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+            <span><img src="./assets/items/4000017.png" alt="" loading="lazy">肥肥頭 x10<br><small><img src="./assets/monster_frames/1210100.png" alt="" loading="lazy">肥肥</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1092000.png" alt="湯寶寶" loading="lazy"><strong>湯寶寶</strong><span class="ringMiniMap" title="鯨魚號餐廳"><img src="./assets/map_renders/120000103.png" alt="鯨魚號餐廳小地圖" loading="lazy"><span class="ringMapPin" style="left:71.5%;top:72.2%;" aria-hidden="true"></span><small>鯨魚號餐廳</small></span></span>
+          </div>
+          <p class="ringNote">完成後需等待 1 天，才可接取湯寶寶的特餐③。</p>
+        </li>
+
+        <li id="step-23">
+          <div class="ringStepHeader"><span>23</span><strong>湯寶寶的特餐③</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>第三次準備同樣材料。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4000009.png" alt="" loading="lazy">藍菇菇傘 x25<br><small><img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+            <span><img src="./assets/items/4000017.png" alt="" loading="lazy">肥肥頭 x10<br><small><img src="./assets/monster_frames/1210100.png" alt="" loading="lazy">肥肥</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1092000.png" alt="湯寶寶" loading="lazy"><strong>湯寶寶</strong><span class="ringMiniMap" title="鯨魚號餐廳"><img src="./assets/map_renders/120000103.png" alt="鯨魚號餐廳小地圖" loading="lazy"><span class="ringMapPin" style="left:71.5%;top:72.2%;" aria-hidden="true"></span><small>鯨魚號餐廳</small></span></span>
+          </div>
+          <p class="ringNote">完成後需等待 1 天，才可接取湯寶寶的特餐④。</p>
+        </li>
+
+        <li id="step-24">
+          <div class="ringStepHeader"><span>24</span><strong>湯寶寶的特餐④</strong><em class="ringStepExpBadge">EXP 50,000</em></div>
+          <p>第四次準備同樣材料，完成後湯寶寶會告知卡伊琳正在找你。</p>
+          <div class="ringMaterialGrid">
+            <span><img src="./assets/items/4000009.png" alt="" loading="lazy">藍菇菇傘 x25<br><small><img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+            <span><img src="./assets/items/4000017.png" alt="" loading="lazy">肥肥頭 x10<br><small><img src="./assets/monster_frames/1210100.png" alt="" loading="lazy">肥肥</small></span>
+          </div>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1092000.png" alt="湯寶寶" loading="lazy"><strong>湯寶寶</strong><span class="ringMiniMap" title="鯨魚號餐廳"><img src="./assets/map_renders/120000103.png" alt="鯨魚號餐廳小地圖" loading="lazy"><span class="ringMapPin" style="left:71.5%;top:72.2%;" aria-hidden="true"></span><small>鯨魚號餐廳</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1090000.png" alt="卡伊琳" loading="lazy"><strong>卡伊琳</strong><span class="ringMiniMap" title="鯨魚號航海室"><img src="./assets/map_renders/120000101.png" alt="鯨魚號航海室小地圖" loading="lazy"><span class="ringMapPin" style="left:52.3%;top:59.6%;" aria-hidden="true"></span><small>鯨魚號航海室</small></span></span>
+          </div>
+          <p class="ringNote">完成後需等待 1 天，才可接續「融合完成的消息」。</p>
+        </li>
+
+        <li id="step-25">
+          <div class="ringStepHeader"><span>25</span><strong>融合完成的消息</strong></div>
+          <p>卡伊琳通知戒指融合完成後，回到魔法森林找漢斯。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1090000.png" alt="卡伊琳" loading="lazy"><strong>卡伊琳</strong><span class="ringMiniMap" title="鯨魚號航海室"><img src="./assets/map_renders/120000101.png" alt="鯨魚號航海室小地圖" loading="lazy"><span class="ringMapPin" style="left:52.3%;top:59.6%;" aria-hidden="true"></span><small>鯨魚號航海室</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-26">
+          <div class="ringStepHeader"><span>26</span><strong>破損的圖書館</strong></div>
+          <p>回到魔法森林後，研究室已破損，戒指和材料消失，只留下灰燼蹤跡。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402759.png" alt="魔法森林散落的灰燼" loading="lazy"><strong>灰燼</strong><span class="ringMiniMap" title="破損的圖書館"><img src="./assets/map_renders/876009612.png" alt="破損的圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:50.9%;top:83.7%;" aria-hidden="true"></span><small>破損的圖書館</small></span><details class="ringRouteDetails"><summary>從魔法森林出發</summary><div class="ringRouteFlow"><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林：進入破損的圖書館"><img src="./assets/map_renders/101000000.png" alt="魔法森林：進入破損的圖書館" loading="lazy"><span class="ringPortalPin" style="left:56.3%;top:13.0%;" aria-hidden="true"></span></span><small>魔法森林：進入破損的圖書館</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="破損的圖書館：灰燼"><img src="./assets/map_renders/876009612.png" alt="破損的圖書館：灰燼" loading="lazy"><span class="ringMapPin" style="left:50.9%;top:83.7%;" aria-hidden="true"></span></span><small>破損的圖書館：灰燼</small></span></div></details></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402769.png" alt="散落的灰燼" loading="lazy"><strong>蹤跡</strong><span class="ringMiniMap" title="破損的圖書館"><img src="./assets/map_renders/876009612.png" alt="破損的圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:50.9%;top:83.7%;" aria-hidden="true"></span><small>破損的圖書館</small></span><details class="ringRouteDetails"><summary>從魔法森林出發</summary><div class="ringRouteFlow"><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林：進入破損的圖書館"><img src="./assets/map_renders/101000000.png" alt="魔法森林：進入破損的圖書館" loading="lazy"><span class="ringPortalPin" style="left:56.3%;top:13.0%;" aria-hidden="true"></span></span><small>魔法森林：進入破損的圖書館</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="破損的圖書館：蹤跡"><img src="./assets/map_renders/876009612.png" alt="破損的圖書館：蹤跡" loading="lazy"><span class="ringMapPin" style="left:50.9%;top:83.7%;" aria-hidden="true"></span></span><small>破損的圖書館：蹤跡</small></span></div></details></span>
+          </div>
+        </li>
+
+        <li id="step-27">
+          <div class="ringStepHeader"><span>27</span><strong>隱藏研究室</strong></div>
+          <p>循著灰燼前往隱藏研究室，遇見愛得溫。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402759.png" alt="魔法森林散落的灰燼" loading="lazy"><strong>灰燼</strong><span class="ringMiniMap" title="北部森林訓練場Ⅴ"><img src="./assets/map_renders/101020006.png" alt="北部森林訓練場Ⅴ小地圖" loading="lazy"><span class="ringMapPin" style="left:43.6%;top:75.9%;" aria-hidden="true"></span><small>北部森林訓練場Ⅴ</small></span><details class="ringRouteDetails"><summary>從魔法森林出發</summary><div class="ringRouteFlow"><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林：往魔法森林北郊"><img src="./assets/map_renders/101000000.png" alt="魔法森林：往魔法森林北郊" loading="lazy"><span class="ringPortalPin" style="left:6.7%;top:35.9%;" aria-hidden="true"></span></span><small>魔法森林：往魔法森林北郊</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林北郊：往大木林Ⅰ"><img src="./assets/map_renders/101010000.png" alt="魔法森林北郊：往大木林Ⅰ" loading="lazy"><span class="ringPortalPin" style="left:11.7%;top:62.5%;" aria-hidden="true"></span></span><small>魔法森林北郊：往大木林Ⅰ</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="大木林Ⅰ：往魔法森林北部"><img src="./assets/map_renders/101010100.png" alt="大木林Ⅰ：往魔法森林北部" loading="lazy"><span class="ringPortalPin" style="left:12.9%;top:92.9%;" aria-hidden="true"></span></span><small>大木林Ⅰ：往魔法森林北部</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="魔法森林北部：進入北部森林訓練場Ⅴ"><img src="./assets/map_renders/101020000.png" alt="魔法森林北部：進入北部森林訓練場Ⅴ" loading="lazy"><span class="ringPortalPin" style="left:50.5%;top:28.7%;" aria-hidden="true"></span></span><small>魔法森林北部：進入北部森林訓練場Ⅴ</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="北部森林訓練場Ⅴ：灰燼"><img src="./assets/map_renders/101020006.png" alt="北部森林訓練場Ⅴ：灰燼" loading="lazy"><span class="ringMapPin" style="left:43.6%;top:75.9%;" aria-hidden="true"></span></span><small>北部森林訓練場Ⅴ：灰燼</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="北部森林訓練場Ⅴ：進入隱藏研究室"><img src="./assets/map_renders/101020006.png" alt="北部森林訓練場Ⅴ：進入隱藏研究室" loading="lazy"><span class="ringPortalPin" style="left:56.0%;top:21.8%;" aria-hidden="true"></span></span><small>北部森林訓練場Ⅴ：進入隱藏研究室</small></span><span class="ringRouteArrow">→</span><span class="ringRouteStep"><span class="ringMiniMap ringRouteMap" title="隱藏研究室：愛得溫"><img src="./assets/map_renders/876009611.png" alt="隱藏研究室：愛得溫" loading="lazy"><span class="ringMapPin" style="left:29.7%;top:84.0%;" aria-hidden="true"></span></span><small>隱藏研究室：愛得溫</small></span></div></details></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402757.png" alt="愛得溫" loading="lazy"><strong>愛得溫</strong><span class="ringMiniMap" title="隱藏研究室"><img src="./assets/map_renders/876009611.png" alt="隱藏研究室小地圖" loading="lazy"><span class="ringMapPin" style="left:29.7%;top:84.0%;" aria-hidden="true"></span><small>隱藏研究室</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-28">
+          <div class="ringStepHeader"><span>28</span><strong>被污染的東西們</strong></div>
+          <p>擊敗愛得溫派出的污染怪物。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402757.png" alt="愛得溫" loading="lazy"><strong>愛得溫</strong><span class="ringMiniMap" title="隱藏研究室"><img src="./assets/map_renders/876009611.png" alt="隱藏研究室小地圖" loading="lazy"><span class="ringMapPin" style="left:29.7%;top:84.0%;" aria-hidden="true"></span><small>隱藏研究室</small></span></span>
+          </div>
+          <div class="ringMaterialGrid ringMonsterRequirementGrid">
+            <span><img src="./assets/monster_frames/9602773.png" alt="" loading="lazy">受污染的猴子 x2</span>
+            <span><img src="./assets/monster_frames/9602774.png" alt="" loading="lazy">受污染的天使猴 x2</span>
+            <span><img src="./assets/monster_frames/9602775.png" alt="" loading="lazy">受污染的風獨眼獸 x2</span>
+          </div>
+        </li>
+
+        <li id="step-29">
+          <div class="ringStepHeader"><span>29</span><strong>師父與徒弟</strong></div>
+          <p>看完漢斯與愛得溫的結尾後，回到魔法圖書館找漢斯。</p>
+          <div class="ringAssetRow">
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/1032001.png" alt="漢斯" loading="lazy"><strong>漢斯</strong><span class="ringMiniMap" title="魔法森林圖書館"><img src="./assets/map_renders/101000003.png" alt="魔法森林圖書館小地圖" loading="lazy"><span class="ringMapPin" style="left:49.2%;top:58.3%;" aria-hidden="true"></span><small>魔法森林圖書館</small></span></span>
+            <span class="ringNpcSpot"><img class="ringNpcIcon" src="./assets/npcs/9402757.png" alt="愛得溫" loading="lazy"><strong>愛得溫</strong><span class="ringMiniMap" title="隱藏研究室"><img src="./assets/map_renders/876009611.png" alt="隱藏研究室小地圖" loading="lazy"><span class="ringMapPin" style="left:29.7%;top:84.0%;" aria-hidden="true"></span><small>隱藏研究室</small></span></span>
+          </div>
+        </li>
+
+        <li id="step-30">
+          <div class="ringStepHeader"><span>30</span><strong>選擇冒險家的戒指</strong><em class="ringStepExpBadge">EXP 100,000</em></div>
+          <p>最後三選一取得冒險家的戒指。</p>
+          <div class="ringRewardChoice" id="rewards">
+            <article>
+              <img src="./assets/items/1113372.png" alt="" loading="lazy">
+              <span class="ringRewardInfo">
+                <strong>冒險家的戒指-生命</strong>
+                <small>需求 Lv.30</small>
+                <span class="ringRewardStats"><b>HP +500</b></span>
+              </span>
+            </article>
+            <article>
+              <img src="./assets/items/1113373.png" alt="" loading="lazy">
+              <span class="ringRewardInfo">
+                <strong>冒險家的戒指-靈魂</strong>
+                <small>需求 Lv.30</small>
+                <span class="ringRewardStats"><b>MP +500</b></span>
+              </span>
+            </article>
+            <article>
+              <img src="./assets/items/1113374.png" alt="" loading="lazy">
+              <span class="ringRewardInfo">
+                <strong>冒險家的戒指-調和</strong>
+                <small>需求 Lv.30</small>
+                <span class="ringRewardStats"><b>HP +250</b><b>MP +250</b></span>
+              </span>
+            </article>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="materials" class="ringGuideSection">
+      <div class="sectionTitle">
+        <h2>總材料清單</h2>
+      </div>
+      <h3 class="ringMaterialGroupTitle">任務道具</h3>
+      <div class="ringTotalGrid">
+        <span><img src="./assets/items/4037512.png" alt="" loading="lazy">綠水靈的生命氣息 x30<br><small><img src="./assets/monster_frames/210100.png" alt="" loading="lazy">綠水靈</small></span>
+        <span><img src="./assets/items/4037517.png" alt="" loading="lazy">黑肥肥的生命氣息 x30<br><small><img src="./assets/monster_frames/2230102.png" alt="" loading="lazy">黑肥肥</small></span>
+        <span><img src="./assets/items/4037518.png" alt="" loading="lazy">刺菇菇的生命氣息 x30<br><small><img src="./assets/monster_frames/2110200.png" alt="" loading="lazy">刺菇菇</small></span>
+        <span><img src="./assets/items/4037507.png" alt="" loading="lazy">永不折斷的執念 x50<br><small><img src="./assets/monster_frames/2130100.png" alt="" loading="lazy">黑斧木妖</small></span>
+        <span><img src="./assets/items/4037513.png" alt="" loading="lazy">卡蜜拉遺失的藥 x1<br><small><img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+        <span><img src="./assets/items/4037516.png" alt="" loading="lazy">鱷魚的牙齒 x100<br><small><img src="./assets/monster_frames/3110100.png" alt="" loading="lazy">鱷魚</small></span>
+        <span><img src="./assets/items/4037508.png" alt="" loading="lazy">永不熄滅的生命意志 x1<br><small><img src="./assets/monster_frames/2230101.png" alt="" loading="lazy">殭屍菇菇</small></span>
+      </div>
+      <h3 class="ringMaterialGroupTitle">一般道具</h3>
+      <div class="ringTotalGrid">
+        <span><img src="./assets/items/4000003.png" alt="" loading="lazy">樹枝 x50<br><small><img src="./assets/monster_frames/130100.png" alt="" loading="lazy">木妖、<img src="./assets/monster_frames/3220000.png" alt="" loading="lazy">樹妖王</small></span>
+        <span><img src="./assets/items/4000005.png" alt="" loading="lazy">葉子 x50<br><small><img src="./assets/monster_frames/1110101.png" alt="" loading="lazy">黑木妖、<img src="./assets/monster_frames/3220000.png" alt="" loading="lazy">樹妖王</small></span>
+        <span><img src="./assets/items/4000018.png" alt="" loading="lazy">木柴 x50<br><small><img src="./assets/monster_frames/1130100.png" alt="" loading="lazy">斧木妖、<img src="./assets/monster_frames/2130100.png" alt="" loading="lazy">黑斧木妖、<img src="./assets/monster_frames/3220000.png" alt="" loading="lazy">樹妖王</small></span>
+        <span><img src="./assets/items/4000001.png" alt="" loading="lazy">菇菇寶貝傘 x50<br><small><img src="./assets/monster_frames/1210102.png" alt="" loading="lazy">菇菇寶貝</small></span>
+        <span><img src="./assets/items/4000010.png" alt="" loading="lazy">綠水靈珠 x10<br><small><img src="./assets/monster_frames/210100.png" alt="" loading="lazy">綠水靈</small></span>
+        <span><img src="./assets/items/4000013.png" alt="" loading="lazy">風獨眼獸之尾巴 x50<br><small><img src="./assets/monster_frames/3230100.png" alt="" loading="lazy">風獨眼獸</small></span>
+        <span><img src="./assets/items/4000009.png" alt="" loading="lazy">藍菇菇傘 x100<br><small><img src="./assets/monster_frames/2220100.png" alt="" loading="lazy">藍菇菇</small></span>
+        <span><img src="./assets/items/4000017.png" alt="" loading="lazy">肥肥頭 x40<br><small><img src="./assets/monster_frames/1210100.png" alt="" loading="lazy">肥肥</small></span>
+      </div>
+    </section>
+    <section id="dialogues" class="ringGuideSection ringDialogueSection"><div class="sectionTitle"><h2>NPC 對話腳本</h2><span>56 個任務 / 293 段</span></div><p class="ringDialogueIntro">依任務 ID 收錄本地任務資料中的完整 NPC 對話。每個任務預設折疊，展開後可查看接取、完成與未完成條件的對話分支。</p><div class="ringDialogueList"><details class="ringDialogueQuest"><summary><span><code>69039</code><strong>師父的擔憂(劍士)</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">眼神大不相同了！這才像個劍士的臉。<br>但可別誤會。從現在起你將面對的，與目前為止截然不同。光靠蠻力硬衝，只會就此結束。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">我在這裡培育了無數劍士，其中不乏令人驚嘆的強大之輩。即便如此...他們之中仍有幾人再也沒能回來。<br>強大與活下去，是兩回事。在學會這一點之前，不能稱之為真正的劍士。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">...聽說魔法森林的漢斯最近正在進行那方面的研究。就是研究讓冒險家們能夠平安歸來的方法。魔法師們做的事我不太清楚，但若是那位的話，應該值得信賴。去幫幫他吧，那也將成為修煉的一部分。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">活著回來，我會在這裡等你。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">難道劍士也會膽怯嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">冒險家的裝備測試</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69040</code><strong>師父的擔憂(魔法師)</strong></span><em>5 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">恭喜你。沒想到你能走到這裡...不，其實我早就知道了。從第一次見到你時，眼神就不一樣...<br>但從現在起才是真正的開始。你迄今為止走過的路...與今後將要面對的相比，不過是散步而已...。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">我在這個位置待了很長的歲月，無數孩子們踏出了這扇門。然而再次歸來的孩子們...並不多...。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">再也無法只是袖手旁觀，於是開始了研究。不是增強力量，而是關於如何存活下去的研究...<br>如果你不介意的話，能幫我一個忙嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">有時間的話再來聊吧，準備好了就來找我說話....</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">這樣啊，我並不打算強留你。<br>若改變心意，隨時都可以來，我一直都在這裡....</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69041</code><strong>師父的擔憂 (弓箭手)</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">到目前為止你做得非常好，<br>但現在才是開始。今後你將面對的一切，將會比到目前為止危險得無可比擬。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">我培養了無數徒弟，他們都帶著興奮與好奇心，笑著說會平安歸來後離去。<br>...但此後再也沒能見到的人...也有很多。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">...聽說魔法森林的漢斯大人最近正埋首於一項研究，為了讓更多冒險家能夠安全地冒險，並且能夠平安歸來的方法。<br>他和我的心意是相同的，或許他會需要幫助。若你能前去，必定是莫大的助力。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">請多保重，還有，一定要再見。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">啊，現在不方便嗎？沒關係，<br>你也有自己的事情要做，看來是我過於擔心了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">漢斯大人在魔法森林。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69042</code><strong>師父的擔憂(盜賊)</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">呵呵...變成像模像樣的盜賊了呢。說實話，比第一次見到你時強多了。<br>不過話說回來，從現在開始才是真正的考驗。到目前為止對付的那些，當作是暖身運動就好。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">你知道在這行撐得久的是什麼樣的人嗎？不是強或快的人，而是無論如何都活下來的人，知道了嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">說到這個，你知道魔法森林大魔法師漢斯吧？那人在做一項奇怪的研究，據說是延長冒險家壽命的方法。<br>既然是那人在做的事，應該不是白費工夫。去拜訪一下吧，幫忙的同時也能學到不少東西。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">決定的好，活著回來再見吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">怎麼了，有什麼要緊事嗎？<br>算了，我也沒打算強迫你，有意願的話再來吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">去魔法森林看看吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69043</code><strong>師父的擔憂(海盜)</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">喲，還不錯嘛。和第一次來的時候眼神完全不同了。<br>不過別高興得太早，從現在起你將面對的世界，和到目前為止完全是不同次元。越過幾個海浪就以為自己是航海師，那可不行。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">在船上待久了，有一件事自然會明白。小浪過後，必有大浪來臨，無一例外。<br>所以大海風平浪靜時，不是放鬆的時候，而是要趁那時檢查船帆、做好準備。浪頭就在眼前才想著去綁繩子的人，已經算是掉進水裡了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">正好，魔法森林有位叫漢斯的人，聽說他最近在研究冒險家的生命力之類的事。你去幫他一下，對你肯定也有幫助。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">很好，還愣著幹嘛？那就去吧。<br>道別說那麼長幹嘛，後會有期。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">什麼，你已經有別的地方要去了？<br>算了，別忘了我說的話，趁有時間早點做好準備。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">漢斯在魔法森林。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69045</code><strong>師父的後悔</strong></span><em>8 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">我也不確定和你說這些是否正確...只是我認為這是遲早要說的話....</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">我在這個位置待了很久....在這段時間裡，無數孩子們走出了這扇門。他們都和你一樣，眼中閃著對冒險的期待與渴望。<br>...其中許多孩子們，我再也無緣相見...<br>那些孩子們中，甚至有人動用了強行燃燒魔力來延續生命的術法。當然，那也未能阻止悲劇的發生，反而只帶來了更糟糕的結果....</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">.... 我袖手旁觀了太久。傳授智慧與力量固然重要，但作為師傅，最應該先做的事，是讓你們能平安歸來。這個道理我醒悟得太晚了...<br>所以近來開始了研究。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_3</code></div><div class="ringDialogueText">...若是有一種方法，能在不冒危險的情況下增加生命力，你會怎麼做？聽起來也許異想天開...但線索已經找到了。<br>你能幫助我嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，我就知道你會這樣做的。<br>話說多了....先去喘口氣吧，接下來會很忙的....</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是嗎。看來老頭子的嘮叨說得太長了。<br>沒關係，也不是什麼急事。若是改變心意，隨時都可以來。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">喘口氣了嗎...？<br>那麼...現在，正式來談談吧...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">關於我在研究什麼...以及我想拜託你什麼...</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69046</code><strong>尋找古老的智慧</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">我在這項研究上花費了很長時間。起初不斷重複將魔力刻入身體、強行灌入、引導填滿... 結果全都失敗了。<br>後來才明白，從一開始試圖強行創造生命就是錯的...生命並非創造出來的，而是將已有的生命分享共用...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">我從妖精們的歷史中找到了線索。他們從很久以前就向自然借用生命並償還後帶著充沛的生命力生活著...然而，現在那種方法已被遺忘了。對他們來說早已如呼吸般自然，所以才被遺忘了...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">聽說森林某處有一座妖精們曾使用的老舊圖書館。雖然現在因無人問津而被遺忘，但那裡應該還留有記錄...<br>能否請你去找一找。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝。位置我也不清楚...問問妖精們應該就能知道了。<br>妖精們可能會有所警戒，但只要說是我派你去的，他們應該會告訴你...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">看來是個太過勉強的請求了....</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">圖書館...？人類為何要尋找妖精們的圖書館呢？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">確切的位置我也不知道...<br>問問妖精們應該就能知道了...</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69047</code><strong>心存警戒的妖精</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">漢斯派你來的？...看來應該和最近他向我們詢問的事情有關。<br>既然是漢斯的朋友，那就值得信賴。因為他是個親切的人。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">若是要找被遺忘的圖書館，我也不知道確切的位置。<br>時間已經過了很久，說不定早已被樹木覆蓋了。<br>去問問羅雯吧，她喜歡書，或許會知道。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">去找羅雯看看吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">你不是在找圖書館嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">漢斯派你來的？<br>需要幫助嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">羅雯在魔法森林村莊。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69048</code><strong>羅雯的記憶</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">廢棄的圖書館啊...<br>圖書館的話，有小時候去玩過幾次的記憶。不過裡面只有關於自然和歷史的書，很快就失去興趣了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">必須深入森林才行，直接去的話會找不到的，<br>因為道路已被樹木覆蓋了。<br>去找瑪麗吧，她經常為了照顧寵物而深入森林，應該比我更清楚。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">最近森林氣息有些異常，請小心。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">瑪麗會親切地告訴你的，不用擔心，去找她看看吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">被遺忘的圖書館？以前經常去呢。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">妖精瑪麗在魔法森林村莊。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69049</code><strong>廢棄的妖精的圖書館</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">為什麼要找圖書館？<br>大魔法師漢斯拜託的？看來漢斯又在研究什麼了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">好，我告訴你。<br>在蘊含精靈智慧的森林下方，有一座入口隱藏在大樹後方，要仔細找才能看到。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">小心，那裡年代久遠，地板不太穩固。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">不是說是漢斯拜託的嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">在雜亂生長的植物之間發現了一本老舊書本。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">就在森林深處，大樹木的後方。<br>在森林裡小心別迷路了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69050</code><strong>妖精們的古書</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">封面已經腐朽，文字無法辨識。但內頁仍清晰地留有妖精的文字。<br>看來是漢斯在找的書，帶去給他吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">(回到魔法森林吧。)</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">(再多看看之後再走。)</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哦，這是...真的找來了...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：確認</strong><code>1_yes_0</code></div><div class="ringDialogueText">書雖然損毀不少，但還讀得下去。這是比我想像中更古老的記錄啊...<br>謝謝，若不是你，這本書恐怕就這樣埋沒在森林裡了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：確認</strong><code>1_yes_1</code></div><div class="ringDialogueText">給我一點點...時間...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">…</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69051</code><strong>生命能量 ①</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">妖精們並非創造了生命，只是將已散落在自然中的事物編織合而為一罷了...就像將線搓成繩子一樣。<br>真令人驚嘆！我耗費數十年試圖創造原本不存在的東西，而答案從一開始就遍布四周。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">還沒有完全掌握，必須找出能讓人類編織使用的方法才行。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">在我研究製作配方的期間，請你幫忙收集一些材料。生命氣息...感覺會需要非常多...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝...生命氣息應該不難從生活在森林中的生物身上取得。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">原來如此，不必著急，我也還沒完成配方。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">生命氣息應該不難從生活在森林中的生物身上取得...</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69052</code><strong>生命能量 ②</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">生命氣息在森林中生活的生物身上應該不難取得...</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69057</code><strong>生命能量 ③</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">生命氣息在森林中生活的生物身上應該不難取得...</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69058</code><strong>不屈的執念</strong></span><em>3 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">那邊的你，看起來不像是來搭船的，有什麼事情？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">你說來找什麼的？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">去海邊看看吧。那裡的人們...應該知道些什麼...</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69059</code><strong>漠然的船員</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">不屈於任何試煉、永不折斷的執念...這個嘛，說起來倒是頭頭是道，不過...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">老實說吧，我從來沒有像那位魔法師所說的，懷抱著什麼崇高的心情出海。<br>早上睜眼就出門，傍晚回來就睡覺，僅此而已。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">不過，那是我的故事，其他人也許想法又不一樣。你去到處問問看吧，港口裡總是有很多人的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">去找百京和特奧吧，他們兩個都是在大海上待了很久的人。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">你不是說來尋找執念的嗎？就這點執念，什麼都找不到吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">快來！大海隨時都在等待著冒險家。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">去找百京和特奧吧。沒找到嗎？他們應該在港口某處。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69060</code><strong>大海的冒險家</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">不向洶湧大海屈服的執念！哈哈哈哈！找得好，身為維京後裔的我，可說是執念的結晶！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">你也想擁有那樣的執念？好，那麼跟我一起出海吧！被海浪捲個十年左右，應該就能得到了！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">什麼，那是什麼表情？我可不是在開玩笑。連這點覺悟都沒有，就想擁有執念嗎？<br>看來不是當船員的料，去問別人吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">如果想乘船遨遊大海，到時候再來找我！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">沒見過的臉啊！找我有什麼事？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">我不清楚，去問別人吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69061</code><strong>特奧的忠告</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">執念？你問能不能找到在洶湧大海中屹立不折的執念？哼...確實，生活在大海中的傢伙們，可以說都擁有對生命的執念。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">不過...你打算怎麼取得？你有好好坐過船嗎？說不定得在海上漂好幾天...不，好幾個月也說不定。若不是海上之人，這並不容易。要不要試著找找其他方法？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">好，這樣想是對的，大海可不是好惹的地方。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">還真是個挺固執的傢伙嘛？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">和他們談過之後感覺怎麼樣，有找到答案嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">果然大家說的都差不多。<br>生活在大海中的生物或許擁有那種執念，但若非海上之人，要得到恐怕很難。<br>光是坐幾天船，你也不可能生出那種心境的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">去和坤談談吧，說不定能想出什麼好辦法呢？</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69062</code><strong>貧瘠之地的事物</strong></span><em>8 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">我想了一下...你來海邊，不就是因為覺得能從每天拼命求生的海洋生物身上，獲得不屈的執念嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">那麼未必非得是大海不可吧？只要是難以生存的地方，哪裡不都一樣嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">去勇士之村看看怎麼樣？那裡是一片只有石頭的土地，比大海更難以生存的地方。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">想得好。<br>啊，對了，去勇士之村的話，可以去找武術教練。他是以真正的劍士身份名聲遠播的人，說不定能讓你得到你所尋找的東西。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">去勇士之村可不容易，但如果你在尋找執念，就不要輕易放棄。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">有什麼事呢? 是漢斯的跑腿？<br>...原來如此，是因為那項研究啊。好，你說在找什麼？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">面對任何試煉都不屈服...不折斷的執念啊。沒錯，那確實存在於這片土地上。<br>因為在這裡存活下來的，沒有一個是沒有求生執念的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">去勇士之村可不容易，但如果你在尋找執念，就不要輕易放棄。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69063</code><strong>不屈的人</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">嗯...好，那樣比較好。<br>這個村莊裡有個在這片土地上比我撐更久的人，就是酋長。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">那個人在這片石地上為人們蓋房子、養活家人。就算炙熱的熱氣讓大地燃燒，就算狂烈的暴風席捲而來，他也從未停歇。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">去找他問問看吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">對了，就算他叫你做粗活，也別抱怨，照做就是。在那過程中，你一定能學到些什麼。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">看來並不著急呢。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">沒見過的臉啊。<br>來得正好！幫我一個忙吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">是酋長。他在村莊裡，好好找找看吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69064</code><strong>堅不可摧的家</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">你看到那邊那棟房子了嗎？上次的旋風把牆面都吹飛了。<br>這一帶本來就是這樣，風一旦大起來，屋頂就會被吹走，有時還會飄來火種，把房子燒掉。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">那麼又能怎樣呢。為了在這座岩石山上生存下去，只能修了再蓋。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">所以請你幫個忙。<br>請幫我找些木柴和樹枝，好補上被風吹走的牆壁。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝。啊，不必特意挑好的，反正下次風一來又會吹走了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">呵呵，看來是耽誤了你的時間。<br>不過你來找我，不是有事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">還沒完成嗎？慢慢來。<br>是木柴、樹枝和樹葉。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69065</code><strong>不屈的執念</strong></span><em>4 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">看你的表情，應該是找到了，恭喜你。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">不過話說回來，你離開之後我仔細想了想，覺得也許你的內心深處，也已經擁有那種不向任何試煉屈服的執念。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_2</code></div><div class="ringDialogueText">你不正是楓之谷世界的冒險家嗎？甚至為了尋找執念那模糊的材料，特地來到這險峻岩山...若連你都沒有執念，還有誰會有呢？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">還沒找到嗎？應該可以從在這片貧瘠土地上頑強生存的生物身上取得。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69066</code><strong>第一個材料</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">不管怎樣，既然取得了想要的東西，現在該回去了。<br>保重，之後若再路過的話記得來坐坐。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">那時候如果屋頂還是飛走的話，幫個忙吧，哈哈。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">路上小心。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">開個玩笑，我怎麼好意思再次麻煩你呢？哈哈...不過也說不定。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哦，你...終於回來了。光看你的臉就知道了，這趟旅途相當艱辛吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">讓我看看...嗯...熱烈而...堅硬的氣息。既不燃燒也不搖動，卻深沉而厚重...感受到一種寂靜的壓迫感...<br>取得很好，辛苦了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">現在該回到那位等著你的魔法師的所在之處了。是魔法森林，對吧？</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69067</code><strong>等待者的祈禱</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">現在該去取得第二樣材料了... 嗯... 這次也不容易啊...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">如果說第一樣是不屈的心，那第二樣就是等待者的祈禱...盼望離去之人能平安歸來的... 那份迫切心情...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">但這究竟要去哪裡取得... 完全沒有頭緒。這種時候，尋求比我更了解的人的幫助會更快。<br>弓箭手村的赫麗娜或許知道答案。多年來培育了無數徒弟...又一一送別了他們...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，請把我的話轉告赫麗娜，她一定會幫忙的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">看來是有急事了...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">赫麗娜在弓箭手村。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69068</code><strong>需要幫助的人們①</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">要整理好思緒，恐怕還需要一些時間呢。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">在那之前...可以去拜訪一下長老斯坦大人嗎？他最近看起來特別忙碌。照看路過弓箭手村的年輕冒險家們的事情似乎越來越多了。雖然嘴上說著那些冒險家在村子裡惹麻煩讓他頭痛，但他始終都很掛心。<br>如果我們能幫上什麼忙就好了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，斯坦大人應該在村莊裡。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">嗯...在忙嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哎，又是冒險家啊。<br>嗯？是赫麗娜讓你來的？那就太好了！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">還沒找到斯坦大人嗎？</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69069</code><strong>需要幫助的人們②</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">最近路過這個村莊的年輕冒險家越來越多了。<br>不知道從哪裡走來的，個個狼狽不堪，腳上全是水泡，餓得連村莊的雜草都要拔來吃的架勢。<br>看著他們的背影...唉...好像在看離家的兒子一樣...心裡不是滋味。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">...想讓他們吃點東西，也想幫他們治療傷口，可這把老骨頭連材料都不好弄啊。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">你能幫我取一些菇菇寶貝傘嗎？熬粥給他們吃應該很管用。綠水靈珠也需要一些，那黏糊糊的東西對水泡特別有效。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，還好偶爾有像你這樣的冒險家在。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">呃咳，現在的年輕人啊...請別惹麻煩，安靜地待著再走吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">嘿，回來得挺快嘛。<br>這樣應該夠了。辛苦了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">菇菇寶貝傘可以從菇菇寶貝身上取得，綠水靈珠可以從綠水靈身上取得。在村莊附近應該不難找到。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69070</code><strong>需要幫助的人們③</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">呃咳...不過我完全不擅長烹飪，得去請麗娜幫忙才行。麗娜是弓箭手村裡廚藝最好的人。啊，請小心別讓這件事傳到明明夫人耳裡...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">告訴麗娜是我派你去的，她會幫忙的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">那麼就拜託你了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">現在的年輕人果然....</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">嗯？是斯坦爺爺派你來的嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">要煮粥給冒險家們吃嗎？那找對人了！說到菇菇粥，那可是我的拿手菜！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">沒找到麗娜嗎？</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69071</code><strong>需要幫助的人們④</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">哎呀，已經連材料都取得了嗎？<br>讓我看看...菇菇傘蓋這樣就夠了...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">要讓粥有濃郁的風味，需要好的湯底。用風獨眼獸的尾巴長時間熬煮，就能熬出濃郁紮實的湯底。<br>請問你能幫我取得一些嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝！那麼我來準備煮粥吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是有什麼急事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哇，這麼快就取得了！謝謝。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">還需要更多風獨眼獸的尾巴，<br>應該可以從附近的風獨眼獸身上取得。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69072</code><strong>需要幫助的人們⑤</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">材料放得很多，所以煮得比平時更美味！份量也很充裕，分給大家也都還有剩呢？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">如果不忙的話，能幫我把這碗粥送給赫麗娜大人嗎？她很喜歡我煮的菇菇粥！<br>村子的人們對赫麗娜大人一直都懷有感謝之情，想這樣一點一滴地回報她。<br>啊啊，請不要擔心！冒險家們那份我會好好分配的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，路上小心！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是有什麼急事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">這是什麼？麗娜煮的菇菇粥？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">幫助了斯坦跟麗娜...原來如此。託你的福，路過村莊的年輕冒險家們也能用溫暖的粥填飽肚子了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">粥要涼了！快去赫麗娜大人那裡吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69073</code><strong>看起來很著急的卡蜜拉</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">看著你幫助那兩個人的樣子，我感覺自己正在一點一點地接近答案。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">再給我一點時間。在這段時間裡，你也可以在村莊裡多逛逛。弓箭手村......是個有很多需要幫助的人的地方。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，有答案的話我會馬上叫你的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是有什麼急事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">啊，不行...怎麼會...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">怎、怎麼辦才好？請幫幫我！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">在村莊裡多逛逛怎麼樣？</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69074</code><strong>遺失的藥</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">抱歉！我現在有點慌亂...其實是好不容易找到的藥被怪物搶走了。那是要拿去給生病的好友的...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">藍菇菇！被藍菇菇搶走了！是經常出現在村莊附近的怪物。<br>拜託你了，沒有那個藥的話...好友的狀態會越來越差的...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，真的謝謝！<br>路上小心。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">那...是呢，抱歉！<br>是個為難你的請求呢。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">太好了！你平安回來了！<br>因為一直沒有你的消息，我很擔心是不是發生了什麼事，又或是我提出了過分的請求...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">...哎呀，對！就是這個藥！謝謝你。<br>託你的福，終於可以把藥交給生病的好友了！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">藍菇菇！被村莊附近的藍菇菇搶走了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69075</code><strong>空珠子</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">對了，赫麗娜大人找過冒險家你呢。<br>請去拜訪一下吧！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">那麼我得趕緊去找好友了。 <br>再見了，冒險家！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">好像是什麼重要的事...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哦，你來了啊，聽說你幫了卡蜜拉。<br>太好了，真的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">還有...找到答案了。看著你幫助斯坦大人、麗娜、卡蜜拉的樣子，我明白了。等待者們的祈禱，已經在你身旁了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_2</code></div><div class="ringDialogueText">你已幫助了許多人。他們祈願你平安返回的心意，光是這樣就已足夠了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_3</code></div><div class="ringDialogueText">請收下這顆珠子，雖然現在還是空的，但這是一顆可以承載珍貴心意的珠子。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69076</code><strong>承載心意的珠子</strong></span><em>5 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">現在帶著這顆珠子，再去拜訪你曾幫助過的人們吧。也就是斯坦、麗娜，還有卡蜜拉，他們的心意將會填滿這顆珠子。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">託你的福，我也領悟了許多，請小心回去。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是有什麼急事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">喲，是你啊！<br>還在弓箭手村呢。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">請去找你幫助過的斯坦、麗娜跟卡蜜拉，他們的心意將會填滿這顆珠子。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69077</code><strong>祈願平安返回的心意</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">那天以後，我一定會讓年輕的冒險家們喝上一碗溫暖的粥再出發。也許是因為吃飽了，在村莊裡惹麻煩的傢伙也少了，真是不知道有多慶幸。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">這都是托你的福。希望...你無論身在何處都能平安，別受傷。一路小心。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">好，再見了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">在弓箭手村還有未完成的事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哎！你又來了呢！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">也去跟麗娜打個招呼再離開吧，她一定會很高興的。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69078</code><strong>居民們的祈禱</strong></span><em>8 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">那天煮的粥，冒險家們都非常喜歡呢。果然不管是冒險還是戰鬥，吃飽了才有力氣啊。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">肚子餓的話隨時來找我！我會一直等著與你再見的。請不要受傷，隨時注意安全！<br>那麼，路上小心！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">再見，冒險家大人！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">在弓箭手村還有未完成的事嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">啊...幸好再次見到你！<br>多虧你，藥平安送到了，好友也好多了。能告訴你這個消息真的很開心。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">現在要離開弓箭手村了嗎？<br>應該是要前往更廣闊的世界了吧？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_2</code></div><div class="ringDialogueText">弓箭手村是個新手冒險家特別常經過的村莊。也因此...不好的消息也常常傳來。<br>嗯嗯...也就是說，我想說的是...冒險家大人請千萬不要受傷，無論去哪裡都要平安回來！一定要！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">卡蜜拉也在等著冒險家大人呢！<br>出發前，去打個招呼吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69079</code><strong>第二個材料</strong></span><em>5 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">嗯？我好像在冒險家的背包裡看到了閃亮的光！<br>是發生什麼好事了嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">呵呵，太好了。那麼請小心慢走。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">我們一定要再見面喔！</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">在弓箭手村還有事情要辦嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">材料還沒找到嗎...？</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69080</code><strong>承載生命的容器</strong></span><em>2 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">說是來替漢斯跑腿？<br>唉呦，研究看來進展得相當不錯嘛，這是個好消息。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">達克魯就在墮落城市。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69081</code><strong>達克魯的考試</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">去搜索沼澤地帶吧，找出證物本身就是考試的一部分。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69082</code><strong>純度極高的原石</strong></span><em>2 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哦，你來了。<br>這塊原石...那位好友挑得真不錯，純度確實很高。<br>辛苦了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">請帶去給漢斯。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69083</code><strong>陽光照不到之處</strong></span><em>9 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">進行得很順利...我嘗試將生命氣息注入你帶來的原石。稍有不慎，原石可能承受不住那股氣息而碎裂...是相當危險的嘗試...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">然而原石...竟撐住了。絲毫無損，反而將那股氣息蘊含其中，散發出淡淡的光芒。這說明方向並沒有錯。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">只是...那道光並未持續太久...蘊含的氣息隨著時間流逝，會逐漸消散。照這樣下去，即使戒指完成了...力量也會很快熄滅的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_3</code></div><div class="ringDialogueText">...所以最後需要的，是不滅的生命意志。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_4</code></div><div class="ringDialogueText">在那片不見半縷陽光的地底深處，能夠堅持生存下去的生命...想必定然懷有那樣的意志。<br>這大概是最後一個請求了...請幫我尋得那不滅的生命意志。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">務必小心。光明之下的世界，潛藏著與地面截然不同的威脅...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">原來如此，不要勉強自己，等想清楚了再來吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">歡迎到來，年輕人，是什麼事讓你來到這危險之地？<br>奇幻村是個寂靜而又危險的地方，若不想被無盡的洞穴和幽暗的森林所吞噬，可得打起精神來......</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">陽光照不到之處...地底之下...維多利亞島最深處，去那裡看看吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69084</code><strong>不滅的生命意志①</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">不滅的生命意志...我也窮盡一生追尋各種藥草與生命，卻從未聽說過那種東西。<br>不過...若是在找陽光照不到的地方，那你可算找對人了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">螞蟻洞。那是連一縷陽光都照不進去的地方。無論走到哪裡，最終都會被黑暗所吞噬...是個又深又幽遠的地方。<br>這座村莊裡有個叫克利斯拉瑪的人。論對螞蟻洞的了解，他遠比我更清楚。你去找他問問看吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">好，去吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是嗎？不用著急，慢慢來吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哦，是客人啊。你說是薩比特拉瑪派你來的？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">在尋找不滅的生命意志...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">克利斯拉瑪應該就在這座村莊的某處。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69085</code><strong>不滅的生命意志②</strong></span><em>8 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">這螞蟻洞的最底層，什麼奇奇怪怪的東西都有。全都是在一絲陽光都沒有的地方，拼命撐著的傢伙。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">其中，極少數...有些特別頑強的傢伙。就是那些即使面對死亡，也想盡辦法撐下去生存的傢伙。據說那種傢伙的身體某處，藏有不滅的生命意志。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">我果然...想知道那究竟是什麼，才在這裡待了這麼多年。為何有些存在即使面對死亡也不肯放手，而有些卻如此輕易地消逝。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_3</code></div><div class="ringDialogueText">哪個傢伙擁有那種東西，我也不清楚。若是找到了，也讓我看看。我想知道真正的生命意志究竟是何種形態。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">謝謝，請多保重。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">是嗎？那，若有心情就再來吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">這正是永不熄滅的生命意志...<br>宛如將熄的餘燼般微弱...但仍活著。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">這並不容易。然而，在螞蟻洞的深處，必定能夠找到。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69086</code><strong>最後的材料</strong></span><em>7 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">真正的生命意志究竟是什麼...我來此地尋找真理，卻仍不知曉答案。然而，光是追尋那個問題，也度過了不算虛度的日子。<br>有時遇見像你這樣的冒險家，也能意外地更接近答案。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">現在要回去了嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">請多保重。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">哎呀，還猶豫什麼，快去吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">哦，你來了。<br>微弱卻不熄滅的火焰...溫熱卻不冷卻的溫度...這正是...不滅的生命意志啊。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">現在所需的材料已全部齊聚，剩下的只是將這些融合為一...不過似乎需要一些時間...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">現在請回到你原本所在的地方吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69087</code><strong>前往鯨魚號</strong></span><em>5 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">生命氣息、讓那股氣息得以留存的不屈執念、等待者們的祈禱，還有永不熄滅的生命意志...所需材料已全數齊備。接下來只剩將這一切融合在一起了...<br>不過似乎需要花些時間...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">這段時間...如果不忙的話，要不要去見見鯨魚號的卡伊琳？他對你非常好奇呢...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">好，去吧...融合一結束就再叫你回來。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">這樣啊。反正也不急，慢慢去吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">卡伊琳在鯨魚號裡呢。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69088</code><strong>湯寶寶的特餐①</strong></span><em>5 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">先去找湯寶寶吧。他是我們鯨魚號上手藝精湛的廚師，會幫你準備特餐的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">啊，材料要自己帶去。我推薦的料理是豬頭香菇火鍋。只需要準備一些肥肥頭和藍菇菇傘就行了，一定要去吃看看。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">好，想得不錯。去好好吃一頓再回來吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">融合結束前，你打算做什麼？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">我推薦的料理是豬頭香菇火鍋，帶來肥肥頭和藍菇菇傘的話就會幫你做。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69089</code><strong>湯寶寶的特餐 ②</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">肥肥頭和藍菇菇傘，今天也麻煩你了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69090</code><strong>湯寶寶的特餐③</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">肥肥頭和藍菇菇傘，今天也麻煩你了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69091</code><strong>湯寶寶的特餐④</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：道具不足</strong><code>1_stop_item_0</code></div><div class="ringDialogueText">肥肥頭和藍菇菇傘，今天也麻煩你了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69092</code><strong>融合完成的消息</strong></span><em>3 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">嘿，來了啊。有吃好睡好嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">魔法森林那邊傳來消息了。說是漢斯終於完成了戒指融合。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">你還在這裡啊？卡伊琳船長應該在等你了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69093</code><strong>破損的圖書館</strong></span><em>8 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">我也感到興奮呢。你可能不太清楚，但這是漢斯準備了相當長時間的研究。讓我們培養並轉職、送入世界的冒險家們不會死去，能夠歸來到我們身邊...原本以為是不可能的事，但也許......</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">快去看看吧。你費盡心力收集的東西，最終合而為一，怎麼可能不好奇呢。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">好，路上小心，之後再見了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">怎麼，還對這裡有所留戀嗎？</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">研究室的門已經破損。走進去後，應該在此的漢斯卻不見蹤影...書櫃和道具雜亂地散落一地。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">戒指，還有至今為止收集的材料...哪裡都找不到。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_2</code></div><div class="ringDialogueText">地板上零星散落著陌生的黑色灰燼。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">去魔法森林看看吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69094</code><strong>循著蹤跡</strong></span><em>2 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">門縫之間透出微弱的光芒。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">仔細查看蹤跡，繼續前進吧。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69095</code><strong>隱藏研究室</strong></span><em>3 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">...真是不受歡迎的入侵者。<br>是漢斯派來的嗎？還是...小偷？無論哪種都無所謂。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_1</code></div><div class="ringDialogueText">我沒有打算歸還。這個...是我應該擁有的東西。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：需要找 NPC</strong><code>1_stop_npc_0</code></div><div class="ringDialogueText">試著進入門內看看。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69096</code><strong>被污染的東西們</strong></span><em>1 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>未完成：狩獵不足</strong><code>1_stop_mob_0</code></div><div class="ringDialogueText">...趁現在收手還來得及。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69097</code><strong>沒有回應的戒指</strong></span><em>0 段</em></summary><p class="ringDialogueEmpty">本地資料未提供 NPC 對話。</p></details><details class="ringDialogueQuest"><summary><span><code>69098</code><strong>師父與徒弟</strong></span><em>6 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">...抱歉，不想讓你看到我這副模樣的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">這下可以了，戒指已經找回來了...還有最後一件事要做。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">...回到魔法圖書館吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">在那裡再見吧。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">別擺出那種表情，我沒事的。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>進行/完成：對話</strong><code>1_0</code></div><div class="ringDialogueText">...來了嗎？是時候為這段漫長的旅程收尾了。</div></article></div></details><details class="ringDialogueQuest"><summary><span><code>69099</code><strong>冒險家的戒指</strong></span><em>5 段</em></summary><div class="ringDialogueEntries"><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_0</code></div><div class="ringDialogueText">散落於自然之中的生命氣息...對生命的執念與意志，以及無數期盼你平安歸來之人的祈禱...你所匯聚的所有心意，皆已銘刻於這枚戒指之中。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_1</code></div><div class="ringDialogueText">這枚戒指只會對你有反應...那是專屬於你的珍貴心意，是理所當然的事...</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：對話</strong><code>0_2</code></div><div class="ringDialogueText">現在只剩下你的選擇了。</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：確認</strong><code>0_yes_0</code></div><div class="ringDialogueText">你的選擇，那便是最後的材料，現在真的完成了</div></article><article class="ringDialogueEntry"><div class="ringDialogueMeta"><strong>接取：取消</strong><code>0_no_0</code></div><div class="ringDialogueText">選擇困難嗎？慢慢煩惱吧。</div></article></div></details></div></section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      function writeCookie(name, value) {
+        try {
+          document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + "; Max-Age=15552000; Path=/; SameSite=Lax";
+        } catch (_error) {}
+      }
+      function applyTheme(theme) {
+        var next = theme === "dark" ? "dark" : "light";
+        document.documentElement.dataset.theme = next;
+        var button = document.getElementById("themeToggle");
+        if (button) {
+          var isDark = next === "dark";
+          button.setAttribute("aria-pressed", String(isDark));
+          button.setAttribute("aria-label", isDark ? "切換為白底" : "切換為黑底");
+          button.title = isDark ? "切換為白底" : "切換為黑底";
+          button.textContent = isDark ? "☀" : "☾";
+        }
+      }
+      applyTheme(document.documentElement.dataset.theme);
+      document.getElementById("themeToggle")?.addEventListener("click", function () {
+        var next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        applyTheme(next);
+        writeCookie("ms_theme", next);
+        try { localStorage.setItem("ms-theme", next); } catch (_error) {}
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var routes = {
+        "勇士聖殿": {
+          from: "勇士之村",
+          steps: [
+            { image: "./assets/map_renders/102000000.png", x: 67.3, y: 20.4, kind: "portal", label: "勇士之村：進入勇士聖殿" },
+            { image: "./assets/map_renders/102000003.png", x: 13.0, y: 52.5, kind: "npc", label: "勇士聖殿：武術教練" }
+          ]
+        },
+        "魔法森林圖書館": {
+          from: "魔法森林",
+          steps: [
+            { image: "./assets/map_renders/101000000.png", x: 56.3, y: 13.0, kind: "portal", label: "魔法森林：進入圖書館" },
+            { image: "./assets/map_renders/101000003.png", x: 49.2, y: 58.3, kind: "npc", label: "魔法森林圖書館：漢斯" }
+          ]
+        },
+        "生命之林": {
+          from: "魔法森林",
+          steps: [
+            { image: "./assets/map_renders/101000000.png", x: 91.0, y: 95.0, kind: "portal", label: "魔法森林：進入生命之林" },
+            { image: "./assets/map_renders/101000200.png", x: 49.6, y: 59.0, kind: "npc", label: "生命之林：瑪麗" }
+          ]
+        },
+        "廢棄的妖精圖書館": {
+          from: "魔法森林",
+          steps: [
+            { image: "./assets/map_renders/101000000.png", x: 9.4, y: 96.2, kind: "portal", label: "魔法森林：往魔法森林南郊" },
+            { image: "./assets/map_renders/100050000.png", x: 14.1, y: 94.2, kind: "portal", label: "魔法森林南郊：往智慧森林" },
+            { image: "./assets/map_renders/100040100.png", x: 77.7, y: 94.0, kind: "portal", label: "智慧森林：進入樹林底層" },
+            { image: "./assets/map_renders/100040110.png", x: 74.1, y: 87.2, kind: "portal", label: "樹林底層：進入廢棄的妖精圖書館" },
+            { image: "./assets/map_renders/876009610.png", x: 32.0, y: 83.8, kind: "npc", label: "廢棄的妖精圖書館：廢棄的古書" }
+          ]
+        },
+        "弓箭手培訓中心": {
+          from: "弓箭手村",
+          steps: [
+            { image: "./assets/map_renders/100000000.png", x: 63.9, y: 52.0, kind: "portal", label: "弓箭手村：進入邱比特公園" },
+            { image: "./assets/map_renders/100000200.png", x: 83.4, y: 69.7, kind: "portal", label: "邱比特公園：進入培訓中心" },
+            { image: "./assets/map_renders/100000201.png", x: 59.4, y: 65.8, kind: "npc", label: "弓箭手培訓中心：赫麗娜" }
+          ]
+        },
+        "墮落城市酒吧": {
+          from: "墮落城市",
+          steps: [
+            { image: "./assets/map_renders/103000000.png", x: 74.6, y: 65.1, kind: "portal", label: "墮落城市：進入酒吧" },
+            { image: "./assets/map_renders/103000003.png", x: 61.3, y: 80.6, kind: "npc", label: "墮落城市酒吧：達克魯" }
+          ]
+        },
+        "鯨魚號航海室": {
+          from: "鯨魚號碼頭",
+          steps: [
+            { image: "./assets/map_renders/120000000.png", x: 50.7, y: 80.0, kind: "portal", label: "鯨魚號碼頭：進入中央走廊" },
+            { image: "./assets/map_renders/120000200.png", x: 67.5, y: 75.1, kind: "portal", label: "中央走廊：上層走廊" },
+            { image: "./assets/map_renders/120000100.png", x: 19.5, y: 75.1, kind: "portal", label: "上層走廊：進入航海室" },
+            { image: "./assets/map_renders/120000101.png", x: 52.3, y: 59.6, kind: "npc", label: "航海室：卡伊琳" }
+          ]
+        },
+        "鯨魚號餐廳": {
+          from: "鯨魚號碼頭",
+          steps: [
+            { image: "./assets/map_renders/120000000.png", x: 50.7, y: 80.0, kind: "portal", label: "鯨魚號碼頭：進入中央走廊" },
+            { image: "./assets/map_renders/120000200.png", x: 67.5, y: 75.1, kind: "portal", label: "中央走廊：上層走廊" },
+            { image: "./assets/map_renders/120000100.png", x: 54.3, y: 75.2, kind: "portal", label: "上層走廊：進入餐廳" },
+            { image: "./assets/map_renders/120000103.png", x: 71.5, y: 72.2, kind: "npc", label: "餐廳：湯寶寶" }
+          ]
+        },
+        "隱藏研究室": {
+          from: "魔法森林",
+          steps: [
+            { image: "./assets/map_renders/101000000.png", x: 6.7, y: 35.9, kind: "portal", label: "魔法森林：往魔法森林北郊" },
+            { image: "./assets/map_renders/101010000.png", x: 11.7, y: 62.5, kind: "portal", label: "魔法森林北郊：往大木林Ⅰ" },
+            { image: "./assets/map_renders/101010100.png", x: 12.9, y: 92.9, kind: "portal", label: "大木林Ⅰ：往魔法森林北部" },
+            { image: "./assets/map_renders/101020000.png", x: 50.5, y: 28.7, kind: "portal", label: "魔法森林北部：進入北部森林訓練場Ⅴ" },
+            { image: "./assets/map_renders/101020006.png", x: 56.0, y: 21.8, kind: "portal", label: "北部森林訓練場Ⅴ：進入隱藏研究室" },
+            { image: "./assets/map_renders/876009611.png", x: 29.7, y: 84.0, kind: "npc", label: "隱藏研究室：愛得溫" }
+          ]
+        }
+      };
+
+      function routeKeyFor(host) {
+        var miniMap = host.querySelector(".ringMiniMap");
+        if (!miniMap) return "";
+        return miniMap.getAttribute("title") || miniMap.querySelector("small")?.textContent.trim() || "";
+      }
+
+      function appendRoute(host, route) {
+        var details = document.createElement("details");
+        details.className = "ringRouteDetails";
+
+        var summary = document.createElement("summary");
+        summary.textContent = "從" + route.from + "出發";
+        details.appendChild(summary);
+
+        var flow = document.createElement("div");
+        flow.className = "ringRouteFlow";
+        route.steps.forEach(function (step, index) {
+          if (index > 0) {
+            var arrow = document.createElement("span");
+            arrow.className = "ringRouteArrow";
+            arrow.textContent = "→";
+            flow.appendChild(arrow);
+          }
+
+          var item = document.createElement("span");
+          item.className = "ringRouteStep";
+
+          var map = document.createElement("span");
+          map.className = "ringMiniMap ringRouteMap";
+          map.title = step.label;
+
+          var img = document.createElement("img");
+          img.src = step.image;
+          img.alt = step.label;
+          img.loading = "lazy";
+          map.appendChild(img);
+
+          var marker = document.createElement("span");
+          marker.className = step.kind === "npc" ? "ringMapPin" : "ringPortalPin";
+          marker.style.left = step.x + "%";
+          marker.style.top = step.y + "%";
+          marker.setAttribute("aria-hidden", "true");
+          map.appendChild(marker);
+          item.appendChild(map);
+
+          var label = document.createElement("small");
+          label.textContent = step.label;
+          item.appendChild(label);
+          flow.appendChild(item);
+        });
+        details.appendChild(flow);
+        host.appendChild(details);
+      }
+
+      document.querySelectorAll(".ringNpcSpot").forEach(function (host) {
+        if (host.querySelector(".ringRouteDetails")) return;
+        var route = routes[routeKeyFor(host)];
+        if (route) appendRoute(host, route);
+      });
+    })();
+  </script>
+  <script src="./mobile.js?v=20260916103303"></script>
+</body>
+</html>

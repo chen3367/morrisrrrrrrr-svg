@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>遊戲資料 diff：1.15.0 → 1.15.1</title>
+<style>
+:root { color-scheme: light; --bg:#f7f9fb; --panel:#fff; --text:#172033; --muted:#64748b; --line:#dbe4ee; --green:#087f5b; --amber:#b7791f; --red:#c2410c; --blue:#2563eb; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif; background:var(--bg); color:var(--text); }
+main { max-width:1180px; margin:0 auto; padding:32px 20px 64px; }
+h1 { margin:0 0 8px; font-size:32px; line-height:1.2; }
+h2 { margin:34px 0 12px; font-size:22px; }
+h3 { margin:18px 0 8px; font-size:17px; }
+p { line-height:1.7; }
+.meta { color:var(--muted); font-size:14px; }
+.notice { padding:14px 16px; border:1px solid #bfdbfe; background:#eff6ff; border-radius:10px; color:#1e3a8a; margin:18px 0; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:20px 0; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+.card b { display:block; font-size:24px; margin-top:6px; }
+.card span { color:var(--muted); font-size:13px; }
+.badge { display:inline-flex; align-items:center; border-radius:999px; padding:3px 9px; font-size:12px; font-weight:700; background:#edf2f7; color:#334155; margin-left:6px; }
+.badge.add { background:#dcfce7; color:#166534; } .badge.mod { background:#fef3c7; color:#92400e; } .badge.rem { background:#fee2e2; color:#991b1b; }
+table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+th,td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:#f1f5f9; font-size:13px; color:#475569; }
+tr:last-child td { border-bottom:0; }
+.diff-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+details { background:var(--panel); border:1px solid var(--line); border-radius:12px; margin:10px 0; overflow:hidden; }
+summary { cursor:pointer; padding:13px 16px; font-weight:700; }
+.details-body { padding:0 16px 16px; }
+ul.clean { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+li.item { border:1px solid #e5edf5; border-radius:10px; padding:10px 12px; background:#fbfdff; }
+li.item small { display:block; color:var(--muted); margin-top:3px; }
+pre { white-space:pre-wrap; overflow:auto; background:#0f172a; color:#e2e8f0; border-radius:10px; padding:12px; font-size:12px; }
+.zero { color:#64748b; font-style:italic; padding:12px 0; }
+.delta-pos { color:var(--green); font-weight:700; } .delta-zero { color:var(--muted); } .delta-neg { color:var(--red); font-weight:700; }
+.field { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:#0f172a; }
+@media (max-width:700px){ main{padding:24px 12px;} h1{font-size:26px;} table{font-size:13px;} th,td{padding:8px;} }
+</style>
+</head>
+<body>
+<main>
+  <h1>遊戲資料 diff：1.15.0 → 1.15.1</h1>
+  <div class="meta">產生時間：2026-09-16 10:55:06 GMT+8 · 基準：更新前本地輸出快照 vs nxdl 最新包重建後本地輸出</div>
+  <div class="notice">結論：這次 nxdl 最新包已更新到 <b>catalog 1.15.1</b>，但網站可見的怪物、道具、任務、技能、地圖資料表與前一版 <b>1.15.0</b> 比對後沒有實質記錄異動。轉蛋/美容池只重新產生圖片快取版本戳，已排除不列為內容修改。</div>
+
+  <h2>資料表差異</h2>
+  <div class="cards"><div class="card"><span>怪物</span><b>0 / 0 / 0</b><span>新增 / 修改 / 移除</span></div><div class="card"><span>道具</span><b>0 / 0 / 0</b><span>新增 / 修改 / 移除</span></div><div class="card"><span>任務</span><b>0 / 0 / 0</b><span>新增 / 修改 / 移除</span></div><div class="card"><span>地圖</span><b>0 / 0 / 0</b><span>新增 / 修改 / 移除</span></div><div class="card"><span>技能</span><b>0 / 0 / 0</b><span>新增 / 修改 / 移除</span></div><div class="card"><span>轉蛋/美容池</span><b>0 / 0 / 0</b><span>新增 / 修改 / 移除</span></div></div>
+
+  <h2>摘要數量</h2>
+  <table><thead><tr><th>項目</th><th>更新前</th><th>更新後</th><th>差異</th></tr></thead><tbody><tr><td>怪物</td><td>377</td><td>377</td><td><span class="delta-zero">0</span></td></tr><tr><td>道具</td><td>12968</td><td>12968</td><td><span class="delta-zero">0</span></td></tr><tr><td>任務</td><td>546</td><td>546</td><td><span class="delta-zero">0</span></td></tr><tr><td>技能</td><td>701</td><td>701</td><td><span class="delta-zero">0</span></td></tr><tr><td>地圖</td><td>1070</td><td>1070</td><td><span class="delta-zero">0</span></td></tr><tr><td>掉落列</td><td>10361</td><td>10361</td><td><span class="delta-zero">0</span></td></tr><tr><td>商店/商城來源</td><td>3728</td><td>3728</td><td><span class="delta-zero">0</span></td></tr><tr><td>商城來源</td><td>1008</td><td>1008</td><td><span class="delta-zero">0</span></td></tr><tr><td>道具圖示</td><td>12958</td><td>12958</td><td><span class="delta-zero">0</span></td></tr><tr><td>怪物圖示</td><td>377</td><td>377</td><td><span class="delta-zero">0</span></td></tr><tr><td>技能圖示</td><td>655</td><td>655</td><td><span class="delta-zero">0</span></td></tr><tr><td>地圖渲染圖</td><td>388</td><td>388</td><td><span class="delta-zero">0</span></td></tr></tbody></table>
+
+  <h2>詳細清單</h2>
+  
+    <section>
+      <h3>怪物<span class="badge add">新增 0</span><span class="badge mod">修改 0</span><span class="badge rem">移除 0</span></h3>
+      <div class="diff-grid">
+        <details open><summary>新增</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>修改</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>移除</summary><div class="details-body"><div class="zero">無</div></div></details>
+      </div>
+    </section>
+    
+    <section>
+      <h3>道具<span class="badge add">新增 0</span><span class="badge mod">修改 0</span><span class="badge rem">移除 0</span></h3>
+      <div class="diff-grid">
+        <details open><summary>新增</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>修改</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>移除</summary><div class="details-body"><div class="zero">無</div></div></details>
+      </div>
+    </section>
+    
+    <section>
+      <h3>任務<span class="badge add">新增 0</span><span class="badge mod">修改 0</span><span class="badge rem">移除 0</span></h3>
+      <div class="diff-grid">
+        <details open><summary>新增</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>修改</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>移除</summary><div class="details-body"><div class="zero">無</div></div></details>
+      </div>
+    </section>
+    
+    <section>
+      <h3>地圖<span class="badge add">新增 0</span><span class="badge mod">修改 0</span><span class="badge rem">移除 0</span></h3>
+      <div class="diff-grid">
+        <details open><summary>新增</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>修改</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>移除</summary><div class="details-body"><div class="zero">無</div></div></details>
+      </div>
+    </section>
+    
+    <section>
+      <h3>技能<span class="badge add">新增 0</span><span class="badge mod">修改 0</span><span class="badge rem">移除 0</span></h3>
+      <div class="diff-grid">
+        <details open><summary>新增</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>修改</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>移除</summary><div class="details-body"><div class="zero">無</div></div></details>
+      </div>
+    </section>
+    
+    <section>
+      <h3>轉蛋/美容池<span class="badge add">新增 0</span><span class="badge mod">修改 0</span><span class="badge rem">移除 0</span></h3>
+      <div class="diff-grid">
+        <details open><summary>新增</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>修改</summary><div class="details-body"><div class="zero">無</div></div></details>
+        <details open><summary>移除</summary><div class="details-body"><div class="zero">無</div></div></details>
+      </div>
+    </section>
+    
+
+  <h2>nxdl 套件資訊</h2>
+  <table><tbody>
+    <tr><th>遊戲</th><td>新楓之谷：經典版</td></tr>
+    <tr><th>App ID</th><td>2982@2141</td></tr>
+    <tr><th>Manifest URL</th><td>https://tw-ngm.maplestoryclassic.games.gamania.com/955e603d8db04552a647fe8bd3cf6922</td></tr>
+    <tr><th>Last-Modified</th><td>2026-09-10 17:17:16 GMT+8</td></tr>
+    <tr><th>檔案數</th><td>169</td></tr>
+    <tr><th>總大小</th><td>3375239853 bytes</td></tr>
+  </tbody></table>
+
+  <details open>
+    <summary>目前套件中的 catalog / 重要檔案</summary>
+    <div class="details-body"><ul class="clean"><li class="item"><span class="field">GameAssembly.dll</span></li><li class="item"><span class="field">Maplestory_Classic.exe</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\catalog.bin</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\catalog.hash</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\catalog_json.bin</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\catalog_json.hash</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\w\catalog_1.15.1.bin</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\w\catalog_1.15.1.hash</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\w\json_catalog_1.15.1.bin</span></li><li class="item"><span class="field">Maplestory_Classic_Data\StreamingAssets\aa\w\json_catalog_1.15.1.hash</span></li><li class="item"><span class="field">Maplestory_Classic_Data\il2cpp_data\Metadata\global-metadata.dat</span></li></ul></div>
+  </details>
+
+  <h2>JSON 報告</h2>
+  <p class="meta">同目錄已輸出 JSON：game-data-diff-1.15.0-to-1.15.1.json</p>
+</main>
+</body>
+</html>
