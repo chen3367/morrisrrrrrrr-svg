@@ -1,0 +1,176 @@
+{
+  "title": "遊戲資料 diff：1.15.0 → 1.15.1",
+  "generatedAt": "2026-09-16 10:55:06 GMT+8",
+  "basis": "更新前本地輸出快照 vs nxdl 最新包重建後本地輸出",
+  "nxdl": {
+    "appid": "2982@2141",
+    "game_name": "新楓之谷：經典版",
+    "manifest_url": "https://tw-ngm.maplestoryclassic.games.gamania.com/955e603d8db04552a647fe8bd3cf6922",
+    "last_modified": 1789031836,
+    "files_in_manifest": 169,
+    "files_to_download": 169,
+    "total_size": 3375239853,
+    "last_modified_text": "2026-09-10 17:17:16 GMT+8"
+  },
+  "summaryRows": [
+    {
+      "key": "monsters",
+      "name": "怪物",
+      "before": 377,
+      "after": 377,
+      "delta": 0
+    },
+    {
+      "key": "items",
+      "name": "道具",
+      "before": 12968,
+      "after": 12968,
+      "delta": 0
+    },
+    {
+      "key": "quests",
+      "name": "任務",
+      "before": 546,
+      "after": 546,
+      "delta": 0
+    },
+    {
+      "key": "skills",
+      "name": "技能",
+      "before": 701,
+      "after": 701,
+      "delta": 0
+    },
+    {
+      "key": "maps",
+      "name": "地圖",
+      "before": 1070,
+      "after": 1070,
+      "delta": 0
+    },
+    {
+      "key": "dropRows",
+      "name": "掉落列",
+      "before": 10361,
+      "after": 10361,
+      "delta": 0
+    },
+    {
+      "key": "shopRows",
+      "name": "商店/商城來源",
+      "before": 3728,
+      "after": 3728,
+      "delta": 0
+    },
+    {
+      "key": "cashShopRows",
+      "name": "商城來源",
+      "before": 1008,
+      "after": 1008,
+      "delta": 0
+    },
+    {
+      "key": "itemImages",
+      "name": "道具圖示",
+      "before": 12958,
+      "after": 12958,
+      "delta": 0
+    },
+    {
+      "key": "monsterImages",
+      "name": "怪物圖示",
+      "before": 377,
+      "after": 377,
+      "delta": 0
+    },
+    {
+      "key": "skillImages",
+      "name": "技能圖示",
+      "before": 655,
+      "after": 655,
+      "delta": 0
+    },
+    {
+      "key": "mapRenderedImages",
+      "name": "地圖渲染圖",
+      "before": 388,
+      "after": 388,
+      "delta": 0
+    }
+  ],
+  "datasets": {
+    "monsters": {
+      "title": "怪物",
+      "beforeVersion": "1.15.0",
+      "afterVersion": "1.15.1",
+      "beforeCount": 377,
+      "afterCount": 377,
+      "added": [],
+      "removed": [],
+      "modified": []
+    },
+    "items": {
+      "title": "道具",
+      "beforeVersion": "1.15.0",
+      "afterVersion": "1.15.1",
+      "beforeCount": 12968,
+      "afterCount": 12968,
+      "added": [],
+      "removed": [],
+      "modified": []
+    },
+    "quests": {
+      "title": "任務",
+      "beforeVersion": "1.15.0",
+      "afterVersion": "1.15.1",
+      "beforeCount": 546,
+      "afterCount": 546,
+      "added": [],
+      "removed": [],
+      "modified": []
+    },
+    "maps": {
+      "title": "地圖",
+      "beforeVersion": "1.15.0",
+      "afterVersion": "1.15.1",
+      "beforeCount": 1070,
+      "afterCount": 1070,
+      "added": [],
+      "removed": [],
+      "modified": []
+    },
+    "skills": {
+      "title": "技能",
+      "beforeVersion": "1.15.0",
+      "afterVersion": "1.15.1",
+      "beforeCount": 701,
+      "afterCount": 701,
+      "added": [],
+      "removed": [],
+      "modified": []
+    },
+    "gacha": {
+      "title": "轉蛋/美容池",
+      "beforeVersion": null,
+      "afterVersion": null,
+      "beforeCount": 4,
+      "afterCount": 4,
+      "added": [],
+      "removed": [],
+      "modified": []
+    }
+  },
+  "currentPackageCatalogs": [
+    "GameAssembly.dll",
+    "Maplestory_Classic.exe",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog.bin",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog.hash",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog_json.bin",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\catalog_json.hash",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\catalog_1.15.1.bin",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\catalog_1.15.1.hash",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_catalog_1.15.1.bin",
+    "Maplestory_Classic_Data\\StreamingAssets\\aa\\w\\json_catalog_1.15.1.hash",
+    "Maplestory_Classic_Data\\il2cpp_data\\Metadata\\global-metadata.dat"
+  ]
+}
