@@ -2936,6 +2936,66 @@ h3 {
   display: grid;
   gap: 8px;
 }
+.gachaPetStrategyActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.gachaPetStrategySettings {
+  display: grid;
+  gap: 8px;
+}
+.gachaPetStrategyRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--detail-bg);
+  padding: 7px 8px;
+}
+.gachaPetStrategyIcon {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--mini-border);
+  border-radius: 7px;
+  background: var(--icon-bg);
+  object-fit: contain;
+  padding: 3px;
+}
+.gachaPetStrategyRow strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+.gachaPetMode {
+  display: grid;
+  grid-template-columns: repeat(2, 44px);
+  border: 1px solid var(--mini-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.gachaPetMode button {
+  min-width: 0;
+  min-height: 30px;
+  border: 0;
+  border-right: 1px solid var(--mini-border);
+  background: var(--control-bg);
+  color: var(--muted);
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.gachaPetMode button:last-child {
+  border-right: 0;
+}
+.gachaPetMode button.active {
+  background: var(--accent-soft);
+  color: var(--active-text);
+}
 .gachaTierControl {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 86px;
