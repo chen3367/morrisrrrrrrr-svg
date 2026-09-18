@@ -52,13 +52,19 @@ const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
 const MAP_MATCH_MIN_SCORE = 72;
-const OCR_REGION_PRESETS = {
-  "1920x1080": {
-    lv: { x: 0.145833, y: 0.962037, width: 0.049479, height: 0.037037 },
-    exp: { x: 0.564063, y: 0.963889, width: 0.095833, height: 0.012037 },
-    meso: { x: 0.126042, y: 0.27963, width: 0.1, height: 0.025 },
-  },
-};
+const CURRENT_UI_OCR_REGIONS = Object.freeze({
+  lv: { x: 0.145833, y: 0.962037, width: 0.049479, height: 0.037037 },
+  exp: { x: 0.564063, y: 0.963889, width: 0.095833, height: 0.012037 },
+  meso: { x: 0.126042, y: 0.27963, width: 0.1, height: 0.025 },
+});
+const OCR_REGION_PRESETS = Object.fromEntries([
+  "1366x768",
+  "1920x1080",
+  "2560x1440",
+  "2732x1440",
+  "2732x1536",
+  "3840x2160",
+].map(key => [key, CURRENT_UI_OCR_REGIONS]));
 const OCR_CAPTURE_FRAMES = {
   "1920x1080": {
     captureWidth: 1922,
@@ -1814,19 +1820,21 @@ function mesoCoinMarkerInfo(sourceCanvas, region) {
   const averageY = ys.reduce((sum, value) => sum + value, 0) / ys.length;
   const markerWidth = maxX - minX + 1;
   const markerHeight = maxY - minY + 1;
-  const valid = points.length >= 32
-    && points.length <= 100
-    && markerWidth >= 5
-    && markerWidth <= 14
-    && markerHeight >= 6
-    && markerHeight <= 14
-    && minX >= 2
+  const scaleX = Math.max(0.5, image.width / 192);
+  const scaleY = Math.max(0.5, image.height / 27);
+  const valid = points.length >= 32 * scaleX * scaleY
+    && points.length <= 100 * scaleX * scaleY
+    && markerWidth >= 5 * scaleX
+    && markerWidth <= 14 * scaleX
+    && markerHeight >= 6 * scaleY
+    && markerHeight <= 14 * scaleY
+    && minX >= 2 * scaleX
     && maxX <= Math.round(image.width * 0.13)
-    && minY >= 3
+    && minY >= 3 * scaleY
     && maxY <= Math.round(image.height * 0.86);
   const alignment = Math.max(0, 1.8
-    - Math.abs(averageX - image.width * 0.06) / 5
-    - Math.abs(averageY - image.height * 0.47) / 2.5);
+    - Math.abs(averageX - image.width * 0.06) / (5 * scaleX)
+    - Math.abs(averageY - image.height * 0.47) / (2.5 * scaleY));
   return {
     valid,
     score: valid ? alignment : 0,
@@ -1840,11 +1848,30 @@ function mesoCoinMarkerInfo(sourceCanvas, region) {
   };
 }
 
+function mesoTemplateCanvas(sourceCanvas, region) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 576;
+  canvas.height = 81;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(
+    sourceCanvas,
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
+  return canvas;
+}
+
 function scoreMesoDynamicCandidate(sourceCanvas, candidate) {
   const visualScore = mesoRegionVisualScore(sourceCanvas, candidate.region);
   const coinMarker = mesoCoinMarkerInfo(sourceCanvas, candidate.region);
-  const sampleScale = Math.max(1, typeScale(candidate.region));
-  const rawCanvas = cropRegionCanvas(sourceCanvas, candidate.region, sampleScale);
+  const rawCanvas = mesoTemplateCanvas(sourceCanvas, candidate.region);
   const template = readMesoFromCanvas(mesoOcrCanvas(rawCanvas));
   const meso = coinMarker.valid ? template.meso : null;
   const digitBonus = meso === null || meso === undefined
@@ -2975,7 +3002,9 @@ async function captureFrame(addToTimeline = true) {
   const [lvDetection, expDetection, mesoDetection] = await Promise.all([
     templateLevel.level ? Promise.resolve({ text: "" }) : detectTextFromCanvas(thresholdRegionCanvas(sourceCanvas, lvRegion, "lv", 8)),
     shouldRunExpOcr ? detectTextFromCanvas(el.expCrop) : Promise.resolve({ text: "" }),
-    mesoCandidate ? detectMesoText(mesoOcrCanvas(el.mesoCrop)) : Promise.resolve({ text: "" }),
+    mesoCandidate
+      ? detectMesoText(mesoOcrCanvas(mesoTemplateCanvas(sourceCanvas, mesoCandidate.region)))
+      : Promise.resolve({ text: "" }),
   ]);
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
