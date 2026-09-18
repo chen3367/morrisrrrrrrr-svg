@@ -296,13 +296,33 @@ function visibleTargets() {
   if (!pool) return [];
   const query = norm(state.targetSearch);
   const activeGroups = activePoolGroups(pool);
-  return pool.prizes.filter(prize => {
+  const filtered = pool.prizes.filter(prize => {
     if (activeGroups && !activeGroups.includes(prize.group)) return false;
     if (state.targetGroup && prize.group !== state.targetGroup) return false;
     if (!query) return true;
     const haystack = `${prize.name} ${prize.tier} ${prize.group} ${prize.id}`.toLowerCase();
     return haystack.includes(query);
   });
+  if (!isPetFusionPool(pool) || state.targetGroup) return filtered;
+  const merged = new Map();
+  for (const prize of filtered) {
+    const key = prize.itemId != null ? `item:${prize.itemId}` : `name:${norm(prize.name)}`;
+    const existing = merged.get(key);
+    if (existing) {
+      existing.targetVariants.push(prize);
+    } else {
+      merged.set(key, { ...prize, targetVariants: [prize] });
+    }
+  }
+  return Array.from(merged.values());
+}
+
+function targetSourceSummary(target) {
+  const variants = Array.isArray(target?.targetVariants) ? target.targetVariants : [target];
+  return variants
+    .filter(Boolean)
+    .map(prize => `${prize.group} ${formatPct(Number(prize.chance || 0))}`)
+    .join(" · ");
 }
 
 function primaryPrizes(pool, target = currentTarget()) {
@@ -864,7 +884,7 @@ function renderTargets() {
         ${prizeIconHtml(target, iconClassForPrize(target, "simPickerIcon gachaPrizePickerIcon"))}
         <span class="simPickerText">
           <strong>${escapeHtml(target.name)}${state.showIds ? ` · ${escapeHtml(target.id)}` : ""}</strong>
-          <span>${escapeHtml(target.group)} · ${formatPct(Number(target.chance || 0))}</span>
+          <span>${escapeHtml(targetSourceSummary(target))}</span>
         </span>
         <span class="simPickerBadge">${escapeHtml(target.tier)}</span>
       </button>
