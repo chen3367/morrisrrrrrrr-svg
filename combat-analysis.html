@@ -38,7 +38,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260918191311" />
+  <link rel="stylesheet" href="./styles.css?v=20260918195926" />
   <style>
     .combatAnalysisPage {
       min-height: calc(100vh - var(--header-height, 124px));
@@ -612,7 +612,7 @@
           <button class="combatButtonSecondary" type="button" id="resetSnapshotsButton">重設紀錄</button>
           <div class="combatStatus" id="ocrStatus"></div>
           <p class="combatHint">分享遊戲視窗後，頁面會在本機擷取 EXP 與楓幣區塊；背包開啟時才能讀到道具欄楓幣。</p>
-          <p class="combatHint">偵測楓幣前，請開啟道具欄並把道具欄貼齊畫面四個角落其中之一；未開啟時 EXP 仍可分析，但楓幣可能讀不到。</p>
+          <p class="combatHint">偵測楓幣前只需開啟道具欄，頁面會自動尋找楓幣位置；未開啟時 EXP 仍可分析，但楓幣可能讀不到。</p>
         </section>
 
         <section class="combatSection">
@@ -620,13 +620,7 @@
           <label class="combatField">辨識解析度
             <select id="ocrResolutionSelect">
               <option value="auto">自動偵測</option>
-              <option value="1366x768">1366x768</option>
-              <option value="1920x1080">1920x1080（舊版介面）</option>
-              <option value="1920x1080-current">1920x1080（目前介面）</option>
-              <option value="2560x1440">2560x1440</option>
-              <option value="2732x1440">2732x1440</option>
-              <option value="2732x1536">2732x1536</option>
-              <option value="3840x2160">3840x2160</option>
+              <option value="1920x1080">1920x1080</option>
             </select>
           </label>
           <div class="combatCropGrid">
@@ -693,8 +687,8 @@
     </div>
   </main>
 
-  <script src="./maps-data.js?v=20260918191311"></script>
-  <script src="./combat-analysis-data.js?v=20260918191311"></script>
-  <script src="./combat-analysis.js?v=20260918191311"></script>
+  <script src="./maps-data.js?v=20260918195926"></script>
+  <script src="./combat-analysis-data.js?v=20260918195926"></script>
+  <script src="./combat-analysis.js?v=20260918195926"></script>
 </body>
 </html>

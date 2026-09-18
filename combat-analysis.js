@@ -53,44 +53,14 @@ const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
 const MAP_MATCH_MIN_SCORE = 72;
 const OCR_REGION_PRESETS = {
-  "1366x768": {
-    lv: { x: 0.211973, y: 0.96, width: 0.051542, height: 0.038541 },
-    exp: { x: 0.528913, y: 0.955321, width: 0.090558, height: 0.017685 },
-    meso: { x: 0.848105, y: 0.394967, width: 0.112695, height: 0.030088 },
-  },
   "1920x1080": {
-    lv: { x: 0.295238, y: 0.96875, width: 0.036366, height: 0.03125 },
-    exp: { x: 0.519505, y: 0.968093, width: 0.064862, height: 0.013179 },
-    meso: { x: 0.892415, y: 0.283051, width: 0.079214, height: 0.018941 },
-  },
-  "1920x1080-current": {
     lv: { x: 0.145833, y: 0.962037, width: 0.049479, height: 0.037037 },
     exp: { x: 0.564063, y: 0.963889, width: 0.095833, height: 0.012037 },
     meso: { x: 0.126042, y: 0.27963, width: 0.1, height: 0.025 },
   },
-  "2560x1440": {
-    lv: { x: 0.210742, y: 0.96, width: 0.052362, height: 0.034895 },
-    exp: { x: 0.529064, y: 0.959139, width: 0.090317, height: 0.015446 },
-    meso: { x: 0.848442, y: 0.397155, width: 0.110875, height: 0.024178 },
-  },
-  "2732x1440": {
-    lv: { x: 0.227149, y: 0.959786, width: 0.052363, height: 0.039222 },
-    exp: { x: 0.526452, y: 0.958579, width: 0.086042, height: 0.015653 },
-    meso: { x: 0.857949, y: 0.39307, width: 0.103671, height: 0.032763 },
-  },
-  "2732x1536": {
-    lv: { x: 0.227149, y: 0.959786, width: 0.052363, height: 0.039222 },
-    exp: { x: 0.526452, y: 0.958579, width: 0.086042, height: 0.015653 },
-    meso: { x: 0.857949, y: 0.369792, width: 0.103671, height: 0.032763 },
-  },
-  "3840x2160": {
-    lv: { x: 0.304671, y: 0.970209, width: 0.038418, height: 0.029791 },
-    exp: { x: 0.518695, y: 0.971186, width: 0.060811, height: 0.011738 },
-    meso: { x: 0.898966, y: 0.265834, width: 0.073318, height: 0.017707 },
-  },
 };
 const OCR_CAPTURE_FRAMES = {
-  "1920x1080-current": {
+  "1920x1080": {
     captureWidth: 1922,
     captureHeight: 1108,
     x: 1,
@@ -1593,61 +1563,145 @@ function jobNameRegionCandidates(width, height) {
   return candidates;
 }
 
-function mesoCornerCandidateRects(width, height) {
-  const preset = selectedRegionPreset(width, height);
-  const frame = preset?.frame || defaultFrame(width, height);
-  const candidates = [];
-  const seen = new Set();
-  const addCandidate = (key, label, region) => {
-    const rect = {
-      x: clamp(Math.round(region.x), 0, Math.max(0, width - region.width)),
-      y: clamp(Math.round(region.y), 0, Math.max(0, height - region.height)),
-      width: Math.max(1, Math.round(region.width)),
-      height: Math.max(1, Math.round(region.height)),
-    };
-    const dedupeKey = `${Math.round(rect.x / 3)}:${Math.round(rect.y / 3)}:${Math.round(rect.width / 3)}:${Math.round(rect.height / 3)}`;
-    if (seen.has(dedupeKey)) return;
-    seen.add(dedupeKey);
-    candidates.push({ key, label, region: rect });
-  };
-
-  const baseRects = [];
-  const addBase = (key, region) => {
-    if (!region) return;
-    const rect = regionToRect(region, width, height, frame);
-    if (rect.width < 40 || rect.height < 12) return;
-    baseRects.push({ key, rect });
-  };
-  addBase(preset?.key || "selected", preset?.regions?.meso);
-  for (const [key, row] of Object.entries(OCR_REGION_PRESETS)) {
-    addBase(`preset-${key}`, row.meso);
-  }
-
-  for (const { key, rect: base } of baseRects) {
-    addCandidate(`${key}-direct`, "推估", base);
-    const mesoTopOffset = Math.max(0, base.y - frame.y);
-    const mesoLeftOffset = Math.max(2, Math.round(base.height * 0.16));
-    const inventoryWidth = Math.min(frame.width, Math.max(base.width, Math.round(base.width * 1.38)));
-    const inventoryHeight = Math.min(frame.height, Math.max(base.height, Math.round(mesoTopOffset + base.height * 2.35)));
-    const topY = frame.y + mesoTopOffset;
-    const bottomY = frame.y + frame.height - inventoryHeight + mesoTopOffset;
-    const leftX = frame.x + mesoLeftOffset;
-    const rightX = frame.x + frame.width - inventoryWidth + mesoLeftOffset;
-    const makeRect = (x, y) => ({
-      x: clamp(Math.round(x), 0, Math.max(0, width - base.width)),
-      y: clamp(Math.round(y), 0, Math.max(0, height - base.height)),
-      width: base.width,
-      height: base.height,
-    });
-    const bottomOffsets = [0, Math.round(base.height * 0.45), Math.round(base.height * 0.9), Math.round(base.height * 1.35)];
-    addCandidate(`${key}-top-left`, "左上", makeRect(leftX, topY));
-    addCandidate(`${key}-top-right`, "右上", makeRect(rightX, topY));
-    for (const offset of bottomOffsets) {
-      addCandidate(`${key}-bottom-left-${offset}`, "左下", makeRect(leftX, bottomY + offset));
-      addCandidate(`${key}-bottom-right-${offset}`, "右下", makeRect(rightX, bottomY + offset));
+function buildMesoFeatureMap(sourceCanvas, frame) {
+  const source = sourceCanvas.getContext("2d", { willReadFrequently: true }).getImageData(
+    frame.x,
+    frame.y,
+    frame.width,
+    frame.height,
+  );
+  const stride = source.width + 1;
+  const size = stride * (source.height + 1);
+  const gold = new Uint32Array(size);
+  const white = new Uint32Array(size);
+  const dark = new Uint32Array(size);
+  const blue = new Uint32Array(size);
+  for (let y = 1; y <= source.height; y += 1) {
+    let goldRow = 0;
+    let whiteRow = 0;
+    let darkRow = 0;
+    let blueRow = 0;
+    for (let x = 1; x <= source.width; x += 1) {
+      const sourceIndex = ((y - 1) * source.width + x - 1) * 4;
+      const r = source.data[sourceIndex];
+      const g = source.data[sourceIndex + 1];
+      const b = source.data[sourceIndex + 2];
+      const brightness = (r + g + b) / 3;
+      const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+      goldRow += r > 170 && g > 110 && g < 230 && b < 110 && saturation > 70 ? 1 : 0;
+      whiteRow += r > 205 && g > 215 && b > 220 && saturation < 70 ? 1 : 0;
+      darkRow += brightness < 95 && saturation < 110 ? 1 : 0;
+      blueRow += b > 125 && g > 100 && r < 170 && saturation > 30 ? 1 : 0;
+      const targetIndex = y * stride + x;
+      const aboveIndex = targetIndex - stride;
+      gold[targetIndex] = gold[aboveIndex] + goldRow;
+      white[targetIndex] = white[aboveIndex] + whiteRow;
+      dark[targetIndex] = dark[aboveIndex] + darkRow;
+      blue[targetIndex] = blue[aboveIndex] + blueRow;
     }
   }
-  return candidates;
+  return { frame, width: source.width, height: source.height, stride, gold, white, dark, blue };
+}
+
+function mesoFeatureSum(featureMap, channel, x, y, width, height) {
+  const left = clamp(Math.round(x - featureMap.frame.x), 0, featureMap.width);
+  const top = clamp(Math.round(y - featureMap.frame.y), 0, featureMap.height);
+  const right = clamp(left + Math.max(1, Math.round(width)), 0, featureMap.width);
+  const bottom = clamp(top + Math.max(1, Math.round(height)), 0, featureMap.height);
+  const values = featureMap[channel];
+  const stride = featureMap.stride;
+  return values[bottom * stride + right]
+    - values[top * stride + right]
+    - values[bottom * stride + left]
+    + values[top * stride + left];
+}
+
+function mesoFeatureScore(featureMap, region) {
+  const leftWidth = Math.max(1, Math.round(region.width * 0.17));
+  const coinX = region.x + Math.round(region.width * 0.025);
+  const coinY = region.y + Math.round(region.height * 0.2);
+  const coinWidth = Math.max(1, Math.round(region.width * 0.07));
+  const coinHeight = Math.max(1, Math.round(region.height * 0.62));
+  const fieldX = region.x + Math.round(region.width * 0.16);
+  const fieldY = region.y + Math.round(region.height * 0.12);
+  const fieldWidth = Math.max(1, Math.round(region.width * 0.66));
+  const fieldHeight = Math.max(1, Math.round(region.height * 0.76));
+  const goldRatio = mesoFeatureSum(featureMap, "gold", region.x, region.y, leftWidth, region.height)
+    / Math.max(1, leftWidth * region.height);
+  const coinRatio = mesoFeatureSum(featureMap, "gold", coinX, coinY, coinWidth, coinHeight)
+    / Math.max(1, coinWidth * coinHeight);
+  const whiteRatio = mesoFeatureSum(featureMap, "white", fieldX, fieldY, fieldWidth, fieldHeight)
+    / Math.max(1, fieldWidth * fieldHeight);
+  const darkRatio = mesoFeatureSum(featureMap, "dark", fieldX, fieldY, fieldWidth, fieldHeight)
+    / Math.max(1, fieldWidth * fieldHeight);
+  const blueRatio = mesoFeatureSum(featureMap, "blue", region.x, region.y, region.width, region.height)
+    / Math.max(1, region.width * region.height);
+  return coinRatio * 4.6
+    + goldRatio * 0.7
+    + whiteRatio * 1.5
+    + Math.min(1, darkRatio * 14) * 1.8
+    + Math.min(1, blueRatio * 10) * 0.45;
+}
+
+function mesoDynamicCandidateRects(sourceCanvas) {
+  const preset = selectedRegionPreset(sourceCanvas.width, sourceCanvas.height);
+  const frame = preset?.frame || defaultFrame(sourceCanvas.width, sourceCanvas.height);
+  const base = regionToRect(preset?.regions?.meso, sourceCanvas.width, sourceCanvas.height, frame);
+  if (!base || base.width < 40 || base.height < 12) return [];
+  const featureMap = buildMesoFeatureMap(sourceCanvas, frame);
+  const stepX = Math.max(6, Math.round(base.width * 0.05));
+  const stepY = Math.max(3, Math.round(base.height * 0.18));
+  const coarse = [];
+  const maxX = frame.x + frame.width - base.width;
+  const maxY = frame.y + frame.height - base.height;
+  for (let y = frame.y; y <= maxY; y += stepY) {
+    for (let x = frame.x; x <= maxX; x += stepX) {
+      const region = { x, y, width: base.width, height: base.height };
+      const featureScore = mesoFeatureScore(featureMap, region);
+      if (featureScore >= 0.9) coarse.push({ region, featureScore });
+    }
+  }
+  coarse.sort((a, b) => b.featureScore - a.featureScore);
+
+  const anchors = [];
+  const separationX = Math.round(base.width * 0.45);
+  const separationY = Math.round(base.height * 2);
+  for (const candidate of coarse) {
+    const overlapsAnchor = anchors.some(anchor => (
+      Math.abs(anchor.region.x - candidate.region.x) < separationX
+      && Math.abs(anchor.region.y - candidate.region.y) < separationY
+    ));
+    if (overlapsAnchor) continue;
+    anchors.push(candidate);
+    if (anchors.length >= 30) break;
+  }
+
+  const refined = [];
+  const seen = new Set();
+  for (const candidate of anchors) {
+    for (let dy = -stepY * 3; dy <= stepY * 3; dy += 1) {
+      let bestAtY = null;
+      for (let dx = -stepX * 2; dx <= stepX * 2; dx += 1) {
+        const x = clamp(candidate.region.x + dx, frame.x, maxX);
+        const y = clamp(candidate.region.y + dy, frame.y, maxY);
+        const region = { x, y, width: base.width, height: base.height };
+        const row = {
+          key: "",
+          label: "動態偵測",
+          region,
+          featureScore: mesoFeatureScore(featureMap, region),
+        };
+        if (!bestAtY || row.featureScore > bestAtY.featureScore) bestAtY = row;
+      }
+      if (!bestAtY || bestAtY.featureScore < 1.4) continue;
+      const key = `${bestAtY.region.x}:${bestAtY.region.y}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      bestAtY.key = `dynamic-${key}`;
+      refined.push(bestAtY);
+    }
+  }
+  return refined.sort((a, b) => b.featureScore - a.featureScore);
 }
 
 function regionImageData(sourceCanvas, region) {
@@ -1689,6 +1743,7 @@ function jobRegionVisualScore(sourceCanvas, region) {
 function mesoRegionVisualScore(sourceCanvas, region) {
   const image = regionImageData(sourceCanvas, region);
   let gold = 0;
+  let coinGold = 0;
   let whiteField = 0;
   let darkDigits = 0;
   let blueChrome = 0;
@@ -1709,6 +1764,10 @@ function mesoRegionVisualScore(sourceCanvas, region) {
         leftTotal += 1;
         if (r > 170 && g > 110 && g < 230 && b < 110 && saturation > 70) gold += 1;
       }
+      if (nx > 0.025 && nx < 0.095 && ny > 0.2 && ny < 0.82
+        && r > 170 && g > 110 && g < 230 && b < 110 && saturation > 70) {
+        coinGold += 1;
+      }
       if (nx > 0.16 && nx < 0.82 && ny > 0.12 && ny < 0.88) {
         fieldTotal += 1;
         if (r > 205 && g > 215 && b > 220 && saturation < 70) whiteField += 1;
@@ -1718,28 +1777,84 @@ function mesoRegionVisualScore(sourceCanvas, region) {
     }
   }
   const goldRatio = leftTotal ? gold / leftTotal : 0;
+  const coinTotal = Math.max(1, Math.round(image.width * 0.07) * Math.round(image.height * 0.62));
+  const coinRatio = coinGold / coinTotal;
   const whiteRatio = fieldTotal ? whiteField / fieldTotal : 0;
   const darkRatio = fieldTotal ? darkDigits / fieldTotal : 0;
   const blueRatio = total ? blueChrome / total : 0;
-  return goldRatio * 2.4
+  return coinRatio * 4.6
+    + goldRatio * 0.7
     + whiteRatio * 1.5
     + Math.min(1, darkRatio * 14) * 1.8
     + Math.min(1, blueRatio * 10) * 0.45;
 }
 
-function scoreMesoCornerCandidate(sourceCanvas, candidate) {
+function mesoCoinMarkerInfo(sourceCanvas, region) {
+  const image = regionImageData(sourceCanvas, region);
+  const points = [];
+  const scanWidth = Math.max(1, Math.round(image.width * 0.17));
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < scanWidth; x += 1) {
+      const index = (y * image.width + x) * 4;
+      const r = image.data[index];
+      const g = image.data[index + 1];
+      const b = image.data[index + 2];
+      const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+      if (r > 170 && g > 110 && g < 230 && b < 110 && saturation > 70) points.push({ x, y });
+    }
+  }
+  if (!points.length) return { valid: false, score: 0, count: 0 };
+  const xs = points.map(point => point.x);
+  const ys = points.map(point => point.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const averageX = xs.reduce((sum, value) => sum + value, 0) / xs.length;
+  const averageY = ys.reduce((sum, value) => sum + value, 0) / ys.length;
+  const markerWidth = maxX - minX + 1;
+  const markerHeight = maxY - minY + 1;
+  const valid = points.length >= 32
+    && points.length <= 100
+    && markerWidth >= 5
+    && markerWidth <= 14
+    && markerHeight >= 6
+    && markerHeight <= 14
+    && minX >= 2
+    && maxX <= Math.round(image.width * 0.13)
+    && minY >= 3
+    && maxY <= Math.round(image.height * 0.86);
+  const alignment = Math.max(0, 1.8
+    - Math.abs(averageX - image.width * 0.06) / 5
+    - Math.abs(averageY - image.height * 0.47) / 2.5);
+  return {
+    valid,
+    score: valid ? alignment : 0,
+    count: points.length,
+    minX,
+    maxX,
+    minY,
+    maxY,
+    averageX,
+    averageY,
+  };
+}
+
+function scoreMesoDynamicCandidate(sourceCanvas, candidate) {
   const visualScore = mesoRegionVisualScore(sourceCanvas, candidate.region);
+  const coinMarker = mesoCoinMarkerInfo(sourceCanvas, candidate.region);
   const sampleScale = Math.max(1, typeScale(candidate.region));
   const rawCanvas = cropRegionCanvas(sourceCanvas, candidate.region, sampleScale);
   const template = readMesoFromCanvas(mesoOcrCanvas(rawCanvas));
-  const meso = template.meso;
+  const meso = coinMarker.valid ? template.meso : null;
   const digitBonus = meso === null || meso === undefined
     ? 0
     : Math.min(2.4, String(meso).length * 0.32);
-  const score = visualScore + digitBonus;
+  const score = visualScore + digitBonus + coinMarker.score;
   return {
     ...candidate,
     meso,
+    coinMarker,
     visualScore,
     score,
     confidence: Math.min(0.98, 0.45 + score / 5),
@@ -1747,14 +1862,16 @@ function scoreMesoCornerCandidate(sourceCanvas, candidate) {
 }
 
 function findMesoRegion(sourceCanvas) {
-  const candidates = mesoCornerCandidateRects(sourceCanvas.width, sourceCanvas.height)
-    .map(candidate => scoreMesoCornerCandidate(sourceCanvas, candidate))
+  const candidates = mesoDynamicCandidateRects(sourceCanvas)
+    .map(candidate => scoreMesoDynamicCandidate(sourceCanvas, candidate))
     .sort((a, b) => b.score - a.score);
-  const best = candidates[0] || null;
+  const best = candidates.find(candidate => candidate.meso !== null && candidate.meso !== undefined) || null;
   if (!best) return null;
-  const hasReliableShape = best.visualScore >= 1.35;
-  const hasReadableValue = best.meso !== null && best.meso !== undefined && best.score >= 1.2;
-  if (!hasReliableShape && !hasReadableValue) {
+  const hasReadableValue = best.meso !== null
+    && best.meso !== undefined
+    && best.visualScore >= 1.2
+    && best.score >= 6.5;
+  if (!hasReadableValue) {
     state.pendingMesoCandidate = {
       found: false,
       best: {
@@ -2835,12 +2952,16 @@ async function captureFrame(addToTimeline = true) {
   const lvRegion = rectFor("lv", sourceCanvas.width, sourceCanvas.height);
   const expRegion = rectFor("exp", sourceCanvas.width, sourceCanvas.height);
   const mesoCandidate = findMesoRegion(sourceCanvas);
-  const mesoRegion = mesoCandidate?.region || rectFor("meso", sourceCanvas.width, sourceCanvas.height);
   const currentMapRegion = mapNameRegion(sourceCanvas.width, sourceCanvas.height);
   const currentJobRegion = jobNameRegion(sourceCanvas.width, sourceCanvas.height);
   drawRegion(sourceCanvas, lvRegion, el.lvCrop);
   drawRegion(sourceCanvas, expRegion, el.expCrop);
-  drawRegion(sourceCanvas, mesoRegion, el.mesoCrop);
+  if (mesoCandidate) {
+    drawRegion(sourceCanvas, mesoCandidate.region, el.mesoCrop);
+  } else {
+    el.mesoCrop.width = 1;
+    el.mesoCrop.height = 1;
+  }
   if (el.mapCrop) drawRegion(sourceCanvas, currentMapRegion, el.mapCrop);
   if (el.jobCrop) drawRegion(sourceCanvas, currentJobRegion, el.jobCrop);
   refreshShareIdentityFromCanvas(sourceCanvas);
@@ -2935,9 +3056,9 @@ async function captureFrame(addToTimeline = true) {
   } else {
     const mesoText = snapshot.meso === null || snapshot.meso === undefined ? "楓幣未讀取" : `楓幣 ${formatNumber(snapshot.meso)}`;
     const mesoNote = mesoResult.reason === "outlier" ? " · 楓幣讀值離群已略過" : "";
-    const mesoCorner = mesoCandidate?.label ? ` · 道具欄${mesoCandidate.label}` : "";
+    const mesoLocation = mesoCandidate?.label ? ` · 道具欄${mesoCandidate.label}` : "";
     const levelNote = levelResult.reused ? "（沿用上一筆）" : "";
-    setStatus(`已讀取 Lv.${snapshot.level}${levelNote} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoCorner}${mesoNote}`);
+    setStatus(`已讀取 Lv.${snapshot.level}${levelNote} · EXP ${formatNumber(snapshot.exp)} · ${mesoText}${mesoLocation}${mesoNote}`);
   }
   if (snapshot && addToTimeline) {
     addSnapshot(snapshot);
