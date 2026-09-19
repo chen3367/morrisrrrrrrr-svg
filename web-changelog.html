@@ -77,13 +77,14 @@
           </div>
         </details>
       </nav>
-      <div class="buildMeta" id="buildMeta">網頁更新 2026-09-18 17:36:27 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
+      <div class="buildMeta" id="buildMeta">網頁更新 2026-09-19 17:37:19 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
     </div>
   </header>
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#cdeb45769"><strong>deb45769</strong><span>2026-09-18</span></a>
+      <a class="patchVersionRow active" href="#cf952570f"><strong>f952570f</strong><span>2026-09-19</span></a>
+      <a class="patchVersionRow" href="#cdeb45769"><strong>deb45769</strong><span>2026-09-18</span></a>
       <a class="patchVersionRow" href="#cbc8f4a4d"><strong>bc8f4a4d</strong><span>2026-09-17</span></a>
       <a class="patchVersionRow" href="#cd25342dd"><strong>d25342dd</strong><span>2026-09-11</span></a>
       <a class="patchVersionRow" href="#ce4443dd"><strong>e4443dd</strong><span>2026-09-11</span></a>
@@ -156,10 +157,20 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>62</strong>
+            <strong>63</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="cf952570f" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/f952570fed851e8d6cea78853737476edd06b1a5">f952570f</a> 戰鬥分析多解析度辨識改善</h3>
+          <ul class="patchChangeList">
+            <li>等級、職業、經驗值與所在地圖改依遊戲 UI prefab 錨點定位，不再只按畫面比例推估辨識區塊。</li>
+            <li>自動偵測與 1366x768、1920x1080、2560x1440、2732x1440、2732x1536、3840x2160 選項皆套用新的精確座標計算。</li>
+            <li>楓幣辨識改用道具欄 prefab 尺寸輔助動態搜尋，不再要求道具欄貼齊畫面角落。</li>
+            <li>1922x1108 等含 Windows 視窗邊框的影片會校正為內層 1920x1080 遊戲畫面後再進行辨識。</li>
+          </ul>
+        </section>
 
         <section id="cdeb45769" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/deb45769682102c7602e84b3c45bb231376c889b">deb45769</a> 寵物獎池道具來源同步</h3>
