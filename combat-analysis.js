@@ -52,19 +52,36 @@ const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
 const MAP_MATCH_MIN_SCORE = 72;
-const CURRENT_UI_OCR_REGIONS = Object.freeze({
-  lv: { x: 0.145833, y: 0.962037, width: 0.049479, height: 0.037037 },
-  exp: { x: 0.564063, y: 0.963889, width: 0.095833, height: 0.012037 },
-  meso: { x: 0.126042, y: 0.27963, width: 0.1, height: 0.025 },
+// Desktop UI prefabs use pixel-sized controls on a centered 1366-wide HUD.
+// Values below come from UIStatusBar, UIMiniMap and UIInventory RectTransforms.
+const DESKTOP_UI_LAYOUT = Object.freeze({
+  viewport: Object.freeze({ width: 1366, height: 768 }),
+  statusBar: Object.freeze({
+    lv: Object.freeze({ x: 3, bottom: 1, width: 95, height: 40 }),
+    job: Object.freeze({ x: 88, bottom: 20, width: 132, height: 20 }),
+    exp: Object.freeze({ x: 806, bottom: 26, width: 184, height: 13 }),
+  }),
+  miniMap: Object.freeze({
+    text: Object.freeze({ x: 35, y: 24, width: 205, height: 44 }),
+  }),
+  inventory: Object.freeze({
+    root: Object.freeze({ width: 212, height: 332 }),
+    mesoRow: Object.freeze({ width: 192, height: 27 }),
+    mesoIcon: Object.freeze({ x: 4, y: 6, width: 16, height: 16 }),
+    mesoField: Object.freeze({ x: 21, y: 6, width: 106, height: 16 }),
+  }),
 });
-const OCR_REGION_PRESETS = Object.fromEntries([
+const OCR_RESOLUTION_KEYS = Object.freeze([
   "1366x768",
   "1920x1080",
   "2560x1440",
   "2732x1440",
   "2732x1536",
   "3840x2160",
-].map(key => [key, CURRENT_UI_OCR_REGIONS]));
+]);
+const OCR_REGION_PRESETS = Object.fromEntries([
+  ...OCR_RESOLUTION_KEYS,
+].map(key => [key, Object.freeze({})]));
 const OCR_CAPTURE_FRAMES = {
   "1920x1080": {
     captureWidth: 1922,
@@ -1171,6 +1188,53 @@ function regionToRect(region, width, height, frame = null) {
   };
 }
 
+function clampRectToCanvas(region, width, height) {
+  const x = clamp(Math.round(region.x), 0, Math.max(0, width - 1));
+  const y = clamp(Math.round(region.y), 0, Math.max(0, height - 1));
+  return {
+    x,
+    y,
+    width: Math.min(Math.max(1, Math.round(region.width)), Math.max(1, width - x)),
+    height: Math.min(Math.max(1, Math.round(region.height)), Math.max(1, height - y)),
+  };
+}
+
+function desktopHudOrigin(frame) {
+  return {
+    x: frame.x + Math.max(0, Math.round((frame.width - DESKTOP_UI_LAYOUT.viewport.width) / 2)),
+    bottom: frame.y + frame.height,
+  };
+}
+
+function desktopUiRect(type, width, height, frame = null) {
+  const gameFrame = frame || defaultFrame(width, height);
+  if (type === "map") {
+    const row = DESKTOP_UI_LAYOUT.miniMap.text;
+    return clampRectToCanvas({
+      x: gameFrame.x + row.x,
+      y: gameFrame.y + row.y,
+      width: row.width,
+      height: row.height,
+    }, width, height);
+  }
+  const row = DESKTOP_UI_LAYOUT.statusBar[type];
+  if (!row) return null;
+  const origin = desktopHudOrigin(gameFrame);
+  return clampRectToCanvas({
+    x: origin.x + row.x,
+    y: origin.bottom - row.bottom - row.height,
+    width: row.width,
+    height: row.height,
+  }, width, height);
+}
+
+function inventoryMesoRowSize() {
+  return {
+    width: DESKTOP_UI_LAYOUT.inventory.mesoRow.width,
+    height: DESKTOP_UI_LAYOUT.inventory.mesoRow.height,
+  };
+}
+
 function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.video?.videoHeight) {
   if (!el.regionPresetStatus) return;
   if (!width || !height) {
@@ -1187,43 +1251,29 @@ function updateRegionPresetStatus(width = el.video?.videoWidth, height = el.vide
   }
   if (preset.forced) {
     el.regionPresetStatus.textContent = preset.adjusted
-      ? `${current} · 手動使用 ${preset.key}，已避開視窗外框`
-      : `${current} · 手動使用 ${preset.key} 辨識區塊`;
+      ? `${current} · 手動使用 ${preset.key}，已避開視窗外框並套用 UI 錨點`
+      : `${current} · 手動使用 ${preset.key} UI 錨點`;
     return;
   }
   el.regionPresetStatus.textContent = preset.adjusted
-    ? `${current} · 自動校正為 ${preset.key} 遊戲畫面`
+    ? `${current} · 自動校正為 ${preset.key} 遊戲畫面並套用 UI 錨點`
     : preset.exact
-    ? `${current} · 使用 ${preset.key} 辨識區塊`
-    : `${current} · 使用最接近的 ${preset.key} 辨識區塊推估`;
+    ? `${current} · 使用 ${preset.key} UI 錨點`
+    : `${current} · 使用最接近的 ${preset.key} 畫面框與 UI 錨點`;
 }
 
 function rectFor(type, width, height) {
   const preset = selectedRegionPreset(width, height);
-  const region = preset?.regions?.[type];
-  if (region) return regionToRect(region, width, height, preset.frame);
-  if (type === "lv") {
-    return {
-      x: Math.round(width * 0.2),
-      y: Math.round(height * 0.94),
-      width: Math.round(width * 0.09),
-      height: Math.round(height * 0.06),
-    };
-  }
-  if (type === "exp") {
-    return {
-      x: Math.round(width * 0.34),
-      y: Math.round(height * 0.895),
-      width: Math.round(width * 0.34),
-      height: Math.round(height * 0.105),
-    };
-  }
+  const anchored = desktopUiRect(type, width, height, preset?.frame);
+  if (anchored) return anchored;
   if (type === "meso") {
+    const frame = preset?.frame || defaultFrame(width, height);
+    const size = inventoryMesoRowSize();
     return {
-      x: Math.round(width * 0.72),
-      y: Math.round(height * 0.015),
-      width: Math.round(width * 0.275),
-      height: Math.round(height * 0.49),
+      x: frame.x,
+      y: frame.y,
+      width: size.width,
+      height: size.height,
     };
   }
   return { x: 0, y: 0, width, height };
@@ -1502,6 +1552,8 @@ function mapNameRegionCandidates(width, height, sourceCanvas = null) {
     candidates.push({ key, label, region: rect });
   };
 
+  addCandidate("prefab-map-text", "小地圖文字", desktopUiRect("map", width, height, frame));
+
   const miniMapText = detectMiniMapTextRegion(sourceCanvas, frame);
   if (miniMapText) {
     addCandidate("minimap-text", "小地圖文字", miniMapText);
@@ -1540,7 +1592,9 @@ function jobRegionFromLevelRect(lvRegion, width, height) {
 }
 
 function jobNameRegion(width, height) {
-  return jobRegionFromLevelRect(rectFor("lv", width, height), width, height);
+  const preset = selectedRegionPreset(width, height);
+  return desktopUiRect("job", width, height, preset?.frame)
+    || jobRegionFromLevelRect(rectFor("lv", width, height), width, height);
 }
 
 function jobNameRegionCandidates(width, height) {
@@ -1559,13 +1613,14 @@ function jobNameRegionCandidates(width, height) {
     candidates.push({ key, label, region: rect });
   };
 
-  addCandidate("selected", "目前", jobNameRegion(width, height));
-  for (const [key, row] of Object.entries(OCR_REGION_PRESETS)) {
-    if (!row.lv) continue;
-    const frame = frameForPreset(key, width, height) || defaultFrame(width, height);
-    const lvRegion = regionToRect(row.lv, width, height, frame);
-    addCandidate(`preset-${key}`, key, jobRegionFromLevelRect(lvRegion, width, height));
-  }
+  const anchored = jobNameRegion(width, height);
+  addCandidate("prefab-job", "狀態列職業", anchored);
+  addCandidate("prefab-job-loose", "狀態列職業", {
+    x: anchored.x - 5,
+    y: anchored.y - 2,
+    width: anchored.width + 12,
+    height: anchored.height + 4,
+  });
   return candidates;
 }
 
@@ -1652,7 +1707,8 @@ function mesoFeatureScore(featureMap, region) {
 function mesoDynamicCandidateRects(sourceCanvas) {
   const preset = selectedRegionPreset(sourceCanvas.width, sourceCanvas.height);
   const frame = preset?.frame || defaultFrame(sourceCanvas.width, sourceCanvas.height);
-  const base = regionToRect(preset?.regions?.meso, sourceCanvas.width, sourceCanvas.height, frame);
+  const mesoSize = inventoryMesoRowSize();
+  const base = { width: mesoSize.width, height: mesoSize.height };
   if (!base || base.width < 40 || base.height < 12) return [];
   const featureMap = buildMesoFeatureMap(sourceCanvas, frame);
   const stepX = Math.max(6, Math.round(base.width * 0.05));
