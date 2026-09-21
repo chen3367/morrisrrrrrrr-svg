@@ -98,6 +98,25 @@
       min-height: 18px;
       color: var(--link);
     }
+    .combatRiskNotice {
+      display: grid;
+      gap: 5px;
+      border: 1px solid var(--danger-border, #b45353);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--danger-bg, rgba(180, 83, 83, 0.12));
+      color: var(--plain-text);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.55;
+    }
+    .combatRiskNotice strong {
+      color: var(--danger-text, #b45353);
+      font-size: 14px;
+    }
+    .combatRiskNotice p {
+      margin: 0;
+    }
     .combatControls {
       position: sticky;
       top: calc(var(--header-height, 124px) + 10px);
@@ -602,6 +621,11 @@
       <aside class="combatPanel combatControls" aria-label="戰鬥分析控制">
         <section class="combatSection">
           <h3>螢幕讀取</h3>
+          <div class="combatRiskNotice" role="note" aria-label="使用風險提醒">
+            <strong>使用風險提醒</strong>
+            <p>本功能會透過瀏覽器螢幕分享與 OCR 讀取遊戲畫面。即使不修改遊戲程式，相關行為仍可能被反作弊系統誤判，造成測謊頻率增加、功能限制、停權或帳號封禁。</p>
+            <p>本站無法控制或保證反作弊系統的判定結果。請自行評估後使用；因使用本功能產生的測謊、帳號限制、停權、封禁或其他損失，本站恕不負責。</p>
+          </div>
           <div class="combatPreview">
             <video id="captureVideo" muted playsinline></video>
           </div>
