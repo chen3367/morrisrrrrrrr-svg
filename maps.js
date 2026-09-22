@@ -164,7 +164,7 @@ const state = {
   showCrossPortals: cookieBool("ms_map_show_cross_portals", cookieBool("ms_map_show_portals", true)),
   showSameMapPortals: cookieBool("ms_map_show_same_map_portals", cookieBool("ms_map_show_portals", true)),
   showTerrainLines: cookieBool("ms_map_show_terrain_lines", true),
-  useRenderedMapMode: false,
+  useRenderedMapMode: true,
   hiddenSpawnKeys: parseCookieSet("ms_map_hidden_spawns"),
   showIds: cookieBool("ms_show_ids"),
   favoriteIds: parseCookieSet("ms_favorite_maps"),

@@ -1593,6 +1593,39 @@ h3 {
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
+.questChain {
+  padding: 16px;
+  border-left: 4px solid var(--accent, #247957);
+}
+.questChainColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 18px;
+}
+.questChainGroup { min-width: 0; }
+.questChainGroup h4, .questDialogueStage h4 { margin: 0 0 10px; font-size: 14px; }
+.questChain .miniLink {
+  border: 1px solid var(--stat-border);
+  background: var(--card-bg);
+  text-decoration: none;
+}
+.questChain .miniLink strong { text-decoration: underline; text-underline-offset: 3px; }
+.questChain .miniLink:hover, .questChain .miniLink:focus-visible {
+  outline: 2px solid var(--accent, #247957);
+  outline-offset: 2px;
+}
+.questDialogueDetails > summary {
+  cursor: pointer;
+  padding: 10px 0;
+  color: var(--plain-text);
+  font-size: 16px;
+}
+.questDialogueDetails > summary span { margin-left: 12px; font-size: 13px; font-weight: 400; }
+.questDialogueStage { padding: 16px 0; border-top: 1px solid var(--stat-border); }
+.questDialogueStage .ringDialogueEntry + .ringDialogueEntry { margin-top: 12px; }
+.questDialogueSection .ringDialogueText { overflow-wrap: anywhere; }
+.questDialogueEmpty { margin: 12px 0; }
+.questDialogueSection { padding: 0 16px; }
 .npcStatCell {
   display: grid;
   align-content: start;
@@ -4534,6 +4567,11 @@ h3 {
   color: var(--plain-text);
   font-size: 13px;
   font-weight: 900;
+}
+.ringNpcLocationNote {
+  grid-column: 1 / -1;
+  line-height: 1.5;
+  font-weight: 400;
 }
 .ringNpcIcon {
   width: 32px;
