@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="使用經典服髮型、臉型與裝備自由搭配角色外觀，預覽動作、表情並匯出紙娃娃圖片。" />
+  <meta name="keywords" content="經典服, 楓之谷經典服, 經典服資料庫, 新楓之谷經典版, MapleStory Classic, 怪物掉落, 道具資料庫, 任務資料庫" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://morrisrrrrrrr-svg.github.io/avatar-maker.html" />
+  <meta property="og:title" content="線上紙娃娃｜楓憶MapleMemory｜新楓之谷：經典版資料庫" />
+  <meta property="og:description" content="使用經典服髮型、臉型與裝備自由搭配角色外觀，預覽動作、表情並匯出紙娃娃圖片。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/avatar-maker.html" />
+  <meta property="og:image" content="https://morrisrrrrrrr-svg.github.io/assets/items/4031456.png" />
+  <meta name="twitter:card" content="summary" />
+  <title>線上紙娃娃｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
+  <link rel="icon" href="data:," />
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("ms-theme") === "dark" ? "dark" : "light";
+        document.documentElement.dataset.theme = savedTheme;
+      } catch (_error) {}
+    })();
+  </script>
+  <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
+  <link rel="stylesheet" href="./styles.css?v=20260922113605" />
+  <style>
+    .avatarPage {
+      min-height: calc(100vh - var(--header-height, 124px));
+      padding: 12px;
+      background: var(--page);
+    }
+    .avatarShell {
+      display: grid;
+      grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+      gap: 12px;
+      max-width: 1680px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    .avatarPanel {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+    .avatarPreviewPanel {
+      position: sticky;
+      top: calc(var(--header-height, 124px) + 10px);
+    }
+    .avatarPanelHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 54px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .avatarPanelHeader h2,
+    .avatarPanelHeader h3 {
+      margin: 0;
+      color: var(--plain-text);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .avatarPanelHeader h2 { font-size: 21px; }
+    .avatarStageWrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+      overflow: hidden;
+      background-color: var(--control-soft);
+    }
+    .avatarStageWrap[data-background="grid"] {
+      background-image:
+        linear-gradient(45deg, rgba(80, 96, 112, 0.12) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(80, 96, 112, 0.12) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(80, 96, 112, 0.12) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(80, 96, 112, 0.12) 75%);
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      background-size: 16px 16px;
+    }
+    .avatarStageWrap[data-background="green"] { background: #dff4e7; }
+    .avatarStageWrap[data-background="blue"] { background: #dcecf8; }
+    #avatarCanvas {
+      display: block;
+      width: min(100%, 480px);
+      height: auto;
+      aspect-ratio: 1;
+      image-rendering: pixelated;
+    }
+    .avatarLoading {
+      position: absolute;
+      inset: auto 12px 12px;
+      min-height: 28px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .avatarLoading:empty { display: none; }
+    .avatarToolbar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+    }
+    .avatarButton,
+    .avatarIconButton,
+    .avatarCategoryButton,
+    .avatarItemCard {
+      border: 1px solid var(--button-border);
+      border-radius: 7px;
+      background: var(--button-bg);
+      color: var(--plain-text);
+      font: inherit;
+      cursor: pointer;
+    }
+    .avatarButton {
+      min-height: 38px;
+      padding: 7px 9px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .avatarButton:hover,
+    .avatarIconButton:hover,
+    .avatarCategoryButton:hover,
+    .avatarItemCard:hover { border-color: var(--green-border); }
+    .avatarButton.primary {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+    .avatarControls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .avatarField {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .avatarField select,
+    .avatarSearch input {
+      min-width: 0;
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--button-border);
+      border-radius: 7px;
+      padding: 7px 9px;
+      background: var(--control-bg);
+      color: var(--plain-text);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .avatarEquipped {
+      border-top: 1px solid var(--line);
+      padding: 12px;
+    }
+    .avatarEquippedHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+    .avatarEquippedHeader strong { color: var(--plain-text); }
+    .avatarEquippedHeader span { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .avatarEquippedList {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+    .avatarEquippedItem {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) 28px;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 6px;
+      background: var(--control-soft);
+    }
+    .avatarEquippedItem img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+    .avatarEquippedItem span { min-width: 0; }
+    .avatarEquippedItem strong,
+    .avatarEquippedItem small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .avatarEquippedItem strong { color: var(--plain-text); font-size: 12px; }
+    .avatarEquippedItem small { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .avatarIconButton {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .avatarBrowser {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      min-height: min(760px, calc(100vh - var(--header-height, 124px) - 24px));
+    }
+    .avatarBrowserTools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .avatarSearch { min-width: 0; }
+    .avatarResultCount {
+      align-self: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .avatarCategories {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: thin;
+    }
+    .avatarCategoryButton {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 6px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .avatarCategoryButton.active {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+    .avatarItemsScroll {
+      overflow: auto;
+      min-height: 0;
+      max-height: calc(100vh - var(--header-height, 124px) - 145px);
+      padding: 10px;
+    }
+    .avatarItemGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+      gap: 8px;
+    }
+    .avatarItemCard {
+      position: relative;
+      display: grid;
+      grid-template-rows: 64px auto auto;
+      justify-items: center;
+      gap: 4px;
+      min-width: 0;
+      min-height: 116px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+    .avatarItemCard.selected {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+    .avatarItemCard img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+    .avatarItemCard strong {
+      width: 100%;
+      overflow: hidden;
+      color: var(--plain-text);
+      font-size: 12px;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .avatarItemCard small { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .avatarEmpty {
+      grid-column: 1 / -1;
+      padding: 40px 12px;
+      color: var(--muted);
+      font-weight: 800;
+      text-align: center;
+    }
+    .avatarLoadMore { display: block; width: min(320px, 100%); margin: 12px auto 2px; }
+    @media (max-width: 900px) {
+      .avatarShell { grid-template-columns: 1fr; }
+      .avatarPreviewPanel { position: static; }
+      .avatarStageWrap { min-height: 330px; }
+      #avatarCanvas { width: min(100%, 390px); }
+      .avatarBrowser { min-height: 680px; }
+      .avatarItemsScroll { max-height: none; }
+    }
+    @media (max-width: 520px) {
+      .avatarPage { padding: 8px; }
+      .avatarToolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .avatarEquippedList { grid-template-columns: 1fr; }
+      .avatarItemGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+      .avatarItemCard { min-height: 108px; padding: 6px 4px; }
+      .avatarItemCard img { width: 58px; height: 58px; }
+    }
+  </style>
+</head>
+<body>
+  <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
+  <header class="appHeader">
+    <div class="titleArea"><h1 class="siteBrandTitle"><img class="siteBrandIcon" src="./assets/items/4031456.png" alt="" loading="lazy" /><span class="siteBrandText"><strong class="siteBrandMain">楓憶MapleMemory</strong><span class="siteBrandSubtitle">新楓之谷：經典版資料庫</span></span></h1>
+      <button id="navDrawerToggle" class="navDrawerToggle" type="button" aria-expanded="false" aria-controls="siteNavigation" aria-label="開啟選單" title="開啟選單">☰</button>
+      <div class="headerActions"><button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button></div></div>
+    <nav class="topNav" aria-label="頁面切換"><a href="./index.html">怪物</a><a href="./items.html">道具</a><a class="active" href="./avatar-maker.html">線上紙娃娃</a></nav>
+    <div class="buildMeta" id="buildMeta"></div>
+  </header>
+
+  <main class="avatarPage">
+    <div class="avatarShell">
+      <section class="avatarPanel avatarPreviewPanel" aria-label="角色預覽">
+        <header class="avatarPanelHeader"><h2>紙娃娃</h2><span class="avatarResultCount" id="avatarVersion"></span></header>
+        <div class="avatarStageWrap" id="avatarStage" data-background="grid">
+          <canvas id="avatarCanvas" width="480" height="480" aria-label="角色預覽圖"></canvas>
+          <div class="avatarLoading" id="avatarStatus" aria-live="polite"></div>
+        </div>
+        <div class="avatarToolbar">
+          <button class="avatarButton" type="button" id="flipAvatar" title="左右翻轉">左右翻轉</button>
+          <button class="avatarButton" type="button" id="randomAvatar">隨機搭配</button>
+          <button class="avatarButton" type="button" id="resetAvatar">重設</button>
+          <button class="avatarButton primary" type="button" id="downloadAvatar">下載 PNG</button>
+        </div>
+        <div class="avatarControls">
+          <label class="avatarField">動作
+            <select id="avatarAction"><option value="stand1">站立</option><option value="walk1">走路</option><option value="alert">警戒</option><option value="jump">跳躍</option></select>
+          </label>
+          <label class="avatarField">表情
+            <select id="avatarExpression"><option value="default">一般</option><option value="smile">微笑</option><option value="angry">生氣</option><option value="cry">哭泣</option><option value="blink">眨眼</option></select>
+          </label>
+          <label class="avatarField">動畫
+            <select id="avatarAnimate"><option value="on">播放</option><option value="off">停止</option></select>
+          </label>
+          <label class="avatarField">背景
+            <select id="avatarBackground"><option value="grid">格線</option><option value="transparent">透明</option><option value="green">綠色</option><option value="blue">藍色</option></select>
+          </label>
+        </div>
+        <div class="avatarEquipped">
+          <div class="avatarEquippedHeader"><strong>目前搭配</strong><span id="equippedCount">0 件</span></div>
+          <div class="avatarEquippedList" id="equippedList"></div>
+        </div>
+      </section>
+
+      <section class="avatarPanel avatarBrowser" aria-label="外觀選擇">
+        <div class="avatarBrowserTools">
+          <label class="avatarSearch"><input id="avatarSearch" type="search" placeholder="搜尋名稱或道具 ID" autocomplete="off" /></label>
+          <span class="avatarResultCount" id="avatarResultCount"></span>
+        </div>
+        <div class="avatarCategories" id="avatarCategories" role="tablist" aria-label="外觀分類"></div>
+        <div class="avatarItemsScroll" id="avatarItemsScroll">
+          <div class="avatarItemGrid" id="avatarItemGrid"></div>
+          <button class="avatarButton avatarLoadMore" type="button" id="avatarLoadMore" hidden>顯示更多</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="./avatar-maker-data.js"></script>
+  <script src="./avatar-maker.js"></script>
+  <script src="./mobile.js?v=20260922113605"></script>
+</body>
+</html>
