@@ -38,7 +38,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20260916103303" />
+  <link rel="stylesheet" href="./styles.css?v=20260921113954" />
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -64,6 +64,7 @@
           <a href="./scroll-simulator.html">卷軸模擬器</a>
           <a href="./damage-calculator.html">戰鬥力計算機</a>
           <a href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./avatar-maker.html">線上紙娃娃</a>
           <a href="./boss-timer.html">Boss 計時器</a>
           <a class="active" href="./gacha-simulator.html">轉蛋模擬器</a>
           </div>
@@ -136,12 +137,30 @@
         <div id="exchangeTierSettings" class="gachaTierSettings"></div>
       </section>
 
+      <section id="petFusionPanel" class="simControlSection gachaPetFusionPanel" hidden>
+        <h2>W寵使用方式</h2>
+        <div class="gachaPetStrategyActions" role="group" aria-label="批次設定 W 寵用途">
+          <button id="keepAllPets" class="toggleButton" type="button">全部保留</button>
+          <button id="useAllPets" class="toggleButton" type="button">全部作為素材</button>
+        </div>
+        <div id="petStrategySettings" class="gachaPetStrategySettings"></div>
+        <label class="gachaCheckField">
+          <input id="autoFusePets" type="checkbox" checked />
+          <span>湊滿 2 隻素材後自動使用月光共鳴石</span>
+        </label>
+      </section>
+
       <section class="simControlSection">
         <h2>抽取模擬</h2>
         <label class="advancedField fullWidthField">
-          <span>單抽成本（楓葉點數）</span>
+          <span id="unitPriceLabel">單抽成本（楓葉點數）</span>
           <input id="unitPrice" type="text" inputmode="numeric" placeholder="楓葉點數" autocomplete="off" />
           <small id="unitPriceHint" class="priceHint"></small>
+        </label>
+        <label id="resonanceStonePriceField" class="advancedField fullWidthField" hidden>
+          <span>月光共鳴石成本（楓幣）</span>
+          <input id="resonanceStonePrice" type="text" inputmode="numeric" placeholder="楓幣" autocomplete="off" />
+          <small id="resonanceStonePriceHint" class="priceHint"></small>
         </label>
         <label class="advancedField fullWidthField">
           <span>抽獎間隔（ms）</span>
@@ -171,8 +190,8 @@
     <section class="detail simulatorDetail gachaDetail" id="gachaDetail"></section>
   </main>
 
-  <script src="./gacha-simulator-data.js?v=20260916103303"></script>
-  <script src="./gacha-simulator.js?v=20260916103303"></script>
-  <script src="./mobile.js?v=20260916103303"></script>
+  <script src="./gacha-simulator-data.js?v=20260921113954"></script>
+  <script src="./gacha-simulator.js?v=20260921113954"></script>
+  <script src="./mobile.js?v=20260921113954"></script>
 </body>
 </html>

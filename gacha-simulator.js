@@ -19,7 +19,10 @@ const state = {
   exchangeTiers: {},
   exchangeValues: {},
   autoOpenExchange: true,
+  petKeepIds: {},
+  autoFusePets: true,
   unitPrice: "",
+  resonanceStonePrice: "",
   autoLimit: 50000,
   drawDelayMs: 0,
   drawing: false,
@@ -33,8 +36,12 @@ function freshSimulation() {
   return {
     draws: 0,
     exchangeDraws: 0,
+    resonanceDraws: 0,
+    resonanceStones: 0,
     hits: 0,
     fragments: 0,
+    petMaterials: {},
+    keptPets: {},
     distribution: {},
     log: [],
   };
@@ -75,7 +82,10 @@ function loadSettings() {
       state.exchangeTiers = saved.exchangeTiers && typeof saved.exchangeTiers === "object" ? saved.exchangeTiers : {};
       state.exchangeValues = saved.exchangeValues && typeof saved.exchangeValues === "object" ? saved.exchangeValues : {};
       state.autoOpenExchange = saved.autoOpenExchange !== false;
+      state.petKeepIds = saved.petKeepIds && typeof saved.petKeepIds === "object" ? saved.petKeepIds : {};
+      state.autoFusePets = saved.autoFusePets !== false;
       state.unitPrice = String(saved.unitPrice || "");
+      state.resonanceStonePrice = String(saved.resonanceStonePrice || "");
       state.autoLimit = positiveInt(saved.autoLimit, 50000);
       state.drawDelayMs = Math.min(5000, positiveInt(saved.drawDelayMs, 0));
     }
@@ -94,7 +104,10 @@ function saveSettings() {
     exchangeTiers: state.exchangeTiers,
     exchangeValues: state.exchangeValues,
     autoOpenExchange: state.autoOpenExchange,
+    petKeepIds: state.petKeepIds,
+    autoFusePets: state.autoFusePets,
     unitPrice: state.unitPrice,
+    resonanceStonePrice: state.resonanceStonePrice,
     autoLimit: state.autoLimit,
     drawDelayMs: state.drawDelayMs,
   }));
@@ -141,7 +154,13 @@ function moneyValue(value) {
 function formatPointCost(value) {
   const raw = String(value ?? "").replace(/[^\d]/g, "");
   if (!raw) return "";
-  return `${formatMoneyInput(raw)} ${GACHA_COST_UNIT}`;
+  return `${formatMoneyInput(raw)} ${currentPool()?.costUnitLabel || GACHA_COST_UNIT}`;
+}
+
+function formatMesoCost(value) {
+  const raw = String(value ?? "").replace(/[^\d]/g, "");
+  if (!raw) return "";
+  return `${formatMoneyInput(raw)} 楓幣`;
 }
 
 function escapeHtml(value) {
@@ -178,6 +197,10 @@ function currentPool() {
 
 function isRoyalPool(pool = currentPool()) {
   return pool?.kind === "royalBeauty" || String(pool?.id || "").startsWith("royal-beauty-");
+}
+
+function isPetFusionPool(pool = currentPool()) {
+  return pool?.kind === "petFusion" || pool?.exchange?.type === "wPetFusion";
 }
 
 function royalCouponLabel() {
@@ -239,6 +262,12 @@ function applyPoolDefaults({ force = false } = {}) {
   if (force || !moneyValue(state.unitPrice)) {
     state.unitPrice = defaultPrice ? String(defaultPrice) : "";
   }
+  const defaultStonePrice = positiveInt(pool.exchange?.defaultStonePrice, 0);
+  if (isPetFusionPool(pool) && (force || !moneyValue(state.resonanceStonePrice))) {
+    state.resonanceStonePrice = defaultStonePrice ? String(defaultStonePrice) : "";
+  } else if (!isPetFusionPool(pool) && force) {
+    state.resonanceStonePrice = "";
+  }
   if (pool.exchange?.enabled) {
     const defaultRequired = positiveInt(pool.exchange.defaultFragmentsRequired, 0);
     if (force || !positiveInt(state.exchangeRequired, 0)) {
@@ -267,13 +296,33 @@ function visibleTargets() {
   if (!pool) return [];
   const query = norm(state.targetSearch);
   const activeGroups = activePoolGroups(pool);
-  return pool.prizes.filter(prize => {
+  const filtered = pool.prizes.filter(prize => {
     if (activeGroups && !activeGroups.includes(prize.group)) return false;
     if (state.targetGroup && prize.group !== state.targetGroup) return false;
     if (!query) return true;
     const haystack = `${prize.name} ${prize.tier} ${prize.group} ${prize.id}`.toLowerCase();
     return haystack.includes(query);
   });
+  if (!isPetFusionPool(pool) || state.targetGroup) return filtered;
+  const merged = new Map();
+  for (const prize of filtered) {
+    const key = prize.itemId != null ? `item:${prize.itemId}` : `name:${norm(prize.name)}`;
+    const existing = merged.get(key);
+    if (existing) {
+      existing.targetVariants.push(prize);
+    } else {
+      merged.set(key, { ...prize, targetVariants: [prize] });
+    }
+  }
+  return Array.from(merged.values());
+}
+
+function targetSourceSummary(target) {
+  const variants = Array.isArray(target?.targetVariants) ? target.targetVariants : [target];
+  return variants
+    .filter(Boolean)
+    .map(prize => `${prize.group} ${formatPct(Number(prize.chance || 0))}`)
+    .join(" · ");
 }
 
 function primaryPrizes(pool, target = currentTarget()) {
@@ -300,6 +349,58 @@ function targetPrizes(pool) {
   return pool.prizes.filter(prize => prize.group === pool.exchange.targetGroup);
 }
 
+function petFusionSourcePrizes(pool = currentPool()) {
+  if (!isPetFusionPool(pool)) return [];
+  return (pool.prizes || []).filter(prize => prize.group === pool.exchange.sourceGroup);
+}
+
+function wonderPetPrizes(pool = currentPool()) {
+  return petFusionSourcePrizes(pool).filter(prize => prize.petClass === "W");
+}
+
+function petStrategyKey(prize) {
+  return String(prize?.itemId || prize?.id || "");
+}
+
+function petShouldKeep(prize) {
+  const key = petStrategyKey(prize);
+  if (Object.prototype.hasOwnProperty.call(state.petKeepIds, key)) return !!state.petKeepIds[key];
+  const defaults = currentPool()?.exchange?.defaultKeepItemIds || [];
+  return defaults.map(String).includes(key);
+}
+
+function petMaterialCount() {
+  return Object.values(state.simulation.petMaterials || {}).reduce((sum, count) => sum + Number(count || 0), 0);
+}
+
+function petInventoryCount(inventory) {
+  return Object.values(inventory || {}).reduce((sum, count) => sum + Number(count || 0), 0);
+}
+
+function addPetInventory(inventory, prize) {
+  const key = petStrategyKey(prize);
+  inventory[key] = (inventory[key] || 0) + 1;
+}
+
+function consumePetMaterials(count) {
+  const consumed = [];
+  const prizes = wonderPetPrizes();
+  for (const prize of prizes) {
+    const key = petStrategyKey(prize);
+    while ((state.simulation.petMaterials[key] || 0) > 0 && consumed.length < count) {
+      state.simulation.petMaterials[key] -= 1;
+      consumed.push(prize);
+    }
+    if (consumed.length >= count) break;
+  }
+  return consumed;
+}
+
+function routeWonderPet(prize) {
+  if (petShouldKeep(prize)) addPetInventory(state.simulation.keptPets, prize);
+  else addPetInventory(state.simulation.petMaterials, prize);
+}
+
 function totalChance(prizes) {
   return prizes.reduce((sum, prize) => sum + Number(prize.chance || 0), 0);
 }
@@ -307,6 +408,36 @@ function totalChance(prizes) {
 function prizeProbability(prize, prizes) {
   const total = totalChance(prizes);
   return total > 0 ? Number(prize?.chance || 0) / total : 0;
+}
+
+function samePrizeItem(left, right) {
+  if (!left || !right) return false;
+  if (left.itemId != null && right.itemId != null) {
+    return String(left.itemId) === String(right.itemId);
+  }
+  return String(left.name || "").trim() === String(right.name || "").trim();
+}
+
+function matchingPrizeProbability(target, prizes) {
+  const total = totalChance(prizes);
+  if (!total) return 0;
+  return prizes.reduce((sum, prize) => (
+    samePrizeItem(prize, target) ? sum + Number(prize.chance || 0) / total : sum
+  ), 0);
+}
+
+function petFusionExpectation(directProbability, materialRate, resonanceProbability, recyclableRate) {
+  const otherResonanceRate = Math.max(0, 1 - resonanceProbability - recyclableRate);
+  const a = directProbability + materialRate;
+  const b = -materialRate;
+  const c = -materialRate * otherResonanceRate;
+  const d = directProbability + materialRate - materialRate * recyclableRate;
+  const determinant = a * d - b * c;
+  if (!(determinant > 0)) return { expectedDraws: 0, expectedResonanceDraws: 0 };
+  return {
+    expectedDraws: (d - b) / determinant,
+    expectedResonanceDraws: (-b * materialRate) / determinant,
+  };
 }
 
 function confidenceDraws(probability, confidence) {
@@ -350,6 +481,57 @@ function expectedFragmentsPerDraw(pool) {
 
 function expectationFor(pool, target) {
   if (!pool || !target) return { mode: "none" };
+  const petFusionPool = isPetFusionPool(pool);
+  const resonanceTargetProbability = petFusionPool ? matchingPrizeProbability(target, targetPrizes(pool)) : 0;
+  const directTargetProbability = petFusionPool ? matchingPrizeProbability(target, petFusionSourcePrizes(pool)) : 0;
+  if (petFusionPool && !state.autoFusePets && resonanceTargetProbability > 0 && directTargetProbability <= 0) {
+    return {
+      mode: "petFusion",
+      chance: resonanceTargetProbability,
+      displayedChance: target.chance,
+      poolTotal: totalChance(targetPrizes(pool)),
+      expectedDraws: 0,
+      materialRate: 0,
+      recyclableRate: 0,
+      directProbability: 0,
+      expectedResonanceDraws: 0,
+      sourceDrawsPerFusion: 0,
+    };
+  }
+  const fusionTarget = petFusionPool && state.autoFusePets && resonanceTargetProbability > 0;
+  if (fusionTarget) {
+    const resonancePool = targetPrizes(pool);
+    const resonanceProbability = matchingPrizeProbability(target, resonancePool);
+    const sourcePool = petFusionSourcePrizes(pool);
+    const sourceTotal = totalChance(sourcePool);
+    const directProbability = matchingPrizeProbability(target, sourcePool);
+    const materialRate = sourceTotal > 0
+      ? sourcePool.reduce((sum, prize) => {
+        if (samePrizeItem(prize, target) || prize.petClass !== "W" || petShouldKeep(prize)) return sum;
+        return sum + Number(prize.chance || 0) / sourceTotal;
+      }, 0)
+      : 0;
+    const resonanceTotal = totalChance(resonancePool);
+    const recyclableRate = resonanceTotal > 0
+      ? resonancePool.reduce((sum, prize) => {
+        if (samePrizeItem(prize, target) || prize.petClass !== "W" || petShouldKeep(prize)) return sum;
+        return sum + Number(prize.chance || 0) / resonanceTotal;
+      }, 0)
+      : 0;
+    const combined = petFusionExpectation(directProbability, materialRate, resonanceProbability, recyclableRate);
+    return {
+      mode: directProbability > 0 ? "petFusionCombined" : "petFusion",
+      chance: resonanceProbability,
+      displayedChance: target.chance,
+      poolTotal: resonanceTotal,
+      expectedDraws: combined.expectedDraws,
+      materialRate,
+      recyclableRate,
+      directProbability,
+      expectedResonanceDraws: combined.expectedResonanceDraws,
+      sourceDrawsPerFusion: materialRate > 0 ? 2 / materialRate : 0,
+    };
+  }
   if (isExchangeTarget(pool, target)) {
     if (!state.autoOpenExchange) {
       return {
@@ -381,7 +563,9 @@ function expectationFor(pool, target) {
     };
   }
   const direct = primaryPrizes(pool, target);
-  const probability = prizeProbability(target, direct);
+  const probability = petFusionPool
+    ? matchingPrizeProbability(target, direct)
+    : prizeProbability(target, direct);
   return {
     mode: "direct",
     chance: probability,
@@ -420,7 +604,7 @@ function currentTimeLabel() {
 }
 
 function isBigPrize(prize) {
-  return ["S", "A", "B"].includes(String(prize?.tier || "").trim().toUpperCase());
+  return prize?.petClass === "P" || ["S", "A", "B"].includes(String(prize?.tier || "").trim().toUpperCase());
 }
 
 function addLog(line) {
@@ -471,6 +655,36 @@ function drawOnce(pool, target, options = {}) {
   const sourcePool = primaryPrizes(pool, target);
   const brightPool = targetPrizes(pool);
   const fragmentsRequired = positiveInt(state.exchangeRequired, 0);
+
+  if (isPetFusionPool(pool)) {
+    const sourcePrize = roll(sourcePool);
+    if (!sourcePrize) return { stopped: false, rolled: false };
+    state.simulation.draws += 1;
+    addDistribution(`${sourcePrize.group} / ${sourcePrize.name}`);
+    addPrizeLog(sourcePrize, prizeProductLabel(pool, sourcePrize));
+    if (sourcePrize.petClass === "W") routeWonderPet(sourcePrize);
+    if (samePrizeItem(sourcePrize, target)) {
+      state.simulation.hits += 1;
+      if (options.untilTarget) return { stopped: true, rolled: true };
+    }
+
+    const materialCount = positiveInt(pool.exchange.materialCount, 2) || 2;
+    while (state.autoFusePets && petMaterialCount() >= materialCount) {
+      consumePetMaterials(materialCount);
+      state.simulation.resonanceDraws += 1;
+      state.simulation.resonanceStones += 1;
+      const resonancePrize = roll(brightPool);
+      if (!resonancePrize) break;
+      addDistribution(`${resonancePrize.group} / ${resonancePrize.name}`);
+      addPrizeLog(resonancePrize, prizeProductLabel(pool, resonancePrize));
+      if (samePrizeItem(resonancePrize, target)) {
+        state.simulation.hits += 1;
+        if (options.untilTarget) return { stopped: true, rolled: true };
+      }
+      if (resonancePrize.petClass === "W") routeWonderPet(resonancePrize);
+    }
+    return { stopped: false, rolled: true };
+  }
 
   if (exchangeTarget && (!state.autoOpenExchange || fragmentsRequired <= 0 || !brightPool.length)) {
     const sourcePrize = roll(sourcePool);
@@ -571,8 +785,16 @@ function syncControls() {
   if (els.targetSelect) els.targetSelect.value = state.targetId;
   if (els.exchangeFragmentsRequired) els.exchangeFragmentsRequired.value = state.exchangeRequired || "";
   if (els.autoOpenExchange) els.autoOpenExchange.checked = state.autoOpenExchange;
+  if (els.autoFusePets) els.autoFusePets.checked = state.autoFusePets;
   if (els.unitPrice) els.unitPrice.value = formatMoneyInput(state.unitPrice);
+  if (els.unitPriceLabel) els.unitPriceLabel.textContent = isPetFusionPool(pool) ? "單盒成本（點數）" : "單抽成本（楓葉點數）";
   if (els.unitPriceHint) els.unitPriceHint.textContent = formatPointCost(state.unitPrice);
+  if (els.resonanceStonePriceField) els.resonanceStonePriceField.hidden = !isPetFusionPool(pool);
+  if (els.resonanceStonePrice) els.resonanceStonePrice.value = formatMoneyInput(state.resonanceStonePrice);
+  if (els.resonanceStonePriceHint) els.resonanceStonePriceHint.textContent = formatMesoCost(state.resonanceStonePrice);
+  if (els.drawOne) els.drawOne.textContent = isPetFusionPool(pool) ? "開 1 個" : "單抽";
+  if (els.drawTen) els.drawTen.textContent = isPetFusionPool(pool) ? "開 10 個" : "10 抽";
+  if (els.drawUntilTarget) els.drawUntilTarget.textContent = isPetFusionPool(pool) ? "開到目標" : "抽到目標";
   if (els.autoLimit) els.autoLimit.value = state.autoLimit;
   if (els.drawDelayMs) els.drawDelayMs.value = state.drawDelayMs || "";
   if (els.stopDraw) els.stopDraw.disabled = !state.drawing;
@@ -662,7 +884,7 @@ function renderTargets() {
         ${prizeIconHtml(target, iconClassForPrize(target, "simPickerIcon gachaPrizePickerIcon"))}
         <span class="simPickerText">
           <strong>${escapeHtml(target.name)}${state.showIds ? ` · ${escapeHtml(target.id)}` : ""}</strong>
-          <span>${escapeHtml(target.group)} · ${formatPct(Number(target.chance || 0))}</span>
+          <span>${escapeHtml(targetSourceSummary(target))}</span>
         </span>
         <span class="simPickerBadge">${escapeHtml(target.tier)}</span>
       </button>
@@ -674,7 +896,7 @@ function renderExchangePanel() {
   const pool = currentPool();
   const panel = els.exchangePanel;
   if (!panel) return;
-  const show = !!pool?.exchange?.enabled;
+  const show = !!pool?.exchange?.enabled && !isPetFusionPool(pool);
   panel.hidden = !show;
   if (!show) return;
   const source = primaryPrizes(pool);
@@ -692,6 +914,29 @@ function renderExchangePanel() {
       </div>
     `).join("");
   }
+}
+
+function renderPetFusionPanel() {
+  const pool = currentPool();
+  const panel = els.petFusionPanel;
+  if (!panel) return;
+  const show = isPetFusionPool(pool);
+  panel.hidden = !show;
+  if (!show || !els.petStrategySettings) return;
+  els.petStrategySettings.innerHTML = wonderPetPrizes(pool).map(prize => {
+    const keep = petShouldKeep(prize);
+    const key = petStrategyKey(prize);
+    return `
+      <div class="gachaPetStrategyRow">
+        ${prizeIconHtml(prize, "gachaPetStrategyIcon")}
+        <strong>${escapeHtml(prize.name)}</strong>
+        <div class="gachaPetMode" role="group" aria-label="${escapeHtml(prize.name)}用途">
+          <button type="button" data-pet-key="${escapeHtml(key)}" data-pet-action="keep" class="${keep ? "active" : ""}" aria-pressed="${String(keep)}">保留</button>
+          <button type="button" data-pet-key="${escapeHtml(key)}" data-pet-action="material" class="${keep ? "" : "active"}" aria-pressed="${String(!keep)}">素材</button>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 function statCard(label, value, hint = "") {
@@ -721,28 +966,41 @@ function renderLogEntry(entry) {
 
 function renderExpectation(pool, target, expectation) {
   const unitPrice = moneyValue(state.unitPrice);
+  const resonanceStonePrice = moneyValue(state.resonanceStonePrice);
   if (!target || expectation.mode === "none") {
     return '<div class="emptyState">選擇一個目標獎項後會顯示期望抽數。</div>';
   }
   const cards = [];
   cards.push(statCard("目標獎項", target.name, `${target.group} · ${target.tier}`));
-  if (expectation.mode === "exchange") {
+  if (expectation.mode === "petFusion" || expectation.mode === "petFusionCombined") {
+    if (expectation.mode === "petFusionCombined") {
+      cards.push(statCard("開盒直接命中率", formatPct(expectation.directProbability * 100), "同一道具直接取得也算命中"));
+    }
+    cards.push(statCard("共鳴石命中率", formatPct(expectation.chance * 100), `官方列示 ${formatPct(expectation.displayedChance)}`));
+    cards.push(statCard("每盒素材 W 寵", formatPct(expectation.materialRate * 100), "依目前保留設定"));
+    cards.push(statCard("合成一次期望", expectation.sourceDrawsPerFusion ? `${formatFloat(expectation.sourceDrawsPerFusion, 1)} 盒` : "沒有素材來源", "需要 2 隻素材 W 寵"));
+    cards.push(statCard("取得目標期望", expectation.expectedDraws ? `${formatFloat(expectation.expectedDraws, 1)} 盒` : "請將 W 寵設為素材", expectation.mode === "petFusionCombined" ? "包含直接開盒與共鳴石合成" : "合成產出的 W 寵可再次作為素材"));
+  } else if (expectation.mode === "exchange") {
     cards.push(statCard("璀璨彗星單抽命中率", formatPct(expectation.chance * 100), `官方列示 ${formatPct(expectation.displayedChance)}`));
     cards.push(statCard("每抽期望碎片", formatFloat(expectation.fragmentRate, 3), `${pool.exchange.fragmentName}`));
     cards.push(statCard("兌換一次期望抽數", expectation.sourceDrawsPerBright ? formatFloat(expectation.sourceDrawsPerBright, 1) : "請輸入碎片數", pool.exchange.targetGroup));
     cards.push(statCard("抽中目標期望", expectation.expectedDraws ? `${formatFloat(expectation.expectedDraws, 1)} 抽` : "請輸入碎片數", drawCurrencyLabel(pool)));
   } else {
+    const drawUnit = isPetFusionPool(pool) ? "盒" : "抽";
     const hint = Math.abs(expectation.poolTotal - 100) > 0.15
       ? `官方列示 ${formatPct(expectation.displayedChance)}，本池加總 ${formatPct(expectation.poolTotal)}`
       : `官方列示 ${formatPct(expectation.displayedChance)}`;
     cards.push(statCard("命中率", formatPct(expectation.chance * 100), hint));
-    cards.push(statCard("期望抽數", expectation.expectedDraws ? `${formatFloat(expectation.expectedDraws, 1)} 抽` : "無法計算", drawCurrencyLabel(pool)));
-    cards.push(statCard("50% 抽中", expectation.p50 ? `${formatInt(expectation.p50)} 抽` : "無法計算"));
-    cards.push(statCard("90% 抽中", expectation.p90 ? `${formatInt(expectation.p90)} 抽` : "無法計算"));
-    cards.push(statCard("95% 抽中", expectation.p95 ? `${formatInt(expectation.p95)} 抽` : "無法計算"));
+    cards.push(statCard(isPetFusionPool(pool) ? "期望盒數" : "期望抽數", expectation.expectedDraws ? `${formatFloat(expectation.expectedDraws, 1)} ${drawUnit}` : "無法計算", drawCurrencyLabel(pool)));
+    cards.push(statCard("50% 抽中", expectation.p50 ? `${formatInt(expectation.p50)} ${drawUnit}` : "無法計算"));
+    cards.push(statCard("90% 抽中", expectation.p90 ? `${formatInt(expectation.p90)} ${drawUnit}` : "無法計算"));
+    cards.push(statCard("95% 抽中", expectation.p95 ? `${formatInt(expectation.p95)} ${drawUnit}` : "無法計算"));
   }
   if (unitPrice > 0 && expectation.expectedDraws > 0) {
-    cards.push(statCard("期望成本", formatPointCost(Math.round(expectedCost(expectation.expectedDraws))), "以單抽楓葉點數估算"));
+    cards.push(statCard("音樂盒期望成本", formatPointCost(Math.round(expectedCost(expectation.expectedDraws))), "以單盒楓葉點數估算"));
+  }
+  if ((expectation.mode === "petFusion" || expectation.mode === "petFusionCombined") && resonanceStonePrice > 0 && expectation.expectedResonanceDraws > 0) {
+    cards.push(statCard("共鳴石期望成本", formatMesoCost(Math.round(expectation.expectedResonanceDraws * resonanceStonePrice)), `約 ${formatFloat(expectation.expectedResonanceDraws, 1)} 顆`));
   }
   return `<div class="gachaStatsGrid">${cards.join("")}</div>`;
 }
@@ -751,6 +1009,7 @@ function renderSimulation(pool, target, expectation) {
   const sim = state.simulation;
   const totalOutcomes = Object.values(sim.distribution).reduce((sum, count) => sum + count, 0);
   const unitPrice = moneyValue(state.unitPrice);
+  const resonanceStonePrice = moneyValue(state.resonanceStonePrice);
   const rows = Object.entries(sim.distribution)
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-Hant"))
     .slice(0, 80)
@@ -768,10 +1027,13 @@ function renderSimulation(pool, target, expectation) {
         <span>${escapeHtml(target?.name || "")}</span>
       </div>
       <div class="gachaStatsGrid">
-        ${statCard("已抽次數", `${formatInt(sim.draws)} 抽`, drawCurrencyLabel(pool))}
-        ${statCard("命中次數", `${formatInt(sim.hits)} 次`, sim.hits ? `平均 ${formatFloat(sim.draws / sim.hits, 1)} 抽 / 次` : "尚未命中")}
-        ${pool?.exchange?.enabled ? statCard("璀璨彗星", `${formatInt(sim.exchangeDraws)} 抽`, `${pool.exchange.fragmentName}剩餘 ${formatInt(sim.fragments)}`) : ""}
-        ${unitPrice > 0 ? statCard("累計成本", formatPointCost(sim.draws * unitPrice), "依單抽楓葉點數計算") : ""}
+        ${statCard(isPetFusionPool(pool) ? "已開啟" : "已抽次數", `${formatInt(sim.draws)} ${isPetFusionPool(pool) ? "個" : "抽"}`, drawCurrencyLabel(pool))}
+        ${statCard("命中次數", `${formatInt(sim.hits)} 次`, sim.hits ? `平均 ${formatFloat(sim.draws / sim.hits, 1)} ${isPetFusionPool(pool) ? "盒" : "抽"} / 次` : "尚未命中")}
+        ${isPetFusionPool(pool) ? statCard("月光共鳴石", `${formatInt(sim.resonanceStones)} 顆`, `${formatInt(sim.resonanceDraws)} 次合成`) : ""}
+        ${isPetFusionPool(pool) ? statCard("W寵庫存", `${formatInt(petMaterialCount())} 隻素材`, `${formatInt(petInventoryCount(sim.keptPets))} 隻保留`) : ""}
+        ${pool?.exchange?.enabled && !isPetFusionPool(pool) ? statCard("璀璨彗星", `${formatInt(sim.exchangeDraws)} 抽`, `${pool.exchange.fragmentName}剩餘 ${formatInt(sim.fragments)}`) : ""}
+        ${unitPrice > 0 ? statCard(isPetFusionPool(pool) ? "音樂盒成本" : "累計成本", formatPointCost(sim.draws * unitPrice), isPetFusionPool(pool) ? "依單盒楓葉點數計算" : "依單抽楓葉點數計算") : ""}
+        ${isPetFusionPool(pool) && resonanceStonePrice > 0 ? statCard("共鳴石成本", formatMesoCost(sim.resonanceStones * resonanceStonePrice), `${formatInt(sim.resonanceStones)} 顆`) : ""}
       </div>
       <div class="gachaSplitGrid">
         <div class="gachaSubPanel">
@@ -827,7 +1089,10 @@ function renderPrizePool(pool, target) {
     <section class="gachaPanel">
       <div class="gachaPanelHeader">
         <h2>獎池機率</h2>
-        <a href="${escapeHtml(pool.sourceUrl)}" target="_blank" rel="noopener">官方公告</a>
+        <span>
+          <a href="${escapeHtml(pool.sourceUrl)}" target="_blank" rel="noopener">${isPetFusionPool(pool) ? "音樂盒公告" : "官方公告"}</a>
+          ${pool.secondarySourceUrl ? ` · <a href="${escapeHtml(pool.secondarySourceUrl)}" target="_blank" rel="noopener">共鳴石公告</a>` : ""}
+        </span>
       </div>
       ${sections}
     </section>
@@ -852,7 +1117,7 @@ function renderDetail() {
         <img class="monsterPortrait" src="${escapeHtml(pool.icon || "./assets/items/5220000.png")}" alt="" loading="lazy" />
         <div>
           <h2>${escapeHtml(pool.name)}</h2>
-          <p>${escapeHtml(pool.period || "活動期間未標示")} · ${escapeHtml(sourceText)}</p>
+          <p>${escapeHtml(pool.period || "活動期間未標示")} · ${escapeHtml(sourceText)}${pool.priceNote ? ` · ${escapeHtml(pool.priceNote)}` : ""}</p>
         </div>
       </div>
       <div class="monsterStats">
@@ -863,7 +1128,7 @@ function renderDetail() {
     <section class="gachaPanel">
       <div class="gachaPanelHeader">
         <h2>期望值</h2>
-        <span>${expectation.mode === "exchange" ? "含彗星碎片兌換" : "單一獎池計算"}</span>
+        <span>${expectation.mode === "petFusion" || expectation.mode === "petFusionCombined" ? "包含 W 寵素材與共鳴石合成" : expectation.mode === "exchange" ? "含彗星碎片兌換" : "單一獎池計算"}</span>
       </div>
       ${renderExpectation(pool, target, expectation)}
       <p class="gachaFormulaNote">期望抽數以官方公告機率換算；若同一表格機率加總不是 100%，模擬會依公告列示權重正規化。</p>
@@ -897,6 +1162,7 @@ function renderAll() {
   renderGroupFilter();
   renderTargets();
   renderExchangePanel();
+  renderPetFusionPanel();
   syncControls();
   renderDetail();
   scrollGachaLogToBottom();
@@ -915,7 +1181,7 @@ function selectPool(poolId) {
   renderAll();
 }
 
-function updatePriceInput(input, hint, setter) {
+function updatePriceInput(input, hint, setter, hintFormatter = formatPointCost) {
   const before = input.value;
   const selection = input.selectionStart ?? before.length;
   const digitsBeforeCursor = before.slice(0, selection).replace(/[^\d]/g, "").length;
@@ -934,7 +1200,7 @@ function updatePriceInput(input, hint, setter) {
     input.setSelectionRange(nextCursor, nextCursor);
   }
   setter(formatted);
-  if (hint) hint.textContent = formatPointCost(formatted);
+  if (hint) hint.textContent = hintFormatter(formatted);
 }
 
 function bindEvents() {
@@ -1009,10 +1275,39 @@ function bindEvents() {
     renderDetail();
     saveSettings();
   });
+  els.petStrategySettings?.addEventListener("click", event => {
+    const button = event.target.closest("[data-pet-key][data-pet-action]");
+    if (!button) return;
+    state.petKeepIds[button.dataset.petKey] = button.dataset.petAction === "keep";
+    resetSimulation(false);
+    renderAll();
+  });
+  els.keepAllPets?.addEventListener("click", () => {
+    wonderPetPrizes().forEach(prize => { state.petKeepIds[petStrategyKey(prize)] = true; });
+    resetSimulation(false);
+    renderAll();
+  });
+  els.useAllPets?.addEventListener("click", () => {
+    wonderPetPrizes().forEach(prize => { state.petKeepIds[petStrategyKey(prize)] = false; });
+    resetSimulation(false);
+    renderAll();
+  });
+  els.autoFusePets?.addEventListener("change", () => {
+    state.autoFusePets = els.autoFusePets.checked;
+    resetSimulation(false);
+    renderAll();
+  });
   els.unitPrice?.addEventListener("input", () => {
     updatePriceInput(els.unitPrice, els.unitPriceHint, value => {
       state.unitPrice = value;
     });
+    renderDetail();
+    saveSettings();
+  });
+  els.resonanceStonePrice?.addEventListener("input", () => {
+    updatePriceInput(els.resonanceStonePrice, els.resonanceStonePriceHint, value => {
+      state.resonanceStonePrice = value;
+    }, formatMesoCost);
     renderDetail();
     saveSettings();
   });
@@ -1037,12 +1332,15 @@ function bindEvents() {
     state.targetGroup = "";
     state.targetId = "";
     state.unitPrice = "";
+    state.resonanceStonePrice = "";
     state.autoLimit = 50000;
     state.drawDelayMs = 0;
     state.exchangeRequired = 0;
     state.exchangeTiers = {};
     state.exchangeValues = {};
     state.autoOpenExchange = true;
+    state.petKeepIds = {};
+    state.autoFusePets = true;
     applyPoolDefaults({ force: true });
     resetSimulation(false);
     renderAll();
@@ -1076,8 +1374,17 @@ function cacheElements() {
     "exchangeFragmentsRequired",
     "autoOpenExchange",
     "exchangeTierSettings",
+    "petFusionPanel",
+    "petStrategySettings",
+    "keepAllPets",
+    "useAllPets",
+    "autoFusePets",
     "unitPrice",
+    "unitPriceLabel",
     "unitPriceHint",
+    "resonanceStonePriceField",
+    "resonanceStonePrice",
+    "resonanceStonePriceHint",
     "autoLimit",
     "drawDelayMs",
     "drawOne",

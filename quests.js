@@ -430,7 +430,7 @@ function npcLocationText(npc) {
   if (!npc) return "";
   if (state.showUnnamedIndex && npc.locationText) return npc.locationText;
   const maps = state.showUnnamedIndex ? (npc.maps || []) : visibleIndexRows(npc.maps || [], "map");
-  return maps.map(map => map.label || map.name || map.id).filter(Boolean).join("、");
+  return [...new Set(maps.map(map => map.label || map.name || map.id).filter(Boolean))].join("、");
 }
 
 function npcMeta(npc, fallback = "NPC") {
@@ -813,14 +813,15 @@ function renderDetail() {
         <div class="heroCounter"><strong>${formatNumber(totalRewardCount(quest))}</strong><span>獎勵</span></div>
       </div>
     </section>
+    ${renderQuestChain(quest)}
     ${renderQuestTexts(quest)}
+    ${renderQuestDialogues(quest)}
     ${renderQuestMeta(quest)}
     ${renderRequirements("接取條件", quest.startRequirements)}
     ${renderRequirements("完成條件", quest.completeRequirements)}
     ${renderRewards("接取時給予", quest.startRewards)}
     ${renderRewards("完成獎勵", quest.completeRewards, quest.nextQuest)}
     ${renderRefs(quest)}
-    ${renderContinuationQuests(quest)}
   `;
 }
 
@@ -839,6 +840,40 @@ function totalRewardCount(quest) {
   return acts.reduce((sum, act) => {
     return sum + (act.exp ? 1 : 0) + (act.money ? 1 : 0) + (act.pop ? 1 : 0) + (act.nextQuest ? 1 : 0) + visibleIndexRows(act.items || [], "item").filter(item => item.action === "give").length;
   }, 0);
+}
+
+function renderQuestChain(quest) {
+  const previous = visibleIndexRows([
+    ...(quest.startRequirements?.quests || []),
+    ...(quest.completeRequirements?.quests || []).map(row => ({ ...row, requirementStage: "完成條件" })),
+  ], "quest");
+  const next = visibleIndexRows([...(quest.nextQuest ? [quest.nextQuest] : []), ...(quest.dependentQuests || [])], "quest");
+  const unique = rows => [...new Map(rows.map(row => [String(row.id) + ":" + (row.state ?? "") + ":" + (row.requirementStage || ""), row])).values()];
+  const nextById = [...new Map(next.map(row => [String(row.id), row])).values()];
+  const groups = [["前置／關聯條件", unique(previous)], ["後續任務", nextById]];
+  if (!previous.length && !next.length) return "";
+  return `<nav class="sectionBlock questChain" aria-label="任務鏈">
+    <div class="sectionTitle"><h3>任務鏈</h3></div>
+    <div class="questChainColumns">${groups.filter(([, rows]) => rows.length).map(([label, rows]) => `
+      <div class="questChainGroup"><h4>${label}</h4><div class="linkGrid">${rows.map(questLink).join("")}</div></div>
+    `).join("")}</div></nav>`;
+}
+
+function renderQuestDialogues(quest) {
+  const rows = quest.dialogues || [];
+  const stages = [...new Set(rows.map(row => row.stage))];
+  return `<section class="sectionBlock questDialogueSection">
+    <details class="questDialogueDetails">
+      <summary><strong>完整對話腳本</strong><span>${rows.length ? `${formatNumber(rows.length)} 段` : "未提供"}</span></summary>
+      ${rows.length ? stages.map(stage => `<section class="questDialogueStage">
+        <h4>${escapeHtml(stage)}</h4>
+        ${rows.filter(row => row.stage === stage).map(row => `<article class="ringDialogueEntry">
+          <div class="ringDialogueMeta"><strong>${escapeHtml(row.label)}</strong><code>${escapeHtml(row.key)}</code></div>
+          <div class="ringDialogueText">${row.html}</div>
+        </article>`).join("")}
+      </section>`).join("") : '<p class="questDialogueEmpty">本地資料未提供此任務的對話腳本。</p>'}
+    </details>
+  </section>`;
 }
 
 function renderQuestTexts(quest) {
