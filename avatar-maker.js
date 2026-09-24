@@ -4,6 +4,7 @@
   const DB = window.MS_AVATAR_MAKER_DB || { items: [], categories: [] };
   const API = "https://mxdwzapi.dvg.cn";
   const API_QUERY = "region=TMS&version=" + encodeURIComponent("主站") + "&cache=2592000";
+  const LOCAL_APPEARANCES = new Set([34060]);
   const STORAGE_KEY = "maplememory-avatar-maker-v1";
   const PAGE_SIZE = 180;
   const BASE_SKIN = { id: 12000, bodyId: 2000, name: "奶油皮膚", slot: "Skin", category: "skin", image: "./assets/items/12000.png" };
@@ -89,7 +90,10 @@
 
   async function fetchJson(path) {
     if (dataCache.has(path)) return dataCache.get(path);
-    const promise = fetch(apiUrl(`node/json/${path}?force_parse=true&simple=true`))
+    const appearance = path.match(/^Character\/Hair\/(\d+)\.img$/);
+    const local = appearance && LOCAL_APPEARANCES.has(Number(appearance[1]));
+    const url = local ? `./assets/avatar-local/${appearance[1]}.json` : apiUrl(`node/json/${path}?force_parse=true&simple=true`);
+    const promise = fetch(url)
       .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
@@ -110,7 +114,7 @@
       image.onload = () => resolve(image);
       image.onerror = reject;
       const override = Object.values(state.effectOverrides).map(row => row.images?.[outlink]).find(Boolean);
-      image.src = override || apiUrl(`node/image/${outlink}?force_parse=true`);
+      image.src = override || (outlink.startsWith('./assets/avatar-local/') ? outlink : apiUrl(`node/image/${outlink}?force_parse=true`));
     }).catch(error => {
       imageCache.delete(outlink);
       throw error;
