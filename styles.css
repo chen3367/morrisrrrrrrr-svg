@@ -341,6 +341,7 @@ h1 {
 .topNav a[href$="damage-calculator.html"] { --nav-icon: url("./assets/skills/1121002.png"); }
 .topNav a[href$="combat-analysis.html"] { --nav-icon: url("./assets/meso/gold.png"); }
 .topNav a[href$="boss-timer.html"] { --nav-icon: url("./assets/monster_frames/6130101.png"); }
+.topNav a[href$="avatar-maker.html"] { --nav-icon: url("./assets/items/5150040.png"); }
 .topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
 .topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
 .topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
