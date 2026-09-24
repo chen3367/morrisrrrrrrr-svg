@@ -997,7 +997,7 @@ function renderExpectation(pool, target, expectation) {
     cards.push(statCard("95% 抽中", expectation.p95 ? `${formatInt(expectation.p95)} ${drawUnit}` : "無法計算"));
   }
   if (unitPrice > 0 && expectation.expectedDraws > 0) {
-    cards.push(statCard("音樂盒期望成本", formatPointCost(Math.round(expectedCost(expectation.expectedDraws))), "以單盒楓葉點數估算"));
+    cards.push(statCard(isPetFusionPool(pool) ? "音樂盒期望成本" : "期望成本", formatPointCost(Math.round(expectedCost(expectation.expectedDraws))), isPetFusionPool(pool) ? "以單盒楓葉點數估算" : "以單抽楓葉點數估算"));
   }
   if ((expectation.mode === "petFusion" || expectation.mode === "petFusionCombined") && resonanceStonePrice > 0 && expectation.expectedResonanceDraws > 0) {
     cards.push(statCard("共鳴石期望成本", formatMesoCost(Math.round(expectation.expectedResonanceDraws * resonanceStonePrice)), `約 ${formatFloat(expectation.expectedResonanceDraws, 1)} 顆`));

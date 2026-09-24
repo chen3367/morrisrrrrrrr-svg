@@ -4,8 +4,25 @@
   const DB = window.MS_AVATAR_MAKER_DB || { items: [], categories: [] };
   const API = "https://mxdwzapi.dvg.cn";
   const API_QUERY = "region=TMS&version=" + encodeURIComponent("主站") + "&cache=2592000";
+  const LOCAL_APPEARANCES = new Set([34060]);
   const STORAGE_KEY = "maplememory-avatar-maker-v1";
   const PAGE_SIZE = 180;
+  const ACTION_LABELS = {
+    stand1: '站立（單手）', stand2: '站立（雙手）', walk1: '走路（單手）', walk2: '走路（雙手）',
+    alert: '警戒', jump: '跳躍', sit: '坐下', prone: '趴下', proneStab: '趴下攻擊', ladder: '爬梯子', rope: '爬繩子',
+    swingO1: '單手揮擊 1', swingO2: '單手揮擊 2', swingO3: '單手揮擊 3', swingOF: '單手揮擊（終結）',
+    swingT1: '雙手揮擊 1', swingT2: '雙手揮擊 2', swingT3: '雙手揮擊 3', swingTF: '雙手揮擊（終結）',
+    swingP1: '槍矛揮擊 1', swingP2: '槍矛揮擊 2', swingPF: '槍矛揮擊（終結）',
+    stabO1: '單手刺擊／拳套投擲 1', stabO2: '單手刺擊／拳套投擲 2', stabOF: '單手刺擊（終結）',
+    stabT1: '雙手刺擊 1', stabT2: '雙手刺擊 2', stabTF: '雙手刺擊（終結）',
+    shoot1: '弓射擊', shoot2: '弩射擊', shootF: '射擊（終結）', shootB1: '弓射擊 2', shootB2: '弩射擊 2',
+    swingD1: '短刀攻擊 1', swingD2: '短刀攻擊 2', stabD1: '短刀刺擊',
+    swingC1: '組合揮擊 1', swingC2: '組合揮擊 2',
+    swingK1: '指虎攻擊 1', swingK2: '指虎攻擊 2',
+    punch: '揮拳', punch2: '揮拳 2', kick: '踢擊', handgun: '火槍射擊', heal: '施法', fly: '飛行',
+  };
+  const EXPRESSION_LABELS = { default: '一般', blink: '眨眼', hit: '受傷', smile: '微笑', troubled: '困擾', cry: '哭泣', angry: '生氣', bewildered: '困惑', stunned: '暈眩', vomit: '嘔吐', oops: '驚訝', cheers: '歡呼', chu: '親吻', wink: '眨單眼', pain: '疼痛', glitter: '閃亮', despair: '絕望', love: '愛心', shine: '發光', blaze: '怒火', bowing: '鞠躬', dam: '冒汗', hot: '炎熱', hum: '哼唱', qBlue: '藍色表情' };
+  const PET_LABELS = { stand0: '站立', stand1: '站立 2', move: '走路', jump: '跳躍', fly: '飛行', hang: '懸掛', sit: '坐下', rest0: '休息', sleep: '睡覺', eat: '吃東西', food: '食物', hungry: '飢餓', angry: '生氣', cry: '哭泣', love: '愛心', chat: '說話', what: '疑惑', roll: '翻滾', dung: '便便', slang: '抱怨' };
   const BASE_SKIN = { id: 12000, bodyId: 2000, name: "奶油皮膚", slot: "Skin", category: "skin", image: "./assets/items/12000.png" };
   const SLOT_LABELS = Object.fromEntries((DB.categories || []).map(row => [row.key, row.label]));
   Object.assign(SLOT_LABELS, { Skin: "皮膚", Hair: "髮型", Face: "臉型" });
@@ -30,6 +47,10 @@
     random: document.getElementById("randomAvatar"),
     reset: document.getElementById("resetAvatar"),
     download: document.getElementById("downloadAvatar"),
+    petPanel: document.getElementById("avatarPetPreview"),
+    petAction: document.getElementById("avatarPetAction"),
+    petCanvas: document.getElementById("avatarPetCanvas"),
+    petStatus: document.getElementById("avatarPetStatus"),
   };
 
   const itemById = new Map((DB.items || []).map(item => [Number(item.id), item]));
@@ -42,6 +63,8 @@
     visible: PAGE_SIZE,
     selected: { Skin: BASE_SKIN, Hair: defaultHair, Face: defaultFace },
     action: "stand1",
+    petAction: 'stand0',
+    petId: null,
     expression: "default",
     animate: true,
     flip: false,
@@ -79,6 +102,9 @@
   }
 
   function itemPath(item) {
+    if (item.slot === 'Pet') return `Item/Pet/${item.id}.img`;
+    if (item.slot === 'Effect') return `Item/Cash/0501.img/${String(item.id).padStart(8, '0')}`;
+    if (['NameRing', 'ChatRing'].includes(item.slot)) return `Character/Ring/${String(item.id).padStart(8, '0')}.img`;
     const id = String(item.id).padStart(8, "0");
     return `Character/${slotFolder(item)}${id}.img`;
   }
@@ -89,7 +115,10 @@
 
   async function fetchJson(path) {
     if (dataCache.has(path)) return dataCache.get(path);
-    const promise = fetch(apiUrl(`node/json/${path}?force_parse=true&simple=true`))
+    const appearance = path.match(/^Character\/Hair\/(\d+)\.img$/);
+    const local = appearance && LOCAL_APPEARANCES.has(Number(appearance[1]));
+    const url = local ? `./assets/avatar-local/${appearance[1]}.json` : apiUrl(`node/json/${path}?force_parse=true&simple=true`);
+    const promise = fetch(url)
       .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
@@ -110,7 +139,7 @@
       image.onload = () => resolve(image);
       image.onerror = reject;
       const override = Object.values(state.effectOverrides).map(row => row.images?.[outlink]).find(Boolean);
-      image.src = override || apiUrl(`node/image/${outlink}?force_parse=true`);
+      image.src = override || (outlink.startsWith('./assets/avatar-local/') ? outlink : apiUrl(`node/image/${outlink}?force_parse=true`));
     }).catch(error => {
       imageCache.delete(outlink);
       throw error;
@@ -123,7 +152,7 @@
     const actionNode = data?.[action];
     if (!actionNode) return null;
     const keys = Object.keys(actionNode).filter(key => /^\d+$/.test(key)).sort((a, b) => Number(a) - Number(b));
-    return keys.length ? actionNode[keys[frame % keys.length]] : actionNode;
+    return keys.length ? actionNode[String(frame % (Number(keys.at(-1)) + 1))] || null : actionNode;
   }
 
   function collectPieceLeaves(value, output, seen, source) {
@@ -172,10 +201,13 @@
   function pieceNodesFor(item, data, frame) {
     const nodes = [];
     item.info = data.info || {};
-    if (item.slot === "Weapon" && !data[state.action]) {
-      data = data[30]?.[state.action] ? data[30] : Object.keys(data).filter(key => /^\d+$/.test(key)).sort((a, b) => Number(b) - Number(a)).map(key => data[key]).find(node => node[state.action]) || data;
+    const action = state.poseAction || state.action;
+    frame = state.poseFrame ?? frame;
+    if (item.slot === "Weapon" && !data[action]) {
+      data = data[30]?.[action] ? data[30] : Object.keys(data).filter(key => /^\d+$/.test(key)).sort((a, b) => Number(b) - Number(a)).map(key => data[key]).find(node => node[action]) || data;
     }
     if (item.slot === "Face") {
+      if (state.hideFace) return [];
       const expression = data[state.expression] ? state.expression : "default";
       const keys = Object.keys(data[expression] || {}).filter(key => /^\d+$/.test(key));
       const duration = keys.reduce((sum, key) => sum + Math.abs(data[expression][key].delay || 100), 0);
@@ -187,10 +219,10 @@
       }
       nodes.push(frameNode(data, expression, faceFrame));
     } else if (item.slot === "Head") {
-      const headNode = frameNode(data, state.action, frame) || data?.front;
+      const headNode = frameNode(data, action, frame) || (state.hideFace ? data?.back : data?.front);
       nodes.push(headNode?.head, headNode?.humanEar);
     } else {
-      nodes.push(frameNode(data, state.action, frame) || data?.default);
+      nodes.push(frameNode(data, action, frame) || data?.default);
     }
     const output = [];
     const seen = new Set();
@@ -222,6 +254,11 @@
 
   function anchorPieces(pieces) {
     const anchors = new Map([["navel", { x: 0, y: 0 }]]);
+    // MXDC's character action setup supplies this anchor outside the WZ piece maps.
+    if (['alert', 'heal'].includes(state.poseAction)) {
+      const handMoves = [{ x: -8, y: -2 }, { x: -10, y: 0 }, { x: -12, y: 3 }];
+      anchors.set('handMove', handMoves[state.poseFrame] || handMoves[0]);
+    }
     const pending = pieces.slice();
     const aligned = [];
     let guard = pending.length * 4 + 4;
@@ -263,26 +300,58 @@
 
   async function renderAvatar() {
     const token = ++state.renderToken;
-    el.status.textContent = "載入角色圖層...";
+    const failures = [];
     const skin = state.selected.Skin || BASE_SKIN;
+    const body = { ...skin, id: skin.bodyId || Number(skin.id) - 10000, slot: 'Body' };
+    try {
+      const data = await fetchJson(itemPath(body));
+      if (token !== state.renderToken) return;
+      state.poseAction = state.action;
+      state.poseFrame = state.frame;
+      let pose = frameNode(data, state.poseAction, state.poseFrame);
+      // Composite attacks sequence existing poses, not independent image layers.
+      for (let depth = 0; pose?.action && depth < 16; depth++) {
+        state.poseAction = pose.action;
+        state.poseFrame = Number(pose.frame || 0);
+        pose = frameNode(data, state.poseAction, state.poseFrame);
+      }
+      state.hideFace = pose?.face === 0;
+    } catch (error) { if (state.previewStrict) throw error; }
     const renderItems = [
       { ...skin, id: skin.bodyId || Number(skin.id) - 10000, slot: "Body", name: skin.name },
       { ...skin, slot: "Head" },
-      ...Object.values(state.selected).filter(item => item && item.slot !== "Skin"),
+      ...Object.values(state.selected).filter(item => item && !['Skin', 'Pet'].includes(item.slot)),
     ];
     const uniqueItems = Array.from(new Map(renderItems.map(item => [`${item.slot}:${item.id}`, item])).values());
     const results = await Promise.all(uniqueItems.map(async item => {
       try {
         const data = await fetchJson(itemPath(item));
+        item.info = data.info || {};
+        if (item.slot === 'Effect') {
+          const node = data.effect?.[state.action] || data.effect?.default || data.effect;
+          const piece = timedFrame(node, state.elapsed);
+          if (!piece?._outlink) throw new Error('Missing effect frames');
+          return [{ ...piece, source: item, effect: true, z: Number(node.z ?? -1) >= 2 ? 'effectFront' : 'effectBack', map: { [node.pos === 4 ? 'navel' : 'brow']: node.pos === 1 ? {x:0,y:0} : {x:-10,y:-50} } }];
+        }
+        if (['NameRing', 'ChatRing'].includes(item.slot)) {
+          const sample = data.info?.sample;
+          if (!sample?._outlink) throw new Error('Missing ring preview');
+          const image = await loadImage(sample._outlink);
+          return [{ ...sample, origin: {x: image.width / 2, y: item.slot === 'NameRing' ? -38 : image.height + 72}, source:item, effect:true, z:'effectFront', map:{navel:{x:0,y:0}} }];
+        }
         if (item.slot === "Body") {
           state.frameCount = Object.keys(data[state.action] || {}).filter(key => /^\d+$/.test(key)).length || 1;
           state.frameDelay = Math.abs(frameNode(data, state.action, state.frame)?.delay || 100);
         }
         const parts = pieceNodesFor(item, data, state.frame);
-        if (state.previewStrict && !parts.length) throw new Error(`Missing layers: ${item.slot} ${item.id}`);
+        // Some equipment intentionally omits individual frames (e.g. a hidden claw).
+        const actionData = data[state.poseAction] || Object.values(data).find(node => node?.[state.poseAction])?.[state.poseAction];
+        const hiddenFrame = !['Body','Head','Face'].includes(item.slot) && actionData && !Object.hasOwn(actionData, String(state.poseFrame));
+        if (!parts.length && !(item.slot === 'Face' && state.hideFace) && !hiddenFrame) throw new Error(`Missing layers: ${item.slot} ${item.id}`);
         return [...parts, ...await itemEffect(item), ...await itemEffect(item, true)];
       } catch (_error) {
         if (state.previewStrict) throw _error;
+        failures.push(item.name || String(item.id));
         return [];
       }
     }));
@@ -290,7 +359,7 @@
     const pieces = visiblePieces(anchorPieces(results.flat()));
     const loaded = await Promise.all(pieces.map(async piece => {
       try { return { ...piece, image: await loadImage(piece._outlink) }; }
-      catch (_error) { if (state.previewStrict) throw new Error(`Missing image: ${piece._outlink}`); return null; }
+      catch (_error) { if (state.previewStrict) throw new Error(`Missing image: ${piece._outlink}`); failures.push(piece.source.name || String(piece.source.id)); return null; }
     }));
     if (token !== state.renderToken) return;
     const visible = loaded.filter(Boolean).sort((a, b) => zRank(b.z) - zRank(a.z) || (a.effectOrder || 0) - (b.effectOrder || 0));
@@ -319,7 +388,94 @@
     }
     for (const piece of visible) ctx.drawImage(piece.image, Math.round(offsetX + piece.x * scale), Math.round(offsetY + piece.y * scale), piece.image.width * scale, piece.image.height * scale);
     ctx.restore();
-    el.status.textContent = "";
+    el.status.textContent = failures.length ? `此動作缺少圖層或載入失敗：${[...new Set(failures)].join('、')}` : "";
+    await renderPet();
+  }
+
+  function timedFrame(node, elapsed) {
+    if (!node) return null;
+    if (node._outlink) return node;
+    const keys = Object.keys(node).filter(key => /^\d+$/.test(key)).sort((a,b) => a-b);
+    const duration = keys.reduce((sum,key) => sum + Math.max(1, Math.abs(node[key].delay || 120)), 0);
+    let time = duration ? elapsed % duration : 0;
+    for (const key of keys) {
+      const delay = Math.max(1, Math.abs(node[key].delay || 120));
+      if (time < delay) return node[key];
+      time -= delay;
+    }
+    return null;
+  }
+
+  function updateOptions(select, keys, labels, value) {
+    const signature = keys.join('|');
+    if (select.dataset.options !== signature) {
+      select.innerHTML = keys.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(labels[key] || key)}</option>`).join('');
+      select.dataset.options = signature;
+    }
+    select.value = keys.includes(value) ? value : keys[0];
+    return select.value;
+  }
+
+  let controlsToken = 0;
+  async function updatePoseControls() {
+    const token = ++controlsToken;
+    const skin = state.selected.Skin || BASE_SKIN;
+    const face = state.selected.Face;
+    try {
+      const body = await fetchJson(itemPath({id:skin.bodyId || skin.id - 10000, slot:'Body'}));
+      const faceData = face ? await fetchJson(itemPath(face)) : {};
+      const weapon = state.selected.Weapon;
+      const weaponData = weapon ? await fetchJson(itemPath(weapon)) : null;
+      if (token !== controlsToken) return;
+      const actions = Object.keys(ACTION_LABELS).filter(key => {
+        if (!body[key]) return false;
+        if (!weaponData || !/^(swing|stab|shoot|handgun|proneStab)/.test(key)) return true;
+        return Object.keys(body[key]).filter(frame => /^\d+$/.test(frame)).every(frame => {
+          let action = key, pose = frameNode(body, action, Number(frame));
+          for (let depth=0; pose?.action && depth<16; depth++) { action=pose.action; pose=frameNode(body,action,Number(pose.frame || 0)); }
+          return weaponData[action] || Object.values(weaponData).some(branch=>branch?.[action]);
+        });
+      });
+      state.action = updateOptions(el.action, actions, ACTION_LABELS, state.action);
+      state.expression = updateOptions(el.expression, Object.keys(faceData).filter(key => key !== 'info' && typeof faceData[key] === 'object'), EXPRESSION_LABELS, state.expression);
+    } catch (_error) { el.status.textContent = '動作選單載入失敗，請重新選取外觀。'; }
+  }
+
+  let petRenderToken = 0;
+  async function renderPet() {
+    const token = ++petRenderToken;
+    const pet = state.selected.Pet;
+    el.petPanel.hidden = !pet;
+    if (!pet) { state.petId = null; return; }
+    try {
+      const data = await fetchJson(itemPath(pet));
+      if (state.selected.Pet !== pet || token !== petRenderToken) return;
+      const keys = Object.keys(data).filter(key => {
+        const frame = timedFrame(data[key], 0);
+        return frame?._outlink;
+      });
+      if (state.petId !== pet.id) { state.petAction = keys.includes('stand0') ? 'stand0' : keys[0]; state.petId = pet.id; }
+      state.petAction = updateOptions(el.petAction, keys, PET_LABELS, state.petAction);
+      if (!keys.length) throw new Error('Missing pet states');
+      const node = data[state.petAction];
+      const frames = Object.keys(node).filter(key => /^\d+$/.test(key)).map(key => node[key]);
+      const loaded = await Promise.all(frames.map(async frame => ({frame, image:await loadImage(frame._outlink)})));
+      if (state.selected.Pet !== pet || token !== petRenderToken) return;
+      const frame = timedFrame(node, state.elapsed);
+      const image = await loadImage(frame._outlink);
+      const bounds = loaded.reduce((b, {frame:f,image:i}) => ({left:Math.min(b.left,-(f.origin?.x || 0)),top:Math.min(b.top,-(f.origin?.y || 0)),right:Math.max(b.right,i.width-(f.origin?.x || 0)),bottom:Math.max(b.bottom,i.height-(f.origin?.y || 0))}), {left:Infinity,top:Infinity,right:-Infinity,bottom:-Infinity});
+      const canvas = el.petCanvas, ctx = canvas.getContext('2d');
+      const scale = Math.min(4,(canvas.width-32)/(bounds.right-bounds.left),(canvas.height-24)/(bounds.bottom-bounds.top));
+      ctx.clearRect(0,0,canvas.width,canvas.height); ctx.imageSmoothingEnabled = false;
+      const x = (canvas.width-(bounds.right-bounds.left)*scale)/2 - bounds.left*scale;
+      const y = (canvas.height-(bounds.bottom-bounds.top)*scale)/2 - bounds.top*scale;
+      ctx.drawImage(image,Math.round(x-(frame.origin?.x || 0)*scale),Math.round(y-(frame.origin?.y || 0)*scale),image.width*scale,image.height*scale);
+      el.petStatus.textContent = pet.name;
+    } catch (_error) {
+      if (token !== petRenderToken) return;
+      el.petCanvas.getContext('2d').clearRect(0,0,el.petCanvas.width,el.petCanvas.height);
+      el.petStatus.textContent = `${pet.name}：動畫素材載入失敗，請稍後再試。`;
+    }
   }
 
   function selectedItem(item) {
@@ -372,8 +528,8 @@
         const item = itemById.get(Number(id));
         if (item && item.slot === slot) state.selected[slot] = item;
       }
-      if (["stand1", "walk1", "alert", "jump"].includes(saved.action)) state.action = saved.action;
-      if (["default", "smile", "angry", "cry", "blink"].includes(saved.expression)) state.expression = saved.expression;
+      if (Object.hasOwn(ACTION_LABELS, saved.action)) state.action = saved.action;
+      if (typeof saved.expression === 'string') state.expression = saved.expression;
       state.flip = Boolean(saved.flip);
       if (["grid", "transparent", "green", "blue"].includes(saved.background)) state.background = saved.background;
     } catch (_error) {}
@@ -392,7 +548,7 @@
     saveState();
     renderItems();
     renderEquipped();
-    renderAvatar();
+    updatePoseControls().then(renderAvatar);
   }
 
   function resetAvatar() {
@@ -406,12 +562,13 @@
     saveState();
     renderItems();
     renderEquipped();
-    renderAvatar();
+    updatePoseControls().then(renderAvatar);
   }
 
   function randomAvatar() {
     const choices = ["Hair", "Face", "Cap", "Overall", "Coat", "Pants", "Shoes", "Glove", "Cape", "Weapon"];
-    const next = { Skin: state.selected.Skin || BASE_SKIN };
+    const skins = DB.skins?.length ? DB.skins : [BASE_SKIN];
+    const next = { Skin: skins[Math.floor(Math.random() * skins.length)] };
     for (const slot of choices) {
       if (!["Hair", "Face"].includes(slot) && Math.random() < 0.35) continue;
       if (next.Overall && ["Coat", "Pants"].includes(slot)) continue;
@@ -423,7 +580,7 @@
     saveState();
     renderItems();
     renderEquipped();
-    renderAvatar();
+    updatePoseControls().then(renderAvatar);
   }
 
   function downloadAvatar() {
@@ -434,6 +591,7 @@
   }
 
   function bindEvents() {
+    el.petAction.addEventListener('change', () => { state.petAction = el.petAction.value; state.elapsed = 0; renderPet(); });
     el.categories.addEventListener("click", event => {
       const button = event.target.closest("[data-category]");
       if (!button) return;
@@ -510,6 +668,7 @@
     } catch (_error) {
       state.zmap = [];
     }
+    await updatePoseControls();
     await renderAvatar();
     requestAnimationFrame(animationLoop);
   }
