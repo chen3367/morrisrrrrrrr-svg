@@ -42,7 +42,7 @@
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css?v=20260916103303" />
-  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-15T23:27:17+08:00","updatedAtText":"2026-10-15 23:27:17 GMT+8"};</script>
+  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-16T00:22:33+08:00","updatedAtText":"2026-10-16 00:22:33 GMT+8"};</script>
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -92,7 +92,8 @@
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#c76185f60"><strong>76185f60</strong><span>2026-10-15</span></a>
+      <a class="patchVersionRow active" href="#cbdbcd683"><strong>bdbcd683</strong><span>2026-10-16</span></a>
+      <a class="patchVersionRow" href="#c76185f60"><strong>76185f60</strong><span>2026-10-15</span></a>
       <a class="patchVersionRow" href="#cb5e67e94"><strong>b5e67e94</strong><span>2026-10-15</span></a>
       <a class="patchVersionRow" href="#c1bf7801c"><strong>1bf7801c</strong><span>2026-10-15</span></a>
       <a class="patchVersionRow" href="#c6ae5d3ae"><strong>6ae5d3ae</strong><span>2026-10-15</span></a>
@@ -178,10 +179,22 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>75</strong>
+            <strong>76</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="cbdbcd683" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/bdbcd6833606693478212ffb48f1ae003959f3f8">bdbcd683</a> 戰鬥分析 HUD、交換券圖示與每日獎勵</h3>
+          <ul class="patchChangeList">
+            <li>戰鬥分析新增 HUD，顯示等級、經驗百分比、每小時經驗與楓幣、累計收益、預估升級時間、職業與地圖；支援置頂視窗，無法使用時可改開一般小視窗。</li>
+            <li>HUD 每秒更新現有數字，不重新載入整個畫面；提供停止／繼續、重設及中斷分享，關閉 HUD 仍保留主頁分析。</li>
+            <li>辨識間隔可選 2、5、10 秒，預設 5 秒；重用辨識程序並避免重複擷取，停止或重設後的舊結果不再寫入，停止期間不計入收益效率。</li>
+            <li>修正未讀到 EXP 或楓幣時被誤當成 0 的問題，楓幣優先採用可信度較高的完整讀值；保留六種解析度、視窗外框校正與動態背包定位。</li>
+            <li>核對 159 個交換券道具 ID，修正 48 張誤植圖示、補齊 2 張圖檔，採用本地遊戲素材並更新匯出流程，避免再次被錯圖覆蓋。</li>
+            <li>「漫漫長夜的守護者」每日獎勵確認為萬聖節硬幣 ×1、萬聖節禮物箱 ×1；同步活動清單、任務索引及道具來源，移除硬幣數量未公布的提示。</li>
+          </ul>
+        </section>
 
         <section id="c76185f60" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/76185f60018dd3b3de8512eea684ae8980cda28c">76185f60</a> 掉落率修正與交換來源連結</h3>
