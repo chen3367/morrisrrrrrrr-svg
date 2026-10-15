@@ -7,13 +7,13 @@
   <meta name="keywords" content="經典服, 楓之谷經典服, 經典服資料庫, 新楓之谷經典版, MapleStory Classic, 怪物掉落, 道具資料庫, 任務資料庫" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://morrisrrrrrrr-svg.github.io/third-job.html" />
-  <meta property="og:title" content="三轉答題｜楓憶MapleMemory｜新楓之谷：經典版資料庫" />
+  <meta property="og:title" content="三轉題庫｜楓憶MapleMemory｜新楓之谷：經典版資料庫" />
   <meta property="og:description" content="查詢冒險家第三次轉職智慧測驗題目與答案，閱讀本地遊戲資料中的五大職業三轉流程與 NPC 對話。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/third-job.html" />
   <meta property="og:image" content="https://morrisrrrrrrr-svg.github.io/assets/items/4031456.png" />
   <meta name="twitter:card" content="summary" />
-  <title>三轉答題｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
+  <title>三轉題庫｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
   <script>
     try {
       var match = document.cookie.match(/(?:^|; )ms_theme=([^;]+)/);
@@ -22,7 +22,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20261015161929" />
+  <link rel="stylesheet" href="./styles.css?v=20261015201732" />
   <link rel="stylesheet" href="./third-job.css" />
 </head>
 <body class="thirdJobPage">
@@ -51,12 +51,16 @@
           <a href="./avatar-maker.html">線上紙娃娃</a>
           <a href="./boss-timer.html">Boss 計時器</a>
           <a href="./gacha-simulator.html">轉蛋模擬器</a>
-          <a class="active" href="./third-job.html">三轉答題</a>
+          <a class="active" href="./third-job.html">三轉題庫</a>
+          <a href="./goddess-tower.html">女神組隊</a>
+          <a href="./exp-exchange.html">經驗物工具</a>
           </div>
         </details>
         <details class="navMenuGroup">
           <summary>其他</summary>
           <div class="navMenuLinks">
+          <a href="./skill-changes.html">技改資訊</a>
+          <a href="./halloween.html">萬聖節活動</a>
           <a href="./patch-notes.html">遊戲更新日誌</a>
           <a href="./web-changelog.html">網頁更新日誌</a>
           </div>
@@ -67,7 +71,7 @@
   <main class="thirdJobMain">
     <div class="thirdJobHeading">
       <img src="./assets/items/4031058.png" width="40" height="40" alt="智慧項鍊" />
-      <div><h2>三轉答題</h2><p id="thirdJobVersion"></p></div>
+      <div><h2>三轉題庫</h2><p id="thirdJobVersion"></p></div>
       <nav class="thirdJobTabs" aria-label="三轉工具頁面">
         <button type="button" id="questionsTab" data-view="questions" aria-pressed="true">答題查詢</button>
         <button type="button" id="flowTab" data-view="flow" aria-pressed="false">任務流程與對話</button>
@@ -77,7 +81,6 @@
       <div class="thirdJobSearchBar">
         <label class="thirdJobSearch"><span>題目搜尋</span><input id="questionSearch" type="search" placeholder="搜尋題目、選項或答案" autocomplete="off" /></label>
         <label><span>分類</span><select id="questionCategory"><option value="">全部分類</option></select></label>
-        <label><span>職業</span><select id="questionClass"><option value="">全部職業</option></select></label>
       </div>
       <div class="thirdJobResultsMeta"><p id="questionCount" role="status" aria-live="polite"></p><small>答案依本地資料與玩家回報整理，非伺服器答案表。</small></div>
       <div id="questionResults" class="thirdJobQuestions"></div>
@@ -85,7 +88,10 @@
     </section>
     <section id="flowView" aria-labelledby="flowTab" hidden>
       <div class="thirdJobFlowToolbar">
-        <label><span>職業</span><select id="flowClass"></select></label>
+        <div class="thirdJobFlowClassField">
+          <span id="flowClassLabel">職業</span>
+          <div id="flowClasses" class="thirdJobFlowClasses" role="group" aria-labelledby="flowClassLabel"></div>
+        </div>
         <a href="./third-job-dialogues.txt" download>下載對話文字檔</a>
       </div>
       <p class="thirdJobSourceNote">流程依本地對話整理。客戶端保留對話字串，但未包含伺服器端完整條件與分支判定；下列取消、未達條件與完成後對話不代表都會依序出現。</p>
@@ -97,6 +103,6 @@
   </main>
   <script src="./third-job-data.js?v=609383a5797e"></script>
   <script src="./third-job.js"></script>
-  <script src="./mobile.js?v=20261015161929"></script>
+  <script src="./mobile.js?v=20261015201732"></script>
 </body>
 </html>

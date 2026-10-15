@@ -724,6 +724,9 @@ function renderList() {
 
 function renderDetail() {
   const map = selectedMap();
+  const previousViewport = mapViewportController?.snapshot();
+  mapViewportController?.destroy();
+  mapViewportController = null;
   if (!map) {
     els.detail.innerHTML = `<div class="empty">找不到符合的地圖</div>`;
     return;
@@ -747,6 +750,7 @@ function renderDetail() {
     ${renderCrossPortalList(map)}
     ${renderSameMapPortalList(map)}
   `;
+  mapViewportController = mountMapViewport(map, previousViewport);
 }
 
 function terrainFootholds(map) {
@@ -915,6 +919,91 @@ function terrainLayerHtml(metrics, map) {
   `;
 }
 
+let mapViewportController = null;
+
+function mountMapViewport(map, previous) {
+  const frame = els.detail.querySelector(".mapViewportFrame");
+  const viewport = frame.querySelector(".mapScrollViewport");
+  const canvas = frame.querySelector(".mapCanvas");
+  const imageSource = canvas.dataset.image;
+  const key = `${map.id}:${shouldUseRenderedMap(map)}:${imageSource}`;
+  const saved = previous?.key === key ? previous : null;
+  let scale = saved?.scale ?? null;
+  let width = Number(canvas.dataset.nativeWidth);
+  let height = Number(canvas.dataset.nativeHeight);
+  let ready = !imageSource;
+  let disposed = false;
+
+  function center() {
+    const view = viewport.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: rect.width ? Math.max(0, Math.min(1, (view.left + viewport.clientLeft + viewport.clientWidth / 2 - rect.left) / rect.width)) : .5,
+      y: rect.height ? Math.max(0, Math.min(1, (view.top + viewport.clientTop + viewport.clientHeight / 2 - rect.top) / rect.height)) : .5,
+    };
+  }
+
+  function fitScale() {
+    return Math.min(1, Math.max(1, viewport.clientWidth - 24) / width,
+      Math.max(1, viewport.clientHeight - 24) / height);
+  }
+
+  function layout(anchor = center()) {
+    if (disposed || !viewport.clientWidth || !viewport.clientHeight) return;
+    const heightLimit = Math.max(200, Math.min(640, window.innerHeight * .6));
+    const initialFit = Math.min(1, Math.max(1, viewport.clientWidth - 24) / width, (heightLimit - 26) / height);
+    frame.style.height = `${Math.max(200, Math.min(heightLimit, height * initialFit + 26))}px`;
+    const fit = fitScale();
+    const minimum = Math.min(.1, fit / 4);
+    const zoom = scale === null ? fit : Math.max(minimum, Math.min(4, scale));
+    if (scale !== null) scale = zoom;
+    canvas.style.width = `${width * zoom}px`;
+    canvas.style.height = `${height * zoom}px`;
+    canvas.dataset.scale = String(zoom);
+    canvas.dataset.nativeWidth = String(width);
+    canvas.dataset.nativeHeight = String(height);
+    canvas.dataset.nativeReady = String(ready);
+    const view = viewport.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
+    viewport.scrollLeft += rect.left + anchor.x * rect.width - view.left - viewport.clientLeft - viewport.clientWidth / 2;
+    viewport.scrollTop += rect.top + anchor.y * rect.height - view.top - viewport.clientTop - viewport.clientHeight / 2;
+    frame.querySelector('[data-map-zoom="in"]').disabled = !ready || zoom >= 4;
+    frame.querySelector('[data-map-zoom="out"]').disabled = !ready || zoom <= minimum;
+    frame.querySelector('[data-map-zoom="native"]').disabled = !ready;
+  }
+
+  const observer = new ResizeObserver(() => layout());
+  const resize = () => layout();
+  observer.observe(viewport);
+  window.addEventListener("resize", resize);
+  layout(saved?.center || { x: .5, y: .5 });
+  const image = new Image();
+  image.onload = () => {
+    if (disposed) return;
+    width = image.naturalWidth;
+    height = image.naturalHeight;
+    ready = true;
+    layout(saved?.center || { x: .5, y: .5 });
+  };
+  if (imageSource) image.src = imageSource;
+  return {
+    snapshot: () => ({ key, scale, center: center() }),
+    zoom(action) {
+      if (!ready) return;
+      const anchor = center();
+      const current = Number(canvas.dataset.scale);
+      scale = action === "native" ? 1 : current * (action === "in" ? 1.25 : .8);
+      layout(anchor);
+    },
+    destroy() {
+      disposed = true;
+      observer.disconnect();
+      window.removeEventListener("resize", resize);
+      image.onload = null;
+    },
+  };
+}
+
 function renderMapCanvas(map) {
   const metrics = mapMetrics(map);
   const rendered = map.renderedMap || {};
@@ -923,8 +1012,8 @@ function renderMapCanvas(map) {
   const usingRegionPreview = !mapImage && Boolean(map.regionImage);
   const previewImage = mapImage || (usingRegionPreview ? map.regionImage : "");
   const imageStyle = previewImage ? `background-image:url('${escapeHtml(previewImage)}');` : "";
-  const aspectWidth = usingRegionPreview ? 480 : Math.max(320, Math.round(metrics.width));
-  const aspectHeight = usingRegionPreview ? 320 : Math.max(180, Math.round(metrics.height));
+  const aspectWidth = usingRegionPreview ? 480 : Math.max(1, Math.round(metrics.width));
+  const aspectHeight = usingRegionPreview ? 320 : Math.max(1, Math.round(metrics.height));
   const style = `aspect-ratio:${aspectWidth} / ${aspectHeight};${imageStyle}`;
   const spawns = displayCoordinateSpawns(map);
   const npcs = displayNpcs(map);
@@ -943,7 +1032,10 @@ function renderMapCanvas(map) {
         ${metricText ? `<span>${escapeHtml(metricText)}</span>` : ""}
       </div>
       <div class="mapCanvasShell">
-        <div class="${canvasClass}" style="${style}" aria-label="${escapeHtml(map.name)}">
+        <div class="mapViewportFrame">
+          <div class="mapScrollViewport" tabindex="0" role="region" aria-label="${escapeHtml(map.name)}，可捲動地圖">
+            <div class="mapCanvasStage">
+        <div class="${canvasClass}" style="${style}" data-image="${escapeHtml(previewImage)}" data-native-width="${aspectWidth}" data-native-height="${aspectHeight}" aria-label="${escapeHtml(map.name)}">
           ${usingRegionPreview ? `<div class="mapPreviewNotice">目前資料包未包含單張小地圖，顯示所屬區域圖</div>` : `
             <div class="mapAxisLabel mapAxisLabelX">${formatNumber(Math.round(metrics.x0))} → ${formatNumber(Math.round(metrics.x1))}</div>
             <div class="mapAxisLabel mapAxisLabelY">${formatNumber(Math.round(metrics.y0))} → ${formatNumber(Math.round(metrics.y1))}</div>
@@ -953,6 +1045,14 @@ function renderMapCanvas(map) {
             ${npcs.map(npc => markerHtml(metrics, npc, "npc")).join("")}
             ${portals.map(portal => markerHtml(metrics, portal, "portal", map.id)).join("")}
           `}
+        </div>
+            </div>
+          </div>
+          <div class="mapZoomControls" role="group" aria-label="地圖縮放">
+            <button type="button" data-map-zoom="in" aria-label="放大地圖" title="放大地圖" disabled>+</button>
+            <button type="button" data-map-zoom="out" aria-label="縮小地圖" title="縮小地圖" disabled>&minus;</button>
+            <button type="button" data-map-zoom="native" aria-label="100%：1 個圖片像素 = 1 個 CSS 像素" title="100%：1 個圖片像素 = 1 個 CSS 像素" disabled>100%</button>
+          </div>
         </div>
         ${usingRegionPreview ? "" : `
           <div class="mapLegend">
@@ -1370,6 +1470,12 @@ els.list.addEventListener("click", event => {
 });
 
 els.detail.addEventListener("click", event => {
+  const zoomButton = event.target.closest("[data-map-zoom]");
+  if (zoomButton) {
+    event.preventDefault();
+    mapViewportController?.zoom(zoomButton.dataset.mapZoom);
+    return;
+  }
   const layerButton = event.target.closest("[data-layer-toggle]");
   if (layerButton) {
     event.preventDefault();

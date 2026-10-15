@@ -686,7 +686,7 @@ function sourceSummary(item) {
   if (counts.shops) parts.push(`購買 ${formatNumber(counts.shops)}`);
   if (counts.crafts) parts.push(`合成 ${formatNumber(counts.crafts)}`);
   if (counts.boxSources) parts.push(`箱子 ${formatNumber(counts.boxSources)}`);
-  if (counts.boxChoices) parts.push(`可選 ${formatNumber(counts.boxChoices)}`);
+  if (counts.boxChoices) parts.push(`內容 ${formatNumber(counts.boxChoices)}`);
   if (counts.gachaSources) parts.push(`轉蛋 ${formatNumber(counts.gachaSources)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
 }
@@ -1292,7 +1292,7 @@ function renderEquipmentStats(item) {
   const rangeSources = item.equipStatRangeSources || [];
   const rangeSourceText = rangeSources.join("、") || "怪物掉落或可使用催化劑合成";
   const rangeNote = Object.keys(ranges).length
-    ? `<p class="equipRangeNote">${escapeHtml(rangeSourceText)}的裝備數值可能浮動。</p>`
+    ? `<p class="equipRangeNote">${escapeHtml(item.equipStatRangeNote || `${rangeSourceText}的裝備數值可能浮動。`)}</p>`
     : "";
   let totalRows = 0;
   const groups = EQUIP_FIELD_GROUPS.map(group => {
@@ -1367,18 +1367,19 @@ function renderMonsterSources(item) {
 function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
   return sourceChipBlock("任務獲取", rows, "questSourceList", row => {
+    const historical = row.sourceKind === "historicalPartyQuestReward";
     const summary = [questStateLabel(row.state)];
     if (row.category) summary.push(row.category);
     if (state.showIds) summary.push(`ID ${row.questId}`);
-    const meta = [`${formatNumber(row.count)} 個`];
+    const meta = [row.quantityLabel || `${formatNumber(row.count)} 個`];
     if (row.choice) meta.push("自選獎勵");
     else if (row.random) meta.push("隨機獎勵");
-    if (row.sourceLabel && row.sourceLabel !== "任務獎勵") meta.push(row.sourceLabel);
+    if (row.sourceLabel && row.sourceLabel !== "任務獎勵" && !historical) meta.push(row.sourceLabel);
     const sourceNpc = row.sourceNpc || row.rewardNpc || null;
     if (sourceNpc?.name) meta.push(sourceNpc.name);
     const badge = questConditionBadgeHtml(row);
     return `
-    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow" href="${questUrl(row.questId)}">
+    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}" href="${questUrl(row.questId)}">
       ${questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}</strong>
@@ -1386,6 +1387,7 @@ function renderQuestSources(item) {
         <p>${escapeHtml(meta.join(" · "))}</p>
       </div>
       ${badge}
+      ${historical ? `<p class="sourceReferenceNote">${escapeHtml(row.sourceLabel)}</p>` : ""}
     </a>
   `;
   });
@@ -1399,6 +1401,7 @@ function shopPriceHtml(row) {
 }
 
 function shopPriceText(row) {
+  if (row.priceLabel) return row.priceLabel;
   if (row.price === null || row.price === undefined) return "價格未知";
   const currency = row.currency || "";
   if (!currency || currency === "楓幣" || currency === "meso") return formatMeso(row.price);
@@ -1438,6 +1441,7 @@ function renderShopSources(item) {
     if (row.count && Number(row.count) > 1) meta.push(`${formatNumber(row.count)} 個`);
     const termText = cashShopTermText(row);
     if (termText) meta.push(`限時 ${termText}`);
+    if (row.availabilityText) meta.push(`限時 ${row.availabilityText}`);
     const originalPrice = originalShopPriceText(row);
     if (originalPrice) meta.push(`原價 ${originalPrice}`);
     if (state.showIds && row.shopId) meta.push(`Shop ${row.shopId}`);
@@ -1450,7 +1454,9 @@ function renderShopSources(item) {
       <div>
         <strong>${escapeHtml(row.merchantName)}</strong>
         <span>${escapeHtml(meta.join(" · ") || "可購買")}</span>
+        ${row.sourceNote ? `<p>${escapeHtml(row.sourceNote)}</p>` : ""}
         ${questText ? `<p>任務需求：${escapeHtml(questText)}</p>` : ""}
+        ${row.priceTiers?.length ? `<details class="shopPriceTiers"><summary>每日領購價格</summary><ol>${row.priceTiers.map((price, i) => `<li>第 ${i + 1} 箱：${price === 0 ? "免費" : `${formatNumber(price)} 楓幣`}</li>`).join("")}</ol></details>` : ""}
       </div>
       <small class="sourceChipBadge">${escapeHtml(shopPriceText(row))}</small>
     </article>
@@ -1595,7 +1601,7 @@ function renderBoxSources(item) {
           <span>${escapeHtml(row.sourceLabel || "開啟後可選擇")}</span>
           <p>${escapeHtml(meta.join(" · "))}</p>
         </div>
-        <small>箱子</small>
+        <small>${row.random ? "隨機" : "箱子"}</small>
       </a>
     `;
   });
@@ -1603,6 +1609,7 @@ function renderBoxSources(item) {
 
 function renderBoxChoiceSources(item) {
   const rows = sourceRows(item).boxChoices;
+  const notes = [...new Set(rows.map(row => row.poolNote).filter(Boolean))];
   return sourceChipBlock("使用/開啟後可取得", rows, "boxSourceList", row => {
     const reward = row.item || {};
     const name = reward.name || row.choiceLabel || `道具 ${reward.id || ""}`;
@@ -1615,14 +1622,14 @@ function renderBoxChoiceSources(item) {
         ${assetImage(reward.image, name, String(name || "?").slice(0, 1), "sourceMonsterImage")}
         <div>
           <strong>${escapeHtml(name)}</strong>
-          <span>${escapeHtml(row.sourceLabel || "開啟後可選擇")}${row.order ? ` · 第 ${formatNumber(row.order)} 項` : ""}</span>
-          ${row.dialogText ? `<p>${escapeHtml(row.dialogText)}</p>` : ""}
+          <span>${escapeHtml(row.sourceLabel || "開啟後可選擇")}${row.order && !row.random ? ` · 第 ${formatNumber(row.order)} 項` : ""}</span>
+          ${row.dialogText && !row.random ? `<p>${escapeHtml(row.dialogText)}</p>` : ""}
           ${meta.length ? `<p>${escapeHtml(meta.join(" · "))}</p>` : ""}
         </div>
-        <small>${formatNumber(reward.count || 1)} 個</small>
+        <small>${row.random ? "機率未公布" : `${formatNumber(reward.count || 1)} 個`}</small>
       </a>
     `;
-  });
+  }, notes.map(note => `<small class="dropRateReferenceInline">${escapeHtml(note)}</small>`).join(""));
 }
 
 function renderGachaSources(item) {

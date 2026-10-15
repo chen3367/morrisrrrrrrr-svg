@@ -1,4 +1,5 @@
 const db = window.MS_QUEST_DB;
+const questMapReferences = new Map((db.quests || []).flatMap(quest => (quest.mapReferences || []).map(map => [String(map.id), map])));
 const COOKIE_DAYS = 180;
 
 function readCookie(name) {
@@ -728,6 +729,7 @@ function renderDetail() {
       </div>
     </section>
     ${renderQuestChain(quest)}
+    ${renderPartyQuestFlow(quest)}
     ${renderQuestTexts(quest)}
     ${renderQuestDialogueAnswers(quest)}
     ${renderQuestDialogues(quest)}
@@ -736,6 +738,7 @@ function renderDetail() {
     ${renderRequirements("完成條件", quest.completeRequirements)}
     ${renderRewards("接取時給予", quest.startRewards)}
     ${renderRewards("完成獎勵", quest.completeRewards, quest.nextQuest)}
+    ${renderPartyQuestRewards(quest)}
     ${renderRefs(quest)}
   `;
 }
@@ -797,6 +800,7 @@ function renderQuestDialogues(quest) {
         ${rows.filter(row => row.stage === stage).map(row => `<article class="ringDialogueEntry">
           <div class="ringDialogueMeta"><strong>${escapeHtml(row.label)}</strong><code>${escapeHtml(row.key)}</code></div>
           <div class="ringDialogueText">${row.html}</div>
+          ${renderQuestMapRefs(row.mapRefs)}
         </article>`).join("")}
       </section>`).join("") : '<p class="questDialogueEmpty">本地資料未提供此任務的對話腳本。</p>'}
     </details>
@@ -817,6 +821,7 @@ function renderQuestTexts(quest) {
           <article class="textLine">
             <strong>${escapeHtml(row.label)}</strong>
             <p>${escapeHtml(row.text)}</p>
+            ${renderQuestMapRefs(row.mapRefs)}
           </article>
         `).join("")}
       </div>
@@ -930,6 +935,7 @@ function renderRewards(title, act = {}, nextQuest = null) {
   if (act.money) stats.push(["楓幣", formatNumber(act.money)]);
   if (act.pop) stats.push(["人氣", `${Number(act.pop) > 0 ? "+" : ""}${formatNumber(act.pop)}`]);
   const parts = [];
+  if (act.note) parts.push(`<p class="partyQuestRewardNote">${escapeHtml(act.note)}</p>`);
   if (stats.length) {
     parts.push(`<div class="requirementGroup"><strong>數值獎勵</strong><div class="statsGrid compactStats">${stats.map(([label, value]) => `<div class="statCell"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}</div></div>`);
   }
@@ -963,7 +969,7 @@ function renderRewards(title, act = {}, nextQuest = null) {
 
 function questRewardItemCard(item, actionLabel = "獎勵") {
   const metaParts = [];
-  metaParts.push(`${actionLabel} ${formatNumber(item.count || 1)} 個`);
+  if (!item.quantityLabel) metaParts.push(`${actionLabel} ${formatNumber(item.count || 1)} 個`);
   if (item.choice) metaParts.push("自選");
   else if (item.random) metaParts.push("隨機");
   const jobLabel = formatQuestRewardJob(item.job);
@@ -984,10 +990,103 @@ function questRewardItemCard(item, actionLabel = "獎勵") {
       ${assetImage(item.image, item.name, String(item.name || "?").slice(0, 1), "itemIcon")}
       <div class="itemText">
         <strong>${escapeHtml(item.name)}</strong>
+        ${item.quantityLabel ? `<span class="questRewardQuantity">${escapeHtml(item.quantityLabel)}</span>` : ""}
         ${detailHtml}
       </div>
     </a>
   `;
+}
+
+function renderPartyQuestSeedMap(map) {
+  if (!map) return "";
+  const {crop, bounds} = map;
+  const percent = (value, size) => (100 * Number(value) / Number(size)).toFixed(5);
+  const imageStyle = `width:${percent(bounds.width, crop.width)}%;height:${percent(bounds.height, crop.height)}%;left:${percent(bounds.left - crop.left, crop.width)}%;top:${percent(bounds.top - crop.top, crop.height)}%`;
+  const markers = map.points.map(point => {
+    const label = `${point.position ? `${point.position}・` : ""}${point.label}`;
+    const fullLabel = `${label}：${point.item.name}（${point.x}, ${point.y}）`;
+    return `<a class="partyQuestSeedMarker seed-${escapeHtml(point.color)}" href="${escapeHtml(point.item.href)}" style="left:${percent(point.x - crop.left, crop.width)}%;top:${percent(point.y - crop.top, crop.height)}%" title="${escapeHtml(fullLabel)}" aria-label="${escapeHtml(fullLabel)}"><img src="${escapeHtml(point.item.image)}" alt="" loading="lazy"><strong>${point.position ? `<span class="partyQuestSeedPosition">${escapeHtml(point.position)}・</span>` : ""}${escapeHtml(point.label)}</strong></a>`;
+  }).join("");
+  return `<figure class="partyQuestSeedMap seedMap-${escapeHtml(map.mode)}">
+    <figcaption>${escapeHtml(map.title)}<a href="./maps.html?map=${Number(map.mapId)}">迎月花山丘</a></figcaption>
+    <div class="partyQuestSeedViewport" tabindex="0" role="region" aria-label="${escapeHtml(map.title)}">
+      <div class="partyQuestSeedCanvas" style="aspect-ratio:${Number(crop.width)} / ${Number(crop.height)}">
+        <img class="partyQuestSeedTerrain" src="${escapeHtml(map.image)}" alt="" loading="lazy" style="${imageStyle}">
+        ${markers}
+      </div>
+    </div>
+  </figure>`;
+}
+
+function renderPartyQuestQuiz(quiz) {
+  if (!quiz) return "";
+  return `<div class="partyQuestQuiz">
+    <table class="partyQuestQuizTable">
+      <caption>${escapeHtml(quiz.title)}</caption>
+      <thead><tr><th scope="col">題目</th><th scope="col">優惠券</th></tr></thead>
+      <tbody>${quiz.questions.map(row => `<tr data-question="${escapeHtml(row.key)}"><td>${escapeHtml(row.question)}</td><td><strong>${Number(row.answer)} 張</strong>${row.status === "reference" ? `<small>參考答案</small>` : ""}</td></tr>`).join("")}</tbody>
+    </table>
+    ${quiz.note ? `<p class="partyQuestRewardNote">${escapeHtml(quiz.note)}</p>` : ""}
+  </div>`;
+}
+
+function renderPartyQuestFlow(quest) {
+  const flow = quest.partyQuestFlow;
+  if (!flow) return "";
+  const tool = flow.tool || (String(quest.id) === "1203" ? {href: "./goddess-tower.html", label: "封印之室五人站位工具", stepLabel: "開啟五人站位工具"} : null);
+  const entity = row => {
+    const body = `${assetImage(row.image, row.name, "?", "miniIcon")}<span><strong>${escapeHtml(row.name)}</strong>${row.quantity ? `<em>${escapeHtml(row.quantity)}</em>` : ""}</span>`;
+    return row.href ? `<a class="miniLink" href="${escapeHtml(row.href)}">${body}</a>` : `<span class="miniLink">${body}</span>`;
+  };
+  const step = (row, index) => `<li class="partyQuestStep" id="partyQuest-${escapeHtml(row.id)}">
+    <h4>${index + 1}. ${escapeHtml(row.title)}</h4>
+    ${renderQuestMapRefs(row.maps, "partyQuestMaps")}
+    <ul class="partyQuestInstructions">${row.instructions.map(line => `<li>${escapeHtml(line)}</li>`).join("")}</ul>
+    ${row.note ? `<p class="partyQuestRewardNote">${escapeHtml(row.note)}</p>` : ""}
+    ${row.tool && tool ? `<a class="partyQuestToolLink" href="${escapeHtml(tool.href)}">${escapeHtml(tool.stepLabel || tool.label)} →</a>` : ""}
+    ${row.entities.length ? `<div class="partyQuestEntities">${row.entities.map(entity).join("")}</div>` : ""}
+    ${renderPartyQuestSeedMap(row.seedMap)}
+    ${renderPartyQuestQuiz(row.quiz)}
+    ${row.id === "music" && flow.music?.length ? `<div class="partyQuestMusic">${flow.music.map(music => `<div><strong>${escapeHtml(music.label)}</strong>${entity(music.item)}</div>`).join("")}</div>` : ""}
+    ${row.dialogues.length ? `<details class="questDialogueDetails partyQuestEvidence"><summary>NPC 對話依據<span>${row.dialogues.length} 段</span></summary>${row.dialogues.map(d => `<div class="partyQuestDialogue"><small>${escapeHtml(d.key)}</small><p>${escapeHtml(d.text)}</p></div>`).join("")}</details>` : ""}
+  </li>`;
+  return `<section class="sectionBlock partyQuestFlowSection">
+    <details class="questDialogueDetails" id="partyQuestFlow">
+      <summary><strong>完整組隊任務流程</strong><span>${flow.steps.length} 段</span></summary>
+      <p>${escapeHtml(flow.intro)}</p>
+      ${tool ? `<a class="partyQuestToolLink" href="${escapeHtml(tool.href)}">${escapeHtml(tool.label)} →</a>` : ""}
+      <nav class="partyQuestAnchors" aria-label="${escapeHtml(quest.name)}流程章節">${flow.steps.map((row, i) => `<a href="#partyQuest-${escapeHtml(row.id)}">${i + 1}. ${escapeHtml(row.title.split("：")[0])}</a>`).join("")}</nav>
+      <ol class="partyQuestSteps">${flow.steps.map(step).join("")}</ol>
+      ${flow.optional?.length ? `<details class="questDialogueDetails"><summary>${escapeHtml(flow.optionalTitle || "選做房間與額外挑戰")}</summary><ol class="partyQuestSteps">${flow.optional.map(step).join("")}</ol></details>` : ""}
+      ${flow.basis ? `<details class="questDialogueDetails"><summary>資料依據與待確認事項</summary><p>${escapeHtml(flow.basis)}</p>${(flow.sources || []).map(s => `<p>${escapeHtml(s.name)}</p>`).join("")}</details>` : ""}
+    </details>
+  </section>`;
+}
+
+function renderPartyQuestRewards(quest) {
+  const info = quest.partyQuestRewards;
+  if (!info) return "";
+  const exchange = info.exchange;
+  const reference = info.reference;
+  return `<section class="sectionBlock partyQuestExchange">
+    <div class="sectionTitle"><h3>女神手鐲兌換</h3></div>
+    <p class="partyQuestRewardNote">${escapeHtml(exchange.note)}</p>
+    <div class="dropsGrid questRewardGrid">${exchange.materials.map(item => questRewardItemCard(item, "需要")).join("")}${questRewardItemCard(exchange.reward, "兌換")}</div>
+    <details class="questDialogueDetails partyQuestEvidence">
+      <summary><strong>本地領獎對話摘錄</strong><span>${info.evidence.length} 段</span></summary>
+      ${info.evidence.map(row => `<article class="ringDialogueEntry"><div class="ringDialogueMeta"><code>${escapeHtml(row.key)}</code></div><p class="ringDialogueText">${escapeHtml(row.text)}</p></article>`).join("")}
+    </details>
+  </section>
+  <section class="sectionBlock partyQuestReference">
+    <details class="questDialogueDetails">
+      <summary><strong>${escapeHtml(reference.title)}</strong><span>卷軸・母礦・藥水・經驗值</span></summary>
+      <p class="partyQuestRewardNote">${escapeHtml(reference.note)} ${escapeHtml(reference.sourceName)}</p>
+      <div class="requirementGroup"><strong>羽翼領取數量</strong><p>${escapeHtml(reference.featherNote)} 舊版玩家記錄</p></div>
+      <div class="requirementGroup"><strong>經驗值（舊台版參考）</strong><div class="statsGrid compactStats">${reference.exp.map(row => `<div class="statCell"><span>${escapeHtml(row.stage)}</span><strong>${formatNumber(row.amount)}</strong></div>`).join("")}</div><p>${escapeHtml(reference.expNote)}</p></div>
+      <p class="partyQuestRewardNote">以下為舊台版通關隨機獎勵，每次領取其中一項；卷軸的 10%、60%、100% 是強化成功率，不是抽中機率。</p>
+      ${reference.groups.map(group => `<div class="requirementGroup"><strong>${escapeHtml(group.title)}</strong><div class="dropsGrid questRewardGrid">${group.items.map(item => questRewardItemCard(item, "參考數量")).join("")}</div></div>`).join("")}
+    </details>
+  </section>`;
 }
 
 function renderContinuationQuests(quest) {
@@ -1019,7 +1118,7 @@ function renderRefs(quest) {
   if (npcs.length) parts.push(`<div class="requirementGroup"><strong>相關 NPC</strong><div class="linkGrid">${npcs.map(npcChip).join("")}</div></div>`);
   if (items.length) parts.push(`<div class="requirementGroup"><strong>文字提及道具</strong><div class="linkGrid">${items.map(itemLink).join("")}</div></div>`);
   if (monsters.length) parts.push(`<div class="requirementGroup"><strong>文字提及怪物</strong><div class="linkGrid">${monsters.map(monsterLink).join("")}</div></div>`);
-  if (maps.length) parts.push(`<div class="requirementGroup"><strong>文字提及地圖</strong><div class="linkGrid">${maps.map(mapChip).join("")}</div></div>`);
+  if (maps.length) parts.push(`<div class="requirementGroup"><strong>文字提及地圖</strong>${renderQuestMapRefs(maps)}</div>`);
   if (!parts.length) return "";
   return `
     <section class="sectionBlock">
@@ -1084,14 +1183,21 @@ function npcChip(npc) {
   `;
 }
 
+function renderQuestMapRefs(maps, className = "") {
+  const rows = visibleIndexRows(maps || [], "map");
+  return rows.length ? `<div class="questMapRefList ${escapeHtml(className)}">${rows.map(mapChip).join("")}</div>` : "";
+}
+
 function mapChip(map) {
-  const meta = [map.street || "地圖"];
-  if (state.showIds) meta.push(map.id);
+  map = {...questMapReferences.get(String(map.id)), ...map};
+  const meta = [...new Set([map.regionName, map.street].filter(Boolean))];
+  if (state.showIds) meta.push(`ID ${map.id}`);
+  const image = map.markImage || map.regionIcon || "./assets/map_marks/Quest.png";
   return `
-    <div class="miniLink staticMini">
-      <div class="miniIcon">圖</div>
-      <span><strong>${escapeHtml(map.name)}</strong><em>${escapeHtml(meta.join(" · "))}</em></span>
-    </div>
+    <a class="miniLink questMapLink" href="./maps.html?map=${encodeURIComponent(String(map.id))}" aria-label="查看地圖：${escapeHtml(map.name)}">
+      ${assetImage(image, map.name, "圖", "miniIcon")}
+      <span class="questMapLinkText"><strong>${escapeHtml(map.name)}</strong>${meta.length ? `<em>${escapeHtml(meta.join(" · "))}</em>` : ""}<span class="questMapLinkAction">查看地圖 <span aria-hidden="true">→</span></span></span>
+    </a>
   `;
 }
 

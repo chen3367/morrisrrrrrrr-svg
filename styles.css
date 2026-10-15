@@ -344,6 +344,10 @@ h1 {
 .topNav a[href$="avatar-maker.html"] { --nav-icon: url("./assets/items/5150040.png"); }
 .topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
 .topNav a[href$="third-job.html"] { --nav-icon: url("./assets/items/4031058.png"); }
+.topNav a[href$="goddess-tower.html"] { --nav-icon: url("./assets/items/4001158.png"); }
+.topNav a[href$="exp-exchange.html"] { --nav-icon: url("./assets/items/4001000.png"); }
+.topNav a[href$="halloween.html"] { --nav-icon: url("./assets/items/1012939.png"); }
+.topNav a[href$="skill-changes.html"] { --nav-icon: url("./assets/skills/1001004.png"); }
 .topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
 .topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
 .topNav a:hover {
@@ -1638,6 +1642,71 @@ h3 {
 .questDialogueSection .ringDialogueText { overflow-wrap: anywhere; }
 .questDialogueEmpty { margin: 12px 0; }
 .questDialogueSection { padding: 0 16px; }
+.questDetailPane .questMapRefList { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; margin: 10px 0; }
+.questDetailPane .ringDialogueEntry > .questMapRefList { grid-column: 1 / -1; }
+.questDetailPane .questMapLink { flex: 0 1 280px; width: 280px; max-width: 100%; min-width: 0; grid-template-columns: 36px minmax(0, 1fr); text-decoration: none; }
+.questDetailPane .questMapLink > .miniIcon { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
+.questDetailPane .questMapLinkText { min-width: 0; }
+.questDetailPane .questMapLinkText strong { font-size: 14px; line-height: 1.5; }
+.questDetailPane .questMapLinkText strong, .questDetailPane .questMapLinkText em { white-space: normal; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; }
+.questDetailPane .questMapLinkAction { display: inline-block; margin-top: 5px; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--active-text); text-decoration: underline; text-underline-offset: 3px; }
+.questDetailPane .questMapLink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.partyQuestFlowSection { line-height: 1.7; padding: 0 16px; }
+#partyQuestFlow { scroll-margin-top: 112px; }
+.partyQuestReference, .partyQuestExchange > .partyQuestEvidence { padding: 0 16px; }
+.partyQuestExchange > .partyQuestRewardNote { margin-inline: 16px; }
+.partyQuestFlowSection a { color: var(--active-text); text-underline-offset: 3px; }
+.partyQuestAnchors, .partyQuestMaps { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 16px 0; font-size: 13px; }
+.partyQuestSteps { list-style: none; margin: 12px 0 0; padding: 0; }
+.partyQuestStep { padding: 20px 0; border-top: 1px solid var(--line); scroll-margin-top: 120px; overflow-wrap: anywhere; }
+.partyQuestStep h4 { margin: 0; font-size: 17px; color: var(--text-strong); }
+.partyQuestInstructions { padding-left: 22px; margin: 12px 0; }
+.partyQuestInstructions li + li { margin-top: 6px; }
+.partyQuestEntities { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.partyQuestEntities .miniLink, .partyQuestMusic .miniLink { flex: 0 1 auto; max-width: 100%; width: auto; text-decoration: none; }
+.partyQuestEntities .miniLink > span, .partyQuestMusic .miniLink > span { min-width: 0; }
+.partyQuestEntities .miniLink strong, .partyQuestMusic .miniLink strong { white-space: normal; overflow: visible; }
+.partyQuestMusic { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 18px 0; }
+.partyQuestMusic > div { display: grid; gap: 6px; align-content: start; }
+.partyQuestMusic > div > strong { font-size: 13px; color: var(--muted); }
+.partyQuestToolLink { display: inline-block; font-weight: 700; margin: 4px 0; }
+.partyQuestRewardNote { color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; margin: 10px 0; font-size: 13px; }
+.partyQuestEvidence { margin-top: 12px; }
+.partyQuestEvidence .ringDialogueText, .partyQuestDialogue p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.partyQuestDialogue { padding: 12px 0; border-top: 1px solid var(--line); }
+.partyQuestDialogue small, .partyQuestEvidence code { overflow-wrap: anywhere; font-size: 11px; color: var(--muted); }
+.partyQuestDialogue p { margin: 6px 0 0; }
+.partyQuestSeedMap { min-width: 0; margin: 20px 0 12px; }
+.partyQuestSeedMap figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 8px; font-weight: 700; }
+.partyQuestSeedMap figcaption a { font-size: 13px; font-weight: 400; }
+.partyQuestSeedViewport { max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--control-bg); overscroll-behavior-x: contain; }
+.partyQuestSeedViewport:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.partyQuestSeedCanvas { position: relative; overflow: hidden; width: 100%; min-width: 360px; }
+.seedMap-plant { max-width: 720px; }
+.seedMap-drop .partyQuestSeedCanvas { min-width: 1260px; }
+.partyQuestSeedTerrain { position: absolute; max-width: none; object-fit: fill; pointer-events: none; image-rendering: pixelated; }
+.partyQuestFlowSection .partyQuestSeedMarker { position: absolute; display: flex; align-items: center; justify-content: center; gap: 4px; transform: translate(-50%, calc(-100% - 6px)); padding: 4px 6px; border: 2px solid var(--seed-color); border-radius: 5px; background: var(--control-bg); color: var(--plain-text); white-space: nowrap; text-decoration: none; font-size: 13px; line-height: 1.3; box-shadow: 0 1px 3px #0005; }
+.partyQuestSeedMarker::after { content: ""; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 6px solid transparent; border-bottom: 0; border-top-color: var(--seed-color); }
+.partyQuestSeedMarker:hover, .partyQuestSeedMarker:focus-visible { outline: 2px solid var(--plain-text); outline-offset: 2px; z-index: 1; }
+.partyQuestSeedMarker img { width: 24px; height: 24px; object-fit: contain; image-rendering: pixelated; flex-shrink: 0; }
+.partyQuestSeedMarker.seed-green { --seed-color: #6b9f23; }
+.partyQuestSeedMarker.seed-purple { --seed-color: #8053cb; }
+.partyQuestSeedMarker.seed-pink { --seed-color: #d246c6; }
+.partyQuestSeedMarker.seed-brown { --seed-color: #b66c32; }
+.partyQuestSeedMarker.seed-yellow { --seed-color: #d8a31b; }
+.partyQuestSeedMarker.seed-blue { --seed-color: #397fe2; }
+@media (max-width: 600px) {
+  .seedMap-plant .partyQuestSeedCanvas { min-width: 0; }
+  .seedMap-plant .partyQuestSeedPosition { display: none; }
+}
+.partyQuestQuiz { margin: 18px 0; min-width: 0; }
+.partyQuestQuizTable { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; }
+.partyQuestQuizTable caption { padding: 0 0 8px; text-align: left; font-weight: 700; color: var(--plain-text); }
+.partyQuestQuizTable th, .partyQuestQuizTable td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.partyQuestQuizTable th { color: var(--muted); font-weight: 600; font-size: 13px; }
+.partyQuestQuizTable th:last-child, .partyQuestQuizTable td:last-child { width: 88px; text-align: center; }
+.partyQuestQuizTable td strong { color: var(--active-text); white-space: nowrap; font-size: 16px; }
+.partyQuestQuizTable td small { display: block; color: var(--muted); font-size: 12px; }
 .questAnswerList {
   margin: 0;
   padding-left: 24px;
@@ -1891,6 +1960,16 @@ h3 {
   font-size: 11px;
   text-align: center;
 }
+.sourceChipList .sourceReferenceRow > .sourceReferenceNote {
+  grid-column: 1 / -1;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+.sourceChipList .sourceReferenceRow > .sourceChipBadge {
+  grid-column: 3;
+  grid-row: 1;
+}
 .shopSourceList .sourceChipBadge {
   min-width: 90px;
 }
@@ -1906,6 +1985,24 @@ h3 {
   text-overflow: clip;
   white-space: normal;
 }
+.shopPriceTiers {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.shopPriceTiers summary { cursor: pointer; }
+.shopPriceTiers ol { list-style: none; padding-left: 0; margin: 6px 0 0; }
+.boxSourceList {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 360px));
+}
+.boxSourceList .sourceChipRow strong,
+.boxSourceList .sourceChipRow span,
+.boxSourceList .sourceChipRow p {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+.boxSourceList .sourceChipRow small { white-space: nowrap; }
 .monsterQuestRequirementSourceList {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
@@ -3790,20 +3887,109 @@ h3 {
 }
 .mapCanvasShell {
   display: grid;
+  min-width: 0;
   gap: 10px;
   padding: 12px 14px 14px;
+}
+.mapDetailPane,
+.mapDetailPane .sectionBlock {
+  min-width: 0;
+}
+.mapDetailPane > .mapHero {
+  position: static;
+}
+.mapDetailPane .heroText,
+.mapDetailPane .sourceLinkRow,
+.mapDetailPane .mapLayerToggle {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.mapViewportFrame {
+  position: relative;
+  min-width: 0;
+  height: min(60vh, 640px);
+  height: min(60svh, 640px);
+  min-height: 200px;
+  overflow: hidden;
+  border: 1px solid var(--mini-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+.mapScrollViewport {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
+.mapCanvasStage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  height: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  padding: 12px;
+}
+.mapZoomControls {
+  position: absolute;
+  z-index: 5;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--stat-border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-soft);
+}
+.mapZoomControls button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--stat-border);
+  border-radius: 4px;
+  background: var(--control-bg);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.mapZoomControls [data-map-zoom="native"] {
+  width: 58px;
+  font-size: 13px;
+}
+.mapZoomControls button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.mapZoomControls button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+.mapZoomControls button:focus-visible,
+.mapScrollViewport:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 .mapCanvas {
   position: relative;
   z-index: 0;
   isolation: isolate;
   contain: paint;
+  flex: 0 0 auto;
   width: 100%;
-  min-height: 280px;
-  max-height: min(68vh, 760px);
+  min-height: 0;
+  max-height: none;
   overflow: hidden;
-  border: 1px solid var(--mini-border);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
@@ -3825,8 +4011,6 @@ h3 {
   background-color: #94cfe8;
 }
 .mapCanvas.withRegionPreviewImage {
-  min-height: 240px;
-  max-height: min(58vh, 520px);
   background-color: #eef7fb;
   background-size: contain;
 }
@@ -3873,6 +4057,10 @@ h3 {
   padding: 3px 6px;
   font-size: 11px;
   font-weight: 800;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   pointer-events: none;
 }
 .mapAxisLabelX {
@@ -4026,6 +4214,7 @@ h3 {
 }
 .npcMarkerLabel {
   display: block;
+  min-width: 0;
   max-width: 108px;
   overflow: hidden;
   border: 1px solid rgba(47, 125, 91, 0.42);
@@ -5687,11 +5876,6 @@ h3 {
   }
   .gachaDrawButtons {
     grid-template-columns: 1fr;
-  }
-  .mapCanvas {
-    max-height: none;
-    overflow: auto;
-    touch-action: pan-x pan-y;
   }
   .mapMarker:hover {
     outline: none;

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="整理經典版萬聖節相關任務、任務鏈、NPC 對話、需求道具、獎勵與流程。" />
+  <meta name="keywords" content="經典服, 楓之谷經典服, 經典服資料庫, 新楓之谷經典版, MapleStory Classic, 怪物掉落, 道具資料庫, 任務資料庫" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://morrisrrrrrrr-svg.github.io/halloween.html" />
+  <meta property="og:title" content="萬聖節活動｜楓憶MapleMemory｜新楓之谷：經典版資料庫" />
+  <meta property="og:description" content="整理經典版萬聖節相關任務、任務鏈、NPC 對話、需求道具、獎勵與流程。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/halloween.html" />
+  <meta property="og:image" content="https://morrisrrrrrrr-svg.github.io/assets/items/4031456.png" />
+  <meta name="twitter:card" content="summary" />
+  <title>萬聖節活動｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
+  <script>
+    try {
+      var match = document.cookie.match(/(?:^|; )ms_theme=([^;]+)/);
+      document.documentElement.dataset.theme = (match ? decodeURIComponent(match[1]) : localStorage.getItem("ms-theme")) === "dark" ? "dark" : "light";
+    } catch (_) {}
+  </script>
+  <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
+  <link rel="stylesheet" href="./styles.css?v=20261015201732" />
+  <link rel="stylesheet" href="./halloween.css?v=c3ac8df82e0c" />
+</head>
+<body class="halloweenPage">
+  <header class="appHeader">
+    <div class="titleArea">
+      <h1 class="siteBrandTitle"><img class="siteBrandIcon" src="./assets/items/4031456.png" alt="" loading="lazy" /><span class="siteBrandText"><strong class="siteBrandMain">楓憶MapleMemory</strong><span class="siteBrandSubtitle">新楓之谷：經典版資料庫</span></span></h1>
+      <button id="navDrawerToggle" class="navDrawerToggle" type="button" aria-expanded="false" aria-controls="siteNavigation" aria-label="開啟選單" title="開啟選單">☰</button>
+      <div class="headerActions"><button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button></div>
+      <nav id="siteNavigation" class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup">
+          <summary>楓葉圖鑑</summary>
+          <div class="navMenuLinks">
+          <a href="./index.html">怪物</a>
+          <a href="./items.html">道具</a>
+          <a href="./quests.html">任務</a>
+          <a href="./maps.html">地圖</a>
+          <a href="./skills.html">技能</a>
+          </div>
+        </details>
+        <details class="navMenuGroup">
+          <summary>實用工具</summary>
+          <div class="navMenuLinks">
+          <a href="./scroll-simulator.html">卷軸模擬器</a>
+          <a href="./damage-calculator.html">戰鬥力計算機</a>
+          <a href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./avatar-maker.html">線上紙娃娃</a>
+          <a href="./boss-timer.html">Boss 計時器</a>
+          <a href="./gacha-simulator.html">轉蛋模擬器</a>
+          <a href="./third-job.html">三轉題庫</a>
+          <a href="./goddess-tower.html">女神組隊</a>
+          <a href="./exp-exchange.html">經驗物工具</a>
+          </div>
+        </details>
+        <details class="navMenuGroup active">
+          <summary>其他</summary>
+          <div class="navMenuLinks">
+          <a href="./skill-changes.html">技改資訊</a>
+          <a class="active" href="./halloween.html">萬聖節活動</a>
+          <a href="./patch-notes.html">遊戲更新日誌</a>
+          <a href="./web-changelog.html">網頁更新日誌</a>
+          </div>
+        </details>
+      </nav>
+    </div>
+  </header>
+  <main class="halloweenMain">
+    <header class="hwHeading">
+      <img src="./assets/items/1012939.png" alt="樹木面具" width="48" height="48" />
+      <div><h2>雪原的面具祭典</h2><p id="hwVersion"></p></div>
+      <a href="#hwArchive">資料與腳本</a>
+    </header>
+    <p class="hwNotice">含完整劇情。每日任務與禮物箱規則已核對活動公告；任務細節依本地資料整理，實際開放以遊戲內為準。</p>
+    <section id="hwDailyChecklist" class="hwDailyChecklist" aria-labelledby="hwDailyTitle"></section>
+    <nav class="hwChapters" id="hwChapters" aria-label="章節"></nav>
+    <div class="hwLayout">
+      <aside class="hwSidebar" aria-label="任務導覽">
+        <label for="hwSearch">搜尋任務、NPC、材料或 ID</label>
+        <input type="search" id="hwSearch" autocomplete="off" />
+        <label for="hwChapter">章節</label>
+        <select id="hwChapter"><option value="">全部章節</option><option value="1">第一章 · Lv.10</option><option value="2">第二章 · Lv.30</option><option value="3">第三章 · Lv.40</option></select>
+        <p id="hwResultCount" role="status" aria-live="polite"></p>
+        <nav id="hwQuestList" aria-label="任務列表"></nav>
+      </aside>
+      <div id="hwDetail" class="hwDetail" aria-live="polite"></div>
+    </div>
+    <section id="hwArchive" class="hwArchive" aria-labelledby="hwArchiveTitle">
+      <h2 id="hwArchiveTitle">資料與完整腳本</h2>
+      <p>任務條件、獎勵來自 Quest.wzjson；敘述與分支對話來自 QuestData.json。事件台詞表不包含完整伺服器程式，不能據此補出未列明的獎池、機率或等待時間。</p>
+      <div id="hwScripts"></div>
+      <details id="hwAudit"><summary>收錄範圍與資料缺口</summary><div id="hwAuditContent"></div></details>
+    </section>
+    <noscript>此頁需要 JavaScript 顯示任務流程。<a href="./quests.html?quest=506364">查看神秘邀請函任務索引</a></noscript>
+  </main>
+  <script src="./halloween-data.js?v=af00932fe41a"></script>
+  <script src="./halloween-daily.js?v=a52c265d74a7"></script>
+  <script src="./halloween.js?v=73b3533c9e50"></script>
+  <script src="./mobile.js?v=20261015201732"></script>
+</body>
+</html>

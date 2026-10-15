@@ -44,8 +44,14 @@ body.thirdJobPage { height: 100dvh; display: flex; flex-direction: column; overf
 .thirdJobEmpty { text-align: center; padding: 60px 0; color: var(--muted); }
 .thirdJobSources { padding: 20px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
 .thirdJobSources li { overflow-wrap: anywhere; }
-.thirdJobFlowToolbar { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding: 20px 0 14px; }
+.thirdJobFlowToolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; padding: 20px 0 14px; }
 .thirdJobFlowToolbar a { color: var(--blue); font-size: 14px; }
+.thirdJobFlowClassField { display: grid; gap: 6px; width: 560px; max-width: 100%; min-width: 0; }
+.thirdJobFlowClassField > span { font-size: 13px; font-weight: 700; color: var(--muted); }
+.thirdJobFlowClasses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.thirdJobFlowClasses button { min-width: 0; min-height: 46px; padding: 10px 4px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--control-bg); color: var(--control-text); font: inherit; font-size: 14px; line-height: 1.5; font-weight: 700; cursor: pointer; }
+.thirdJobFlowClasses button:hover { border-color: var(--accent); }
+.thirdJobFlowClasses button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--active-text); box-shadow: inset 0 -3px var(--accent); }
 .thirdJobSourceNote { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 880px; }
 .thirdJobSteps { list-style: none; padding: 0; margin: 18px 0 0; counter-reset: steps; }
 .thirdJobStep { padding: 22px 0; border-top: 1px solid var(--line); counter-increment: steps; }
@@ -77,5 +83,4 @@ body.thirdJobPage { height: 100dvh; display: flex; flex-direction: column; overf
   .thirdJobQuestions { grid-template-columns: minmax(0, 1fr); }
   .thirdJobQuestion { padding: 15px; }
   .thirdJobQuestion h3 { font-size: 16px; }
-  .thirdJobFlowToolbar label { min-width: 130px; }
 }

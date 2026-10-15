@@ -1,0 +1,105 @@
+.goddessPage { height: auto; min-height: 100vh; overflow: auto; background: var(--shell); letter-spacing: 0; }
+.goddessPage .mobileDock { display: none !important; }
+.goddessMain { width: 100%; max-width: 1080px; padding: 24px 28px 48px; margin: 0 auto; color: var(--ink); }
+.goddessMain a { color: var(--active-text); text-underline-offset: 3px; }
+.goddessMain h2, .goddessMain h3, .goddessMain h4 { margin: 0; line-height: 1.4; }
+.goddessMain h2 { font-size: 24px; }
+.goddessMain h3 { font-size: 20px; }
+.goddessMain h4 { font-size: 16px; }
+.goddessMain p { line-height: 1.65; overflow-wrap: anywhere; }
+.goddessMain button, .goddessMain select, .goddessDialog button { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; font: inherit; min-height: 44px; cursor: pointer; }
+.goddessMain button:disabled { cursor: default; opacity: .45; }
+.goddessMain :is(button, select, a, summary):focus-visible, .goddessDialog button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.goddessMain button:not(:disabled):hover { border-color: var(--accent); background: var(--accent-soft); }
+.goddessMain select { padding: 8px 30px 8px 10px; max-width: 100%; }
+.goddessHeading { display: flex; align-items: center; gap: 14px; padding-bottom: 24px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.goddessHeading img { object-fit: contain; image-rendering: pixelated; }
+.goddessHeading > div { flex: 1; min-width: 210px; }
+.goddessHeading p { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.goddessHeading > a { font-size: 14px; }
+.goddessSolver { padding: 24px 0 16px; }
+.goddessSectionHeading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.goddessTools { display: flex; gap: 8px; }
+.goddessMain .goddessIconButton { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 10px; flex: 0 0 44px; }
+.goddessIconButton svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.goddessRule { font-size: 14px; color: var(--muted); margin: 10px 0 24px; }
+.goddessWorkspace { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 36px; }
+.goddessPosition, .goddessResponse { min-width: 0; }
+.goddessPositionMeta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.goddessPlatforms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.goddessPlatforms > div { display: grid; text-align: center; justify-items: center; grid-template-rows: 24px 66px 22px; padding: 16px 8px 12px; border-bottom: 5px solid var(--blue); background: var(--panel); }
+.goddessPlatforms > div:first-child { border-color: var(--accent); }
+.goddessPlatforms > div:last-child { border-color: var(--gold); }
+.goddessPlatforms strong { font-size: 48px; line-height: 66px; font-variant-numeric: tabular-nums; }
+.goddessPlatforms span { font-size: 15px; }
+.goddessPlatforms small { color: var(--muted); font-size: 12px; }
+.goddessGuessRow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.goddessGuessRow > span { flex: 1; font-size: 13px; color: var(--muted); }
+.goddessChoices { margin-top: 20px; }
+#goddessGuessOrder { font-size: 13px; color: var(--muted); }
+.goddessGuessGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.goddessMain .goddessGuessButton { display: grid; grid-template-rows: 24px 16px; align-content: center; justify-items: center; gap: 2px; height: 60px; min-width: 0; padding: 6px 4px; letter-spacing: 0; }
+.goddessGuessValue { font-size: 18px; line-height: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.goddessGuessState { font-size: 12px; line-height: 16px; white-space: nowrap; color: var(--active-text); }
+.goddessMain .goddessGuessButton[data-recommended="true"] { border-color: var(--blue); border-style: dashed; }
+.goddessMain .goddessGuessButton[aria-pressed="true"] { border: 1px solid var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); color: var(--active-text); }
+.goddessMain .goddessGuessButton:disabled { opacity: 1; color: var(--muted); }
+.goddessMain .goddessGuessButton:disabled[aria-pressed="true"] { color: var(--active-text); }
+.goddessStatus { margin: 12px 0 0; font-size: 14px; color: var(--active-text); min-height: 48px; }
+.goddessCopyStatus { margin: 0; font-size: 12px; color: var(--muted); }
+#goddessCopyFallback { display: grid; gap: 6px; font-size: 13px; margin-top: 10px; }
+#goddessCopyText { width: 100%; min-width: 0; padding: 8px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); }
+.goddessResponse { padding-left: 28px; border-left: 1px solid var(--line); }
+.goddessNpc { display: flex; gap: 16px; align-items: center; margin: 0 0 20px; }
+.goddessNpc img { object-fit: contain; image-rendering: pixelated; }
+.goddessNpc p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.goddessFeedback { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.goddessFeedback button { display: grid; justify-items: center; gap: 8px; padding: 14px 4px; min-height: 92px; }
+.goddessFeedback strong { font-size: 26px; }
+.goddessFeedback span { font-size: 13px; }
+.goddessFeedback [data-feedback="3"] { background: var(--accent-soft); color: var(--active-text); border-color: var(--accent); }
+.goddessMathNote { color: var(--muted); font-size: 12px; margin: 14px 0 0; }
+.goddessError { color: #a13031; font-size: 14px; min-height: 24px; margin: 8px 0 0; }
+[data-theme="dark"] .goddessError { color: #ffabab; }
+.goddessHistory { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px; }
+#goddessHistoryCount { font-size: 13px; color: var(--muted); }
+#goddessEmpty { font-size: 14px; color: var(--muted); }
+#goddessHistory { list-style: none; padding: 0; margin: 12px 0 0; }
+#goddessHistory li { display: grid; grid-template-columns: 74px 1fr 100px; gap: 12px; padding: 12px 0; align-items: center; border-bottom: 1px solid var(--line); font-size: 14px; }
+#goddessHistory li > span { color: var(--muted); font-size: 13px; }
+#goddessHistory li > strong { font-variant-numeric: tabular-nums; }
+#goddessHistory li > em { font-style: normal; text-align: right; color: var(--active-text); }
+.goddessCandidates { margin-top: 16px; }
+.goddessMain summary { cursor: pointer; font-size: 14px; padding: 8px 0; }
+.goddessCandidates summary span { color: var(--muted); margin-left: 8px; }
+#goddessCandidates { display: flex; flex-wrap: wrap; gap: 8px 16px; font-variant-numeric: tabular-nums; font-size: 15px; color: var(--muted); }
+.goddessMusic { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); align-items: center; }
+.goddessMusic h3 { font-size: 18px; margin-bottom: 14px; }
+.goddessMusic label { font-size: 13px; margin-right: 12px; color: var(--muted); }
+.goddessMain #goddessWeekday { transition-property: border-color, box-shadow; }
+[data-theme="dark"] .goddessMain #goddessWeekday { background-color: #121926; color: var(--ink); }
+.goddessMusicItem { display: flex; gap: 14px; align-items: center; font-size: 15px; }
+.goddessMusicItem img { object-fit: contain; image-rendering: pixelated; flex-shrink: 0; }
+.goddessBasis { margin-top: 16px; color: var(--muted); font-size: 13px; }
+.goddessDialog { width: min(420px, calc(100% - 32px)); padding: 24px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--panel); }
+.goddessDialog::backdrop { background: #0008; }
+.goddessDialog h3 { margin-top: 0; }
+.goddessDialog p { line-height: 1.65; }
+.goddessDialog form > div { display: flex; gap: 12px; justify-content: flex-end; }
+.goddessDialog button { padding: 8px 14px; }
+@media (min-width: 681px) and (max-width: 900px) {
+  .goddessGuessGrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .goddessMain { padding: 18px 16px 36px; }
+  .goddessHeading { gap: 10px; padding-bottom: 18px; }
+  .goddessMain h2 { font-size: 22px; }
+  .goddessWorkspace { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .goddessResponse { border-left: 0; border-top: 1px solid var(--line); padding: 18px 0 0; }
+  .goddessNpc { margin-bottom: 12px; }
+  .goddessNpc img { width: 40px; height: 48px; }
+  .goddessMusic { grid-template-columns: minmax(0, 1fr); }
+  #goddessHistory li { grid-template-columns: 48px 1fr 78px; gap: 8px; font-size: 13px; }
+  .goddessGuessRow { gap: 8px; }
+  .goddessGuessGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
