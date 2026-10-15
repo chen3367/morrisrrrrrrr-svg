@@ -9,12 +9,16 @@
   const locations = npc => npc.maps.map(map => `<a href="${escape(map.href)}">${escape(map.name)}</a>`).join("、");
   const dialogue = rows => rows.map(row => `<div class="expDialogue"><small>${escape(row.key)}${row.fragment ? " · 伺服器拼接用片段" : ""}</small><p>${escape(row.text)}</p><details><summary>原始字串</summary><pre>${escape(row.raw)}</pre></details></div>`).join("");
   const shoes = data.shoes, charlie = data.charlie;
+  const params = new URLSearchParams(location.search);
+  const linkedMaterial = charlie.materials.find(row => String(row.id) === params.get("material"));
+  const linkedReward = linkedMaterial?.rewardReference?.rewards.find(row => String(row.id) === params.get("reward"));
   function rewardDetails(material) {
     const pool = material.rewardReference;
     if (!pool) return '<details class="expRewardDetails"><summary>隨機獎勵 · 暫無資料</summary><p class="expMinor">獎勵內容待確認。</p></details>';
     const rows = pool.rewards.map(row => {
       const tag = row.href ? "a" : "span";
-      return `<li><${tag}${row.href ? ` href="${escape(row.href)}"` : ""} class="expRewardItem">${row.image ? `<img src="${escape(row.image)}" width="32" height="32" alt="" loading="lazy" />` : '<span class="expMissingImage" aria-label="尚無本地圖示">?</span>'}<span>${escape(row.name)}${row.localStatus !== "完整" ? `<small>${escape(row.localStatus)}</small>` : ""}</span></${tag}><strong>×${n(row.count)}</strong></li>`;
+      const selected = material === linkedMaterial && row === linkedReward;
+      return `<li${selected ? ' class="expLinkedReward"' : ""}><${tag}${row.href ? ` href="${escape(row.href)}"` : ""} class="expRewardItem">${row.image ? `<img src="${escape(row.image)}" width="32" height="32" alt="" loading="lazy" />` : '<span class="expMissingImage" aria-label="尚無本地圖示">?</span>'}<span>${escape(row.name)}${row.localStatus !== "完整" ? `<small>${escape(row.localStatus)}</small>` : ""}</span></${tag}><strong>×${n(row.count)}</strong></li>`;
     }).join("");
     const issues = pool.issues.length ? `<p class="expWarning">另有 ${pool.issues.length} 項獎勵尚待確認，暫不列出。</p>` : "";
     return `<details class="expRewardDetails"><summary>隨機獎勵 <span>${pool.rewards.length} 項${pool.issues.length ? ` · ${pool.issues.length} 項待確認` : ""}</span></summary><p class="expMinor">每 ${material.batch} 個材料，隨機獲得一項獎勵。</p><ul class="expRewardList">${rows}</ul>${issues}</details>`;
@@ -80,7 +84,7 @@
   $("expForm").addEventListener("submit", event => event.preventDefault());
   $("expForm").addEventListener("input", event => { if (event.target.id !== "expSearch") update(); });
   $("expForm").addEventListener("change", update);
-  $("expSearch").addEventListener("input", () => {
+  function filterMaterials() {
     const query = $("expSearch").value.trim().toLocaleLowerCase();
     let count = 0;
     for (const row of charlie.materials) {
@@ -90,6 +94,17 @@
       if (visible) count++;
     }
     $("expSearchEmpty").hidden = count > 0;
-  });
+  }
+  $("expSearch").addEventListener("input", filterMaterials);
   update();
+  if (linkedMaterial) {
+    $("expSearch").value = String(linkedMaterial.id);
+    filterMaterials();
+    const details = document.querySelector(`[data-material="${linkedMaterial.id}"] .expRewardDetails`);
+    details.open = true;
+    requestAnimationFrame(() => {
+      $("expCharlie").scrollIntoView({ block: "start" });
+      details.querySelector("summary").focus({ preventScroll: true });
+    });
+  }
 })();

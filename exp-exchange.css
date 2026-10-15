@@ -42,6 +42,8 @@
 .expShoeStats span { font-size: 12px; color: var(--muted); }
 #expShoeWarning { grid-column: 1 / -1; }
 .expCharlie { padding: 22px 0; }
+#expCharlie { scroll-margin-top: 110px; }
+.expRewardList > .expLinkedReward { background: var(--accent-soft); outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; padding-inline: 8px; }
 .expSectionHeading { display: flex; align-items: center; gap: 20px; justify-content: space-between; margin-bottom: 12px; }
 .expRate { display: grid; gap: 6px; width: 180px; flex-shrink: 0; }
 .expMaterialToolbar { display: flex; gap: 20px; justify-content: space-between; align-items: end; margin-bottom: 12px; }

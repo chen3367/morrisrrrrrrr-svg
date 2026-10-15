@@ -2003,6 +2003,26 @@ h3 {
   white-space: normal;
 }
 .boxSourceList .sourceChipRow small { white-space: nowrap; }
+.exchangeSourceList {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 360px));
+}
+.exchangeSourceList .sourceChipRow {
+  grid-template-columns: 38px minmax(0, 1fr);
+  position: relative;
+  padding-top: 32px;
+}
+.exchangeSourceList .sourceChipRow strong,
+.exchangeSourceList .sourceChipRow p {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.exchangeSourceList .sourceChipBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
 .monsterQuestRequirementSourceList {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }

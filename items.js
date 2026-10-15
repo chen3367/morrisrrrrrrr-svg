@@ -654,6 +654,7 @@ function sourceRows(item) {
     boxSources: item.sources?.boxSources || [],
     boxChoices: item.sources?.boxChoices || [],
     gachaSources: item.sources?.gachaSources || [],
+    exchangeSources: item.sources?.exchangeSources || [],
   };
 }
 
@@ -675,6 +676,7 @@ function sourceCounts(item) {
     boxSources: rows.boxSources.length,
     boxChoices: rows.boxChoices.length,
     gachaSources: rows.gachaSources.length,
+    exchangeSources: rows.exchangeSources.length,
   };
 }
 
@@ -688,6 +690,7 @@ function sourceSummary(item) {
   if (counts.boxSources) parts.push(`箱子 ${formatNumber(counts.boxSources)}`);
   if (counts.boxChoices) parts.push(`內容 ${formatNumber(counts.boxChoices)}`);
   if (counts.gachaSources) parts.push(`轉蛋 ${formatNumber(counts.gachaSources)}`);
+  if (counts.exchangeSources) parts.push(`交換 ${formatNumber(counts.exchangeSources)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
 }
 
@@ -764,6 +767,9 @@ function searchableText(item) {
     row.itemId,
     row.itemName,
   ]);
+  const exchangeText = sources.exchangeSources.flatMap(row => [
+    row.name, row.npc?.id, row.npc?.name, row.material?.id, row.material?.name,
+  ]);
   return [
     item.id,
     ...(item.mergedIds || []),
@@ -782,6 +788,7 @@ function searchableText(item) {
     ...boxSourceText,
     ...boxChoiceText,
     ...gachaText,
+    ...exchangeText,
   ].map(norm).join(" ");
 }
 
@@ -1202,7 +1209,7 @@ function renderList() {
 
 function totalSources(item) {
   const counts = sourceCounts(item);
-  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices + counts.gachaSources;
+  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices + counts.gachaSources + counts.exchangeSources;
 }
 
 function selectedItem() {
@@ -1238,6 +1245,7 @@ function renderDetail() {
     ${renderSellPrice(item)}
     ${renderMonsterSources(item)}
     ${renderQuestSources(item)}
+    ${renderExchangeSources(item)}
     ${renderShopSources(item)}
     ${renderCraftSources(item)}
     ${renderBoxSources(item)}
@@ -1391,6 +1399,22 @@ function renderQuestSources(item) {
     </a>
   `;
   });
+}
+
+function renderExchangeSources(item) {
+  const rows = sourceRows(item).exchangeSources;
+  const note = rows.some(row => !row.currentVersionConfirmed)
+    ? '<small class="dropRateReferenceInline">舊版獎勵參考，現行品項與機率待確認。</small>' : "";
+  return sourceChipBlock("交換取得", rows, "exchangeSourceList", row => `
+    <a class="sourceRow sourceLinkRow sourceChipRow exchangeSourceRow" href="${escapeHtml(row.href)}">
+      ${assetImage(row.npc?.image, row.npc?.name || row.name, "?", "sourceMonsterImage")}
+      <div>
+        <strong>${escapeHtml(row.name)}</strong>
+        <p>${escapeHtml(row.material.name)} ×${formatNumber(row.material.count)}</p>
+      </div>
+      <small class="sourceChipBadge">隨機 ×${formatNumber(row.count)}</small>
+    </a>
+  `, note);
 }
 
 function shopPriceHtml(row) {
