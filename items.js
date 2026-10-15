@@ -1668,7 +1668,7 @@ function renderQuestRequirementSources(item) {
   return sourceChipBlock("任務需求", rows, "questSourceList questRequirementSourceList", row => {
     const summary = [row.category || "任務"];
     if (state.showIds) summary.push(`ID ${row.questId}`);
-    const meta = [row.stageLabel || "任務條件", `需要 ${formatNumber(row.count)} 個`];
+    const meta = [row.stageLabel || "任務條件", row.mustEquip === true ? "需裝備" : row.mustEquip === false ? "不可裝備" : `需要 ${formatNumber(row.count)} 個`];
     if (row.parent) meta.push(row.parent);
     const badge = questConditionBadgeHtml(row);
     return `

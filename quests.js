@@ -1132,7 +1132,7 @@ function renderRefs(quest) {
 }
 
 function itemLink(item) {
-  const meta = [`${formatNumber(item.count || 1)} 個`];
+  const meta = [item.mustEquip === true ? "需裝備" : item.mustEquip === false ? "不可裝備" : `${formatNumber(item.count || 1)} 個`];
   if (state.showIds) meta.push(`ID ${item.id}`);
   if (item.choice) meta.push("自選");
   else if (item.random) meta.push("隨機");

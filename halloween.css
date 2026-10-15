@@ -93,16 +93,19 @@
 .hwSteps li { margin: 10px 0; white-space: pre-line; }
 .hwLocationPreview > a { font-size: 13px; }
 .hwMapFrame { margin-top: 12px; padding: 28px 16px 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--shell); }
+.hwCompactLocation .hwMapFrame { max-width: 640px; }
 .hwMapCanvas { position: relative; width: 100%; }
 .hwMapCanvas > img { position: absolute; object-fit: fill; }
 .hwMapPoint { position: absolute; width: 0; height: 0; color: var(--ink); z-index: 1; }
 .hwMapDot { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #d84040; border: 1px solid #fff; }
 .hwMapLeader { position: absolute; left: 0; top: -1px; height: 2px; background: #d84040; transform-origin: 0 50%; }
 .hwMapNumber { position: absolute; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid #fff; border-radius: 50%; background: #a92525; color: #fff; font-size: 13px; font-weight: 700; transform: translate(-50%, -50%); }
+.hwMapName { width: auto; min-width: 48px; padding: 0 6px; border-radius: 4px; white-space: nowrap; }
 .hwMapPoint:focus-visible .hwMapNumber { outline: 3px solid var(--accent); outline-offset: 3px; }
 .hwMapCoordinates { display: flex; flex-wrap: wrap; gap: 12px 24px; list-style: none; margin: 14px 0 0; padding: 0; }
 .hwMapCoordinates li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .hwCoordinateNumber { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; background: #a92525; color: #fff; font-weight: 700; }
+.hwCoordinateIcon { width: 36px; height: 36px; flex: none; object-fit: contain; }
 .hwMapCoordinates strong, .hwMapCoordinates li > div > span { display: block; }
 .hwMapCoordinates li > div > span { color: var(--muted); font-variant-numeric: tabular-nums; }
 .hwRewardStats { display: flex; gap: 20px; flex-wrap: wrap; margin: 6px 0 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
