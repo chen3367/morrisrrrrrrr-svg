@@ -13,7 +13,10 @@
   <meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/web-changelog.html" />
   <meta property="og:image" content="https://morrisrrrrrrr-svg.github.io/assets/items/4031456.png" />
   <meta name="twitter:card" content="summary" />
-  <title>網頁更新日誌｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
+<meta property="og:description" content="記錄楓憶MapleMemory 網站功能更新、資料修正與 GitHub commit 變更。" />
+<meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/web-changelog.html" />
+<meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/web-changelog.html" />
+<title>網頁更新日誌｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
   <link rel="icon" href="data:," />
   <script>
     (function () {
@@ -39,7 +42,7 @@
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css?v=20260916103303" />
-  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-09-24T11:30:06Z","updatedAtText":"2026-09-24 19:30:06 GMT+8"};</script>
+  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-15T14:05:23+08:00","updatedAtText":"2026-10-15 14:05:23 GMT+8"};</script>
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -65,6 +68,7 @@
           <a href="./scroll-simulator.html">卷軸模擬器</a>
           <a href="./damage-calculator.html">戰鬥力計算機</a>
           <a href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./avatar-maker.html">線上紙娃娃</a>
           <a href="./boss-timer.html">Boss 計時器</a>
           <a href="./gacha-simulator.html">轉蛋模擬器</a>
           </div>
@@ -77,13 +81,14 @@
           </div>
         </details>
       </nav>
-      <div class="buildMeta" id="buildMeta">網頁更新 2026-09-24 19:30:06 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
+      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-15 14:05:23 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
     </div>
   </header>
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#c0b4b11dc"><strong>0b4b11dc</strong><span>2026-09-24</span></a>
+      <a class="patchVersionRow active" href="#c7a7f00e9"><strong>7a7f00e9</strong><span>2026-10-15</span></a>
+      <a class="patchVersionRow" href="#c0b4b11dc"><strong>0b4b11dc</strong><span>2026-09-24</span></a>
       <a class="patchVersionRow" href="#c49aeee05"><strong>49aeee05</strong><span>2026-09-24</span></a>
       <a class="patchVersionRow" href="#cf952570f"><strong>f952570f</strong><span>2026-09-19</span></a>
       <a class="patchVersionRow" href="#cf9085d85"><strong>f9085d85</strong><span>2026-09-22</span></a>
@@ -160,10 +165,22 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>66</strong>
+            <strong>67</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="c7a7f00e9" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/7a7f00e9efaa5e902514ba06923ce842b2a861e1">7a7f00e9</a> 遊戲 2.0.0 與道具交易屬性</h3>
+          <ul class="patchChangeList">
+            <li>更新至遊戲 2.0.0 資料，補充道具、任務、地圖與本地圖示；遊戲更新日誌逐項列出新增、修改、移除及修改前後內容。</li>
+            <li>怪物與地圖索引的「當前版本地區」加入冰原雪域、廢礦，沿用舊預設的篩選同步更新，自訂地區保持不變。</li>
+            <li>道具索引新增交易屬性，裝備綁定道具獨立顯示「裝備時不可交換」；缺乏可靠資料的項目標示「未確認」。</li>
+            <li>剪刀屬性與原始交易限制分開顯示，支援神奇剪刀說明；其他剪刀類型保留待確認標記。</li>
+            <li>同名但不同 ID 的道具保留各自交易與剪刀設定，可展開比較差異。</li>
+            <li>修正記憶音樂盒新版正確售價仍被舊規則隱藏的問題，並修復發布前檢查發現的空白怪物與技能圖示。</li>
+          </ul>
+        </section>
 
         <section id="c0b4b11dc" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/0b4b11dcf0589571015cb3b2ac279f08715d8f5b">0b4b11dc</a> 紙娃娃動作、寵物預覽與圖示修正</h3>
