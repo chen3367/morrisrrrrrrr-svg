@@ -1018,6 +1018,45 @@ function renderPartyQuestSeedMap(map) {
   </figure>`;
 }
 
+function renderPartyQuestGuideMap(map) {
+  if (!map) return "";
+  const {crop, bounds} = map;
+  const percent = (value, size) => (100 * Number(value) / Number(size)).toFixed(5);
+  const x = point => percent(point.x - crop.left, crop.width);
+  const y = point => percent(point.y - crop.top, crop.height);
+  const terrain = `<img class="partyQuestGuideTerrain" src="${escapeHtml(map.image)}" alt="${escapeHtml(map.mapName)}" loading="lazy" style="width:${percent(bounds.width, crop.width)}%;height:${percent(bounds.height, crop.height)}%;left:${percent(bounds.left - crop.left, crop.width)}%;top:${percent(bounds.top - crop.top, crop.height)}%">`;
+  const caption = `<figcaption>${escapeHtml(map.title)}<a href="./maps.html?map=${Number(map.mapId)}">查看地圖</a></figcaption>`;
+  if (map.mode === "hall") {
+    const labels = map.points.map(point => {
+      const stats = point.stats;
+      const title = `${point.label} ${point.monster ? point.monster.name.replace(/^女神的/, "") : "號房"}`;
+      const defenses = stats ? `<span>物防 ${Number(stats.PDDamage)} / 魔防 ${Number(stats.MDDamage)}</span><span>${escapeHtml(point.elements.summary)}</span>` : `<span>${escapeHtml(point.description)}</span>`;
+      return `<a class="partyQuestHallLabel pqTone-${escapeHtml(point.color)}" href="${escapeHtml(point.href)}" style="top:${y(point)}%"><strong>${escapeHtml(title)}</strong>${defenses}</a>`;
+    }).join("");
+    const markers = map.points.map(point => `<a class="partyQuestGuidePin pqTone-${escapeHtml(point.color)}" href="${escapeHtml(point.href)}" style="left:${x(point)}%;top:${y(point)}%" aria-label="${escapeHtml(point.label)} 號房入口">${escapeHtml(point.label)}</a>`).join("");
+    const leaders = `<svg class="partyQuestGuideLeaders" viewBox="0 0 ${crop.width} ${crop.height}" preserveAspectRatio="none" aria-hidden="true">${map.points.map(point => `<line x1="${point.x - crop.left}" y1="${point.y - crop.top}" x2="${crop.width}" y2="${point.y - crop.top}"/>`).join("")}</svg>`;
+    const mobs = map.points.filter(point => point.stats);
+    const common = mobs.every(point => point.stats.level === mobs[0].stats.level && point.stats.maxHP === mobs[0].stats.maxHP)
+      ? `三種獨角獅皆為 Lv.${Number(mobs[0].stats.level)}，HP ${Number(mobs[0].stats.maxHP).toLocaleString()}。` : "";
+    const rates = mobs.every(point => point.stats.PDRate == null && point.stats.MDRate == null)
+      ? ""
+      : mobs.map(point => `${point.label} 號房：物理減傷 ${point.stats.PDRate == null ? "未提供" : `${point.stats.PDRate}%`}、魔法減傷 ${point.stats.MDRate == null ? "未提供" : `${point.stats.MDRate}%`}`).join("；");
+    return `<figure class="partyQuestGuideMap pqGuide-hall">${caption}
+      <div class="partyQuestGuideViewport" tabindex="0" role="region" aria-label="大廳房間入口與抗性位置圖">
+        <div class="partyQuestHallScene" style="--hall-height:${128 * crop.height / crop.width}px">
+          <div class="partyQuestGuideCanvas">${terrain}${leaders}${markers}</div><div class="partyQuestHallLabels">${labels}</div>
+        </div>
+      </div><p class="partyQuestRewardNote">${escapeHtml(common)}${escapeHtml(rates)}</p>
+    </figure>`;
+  }
+  const markers = map.points.map(point => {
+    const area = point.area;
+    return `<span class="partyQuestDropArea" style="left:${percent(area.left - crop.left, crop.width)}%;top:${percent(area.top - crop.top, crop.height)}%;width:${percent(area.width, crop.width)}%;height:${percent(area.height, crop.height)}%"></span><a class="partyQuestGuidePin" href="${escapeHtml(point.item.href)}" style="left:${x(point)}%;top:${y(point)}%" title="${escapeHtml(point.item.name)}：${escapeHtml(point.position)}" aria-label="${escapeHtml(point.item.name)}，${escapeHtml(point.position)}，1 個">${escapeHtml(point.label)}</a>`;
+  }).join("");
+  const legend = map.points.map(point => `<a class="partyQuestFragment" href="${escapeHtml(point.item.href)}"><img src="${escapeHtml(point.item.image)}" alt="" loading="lazy"><span><strong>${escapeHtml(point.label)}. ${escapeHtml(point.position)}</strong><span>${escapeHtml(point.item.name)}</span><small>${escapeHtml(point.source)} · 1 個</small></span></a>`).join("");
+  return `<figure class="partyQuestGuideMap pqGuide-statue">${caption}<div class="partyQuestGuideCanvas" style="aspect-ratio:${crop.width}/${crop.height}">${terrain}${markers}</div><div class="partyQuestFragmentLegend">${legend}</div></figure>`;
+}
+
 function renderPartyQuestQuiz(quiz) {
   if (!quiz) return "";
   return `<div class="partyQuestQuiz">
@@ -1046,6 +1085,7 @@ function renderPartyQuestFlow(quest) {
     ${row.tool && tool ? `<a class="partyQuestToolLink" href="${escapeHtml(tool.href)}">${escapeHtml(tool.stepLabel || tool.label)} →</a>` : ""}
     ${row.entities.length ? `<div class="partyQuestEntities">${row.entities.map(entity).join("")}</div>` : ""}
     ${renderPartyQuestSeedMap(row.seedMap)}
+    ${renderPartyQuestGuideMap(row.guideMap)}
     ${renderPartyQuestQuiz(row.quiz)}
     ${row.id === "music" && flow.music?.length ? `<div class="partyQuestMusic">${flow.music.map(music => `<div><strong>${escapeHtml(music.label)}</strong>${entity(music.item)}</div>`).join("")}</div>` : ""}
     ${row.dialogues.length ? `<details class="questDialogueDetails partyQuestEvidence"><summary>NPC 對話依據<span>${row.dialogues.length} 段</span></summary>${row.dialogues.map(d => `<div class="partyQuestDialogue"><small>${escapeHtml(d.key)}</small><p>${escapeHtml(d.text)}</p></div>`).join("")}</details>` : ""}

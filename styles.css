@@ -1699,6 +1699,34 @@ h3 {
   .seedMap-plant .partyQuestSeedCanvas { min-width: 0; }
   .seedMap-plant .partyQuestSeedPosition { display: none; }
 }
+.partyQuestGuideMap { min-width: 0; max-width: 620px; margin: 20px 0; }
+.partyQuestGuideMap figcaption { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; margin-bottom: 10px; font-weight: 700; }
+.partyQuestGuideMap figcaption a { font-size: 13px; font-weight: 400; }
+.partyQuestGuideViewport { overflow-x: auto; max-width: 100%; overscroll-behavior-x: contain; }
+.partyQuestGuideViewport:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.partyQuestGuideCanvas { position: relative; overflow: hidden; background: var(--control-bg); min-width: 0; }
+.partyQuestGuideTerrain { position: absolute; max-width: none; object-fit: fill; image-rendering: pixelated; pointer-events: none; }
+.partyQuestHallScene { display: grid; grid-template-columns: 128px minmax(0, 1fr); min-width: 270px; max-width: 480px; height: var(--hall-height); }
+.partyQuestHallLabels { position: relative; min-width: 0; }
+.partyQuestGuideLeaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.partyQuestGuideLeaders line { stroke: var(--plain-text); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.partyQuestGuideMap .partyQuestHallLabel { position: absolute; left: 0; right: 0; transform: translateY(-50%); padding: 3px 10px; border-left: 3px solid var(--pq-tone); text-decoration: none; color: var(--plain-text); font-size: 13px; line-height: 1.65; }
+.partyQuestHallLabel strong { display: block; font-size: 14px; }
+.partyQuestHallLabel span { display: block; }
+.partyQuestGuideMap .partyQuestGuidePin { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; min-width: 28px; height: 28px; padding-inline: 4px; border: 2px solid var(--pq-tone, var(--accent)); border-radius: 14px; background: var(--control-bg); color: var(--plain-text); font-size: 13px; font-weight: 700; line-height: 1; text-decoration: none; }
+.partyQuestGuideMap a:focus-visible, .partyQuestGuideMap .partyQuestGuidePin:hover { outline: 2px solid var(--accent); outline-offset: 2px; z-index: 2; }
+.pqTone-red { --pq-tone: #d65353; }
+.pqTone-blue { --pq-tone: #3988d2; }
+.pqTone-yellow { --pq-tone: #b78d17; }
+.pqTone-neutral { --pq-tone: #7a8490; }
+.pqGuide-statue { max-width: 590px; }
+.partyQuestDropArea { position: absolute; border: 2px dashed #39a584; background: #39a58430; pointer-events: none; }
+.partyQuestFragmentLegend { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 8px 14px; margin-top: 12px; }
+.partyQuestGuideMap .partyQuestFragment { display: flex; gap: 8px; align-items: center; min-width: 0; padding: 6px 0; text-decoration: none; color: var(--plain-text); font-size: 13px; line-height: 1.5; }
+.partyQuestFragment img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; flex-shrink: 0; }
+.partyQuestFragment > span { min-width: 0; }
+.partyQuestFragment strong, .partyQuestFragment span span, .partyQuestFragment small { display: block; }
+.partyQuestFragment small { color: var(--muted); font-size: 12px; }
 .partyQuestQuiz { margin: 18px 0; min-width: 0; }
 .partyQuestQuizTable { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14px; }
 .partyQuestQuizTable caption { padding: 0 0 8px; text-align: left; font-weight: 700; color: var(--plain-text); }
@@ -5218,6 +5246,30 @@ h3 {
 .mobileDock {
   display: none;
 }
+.backToTop {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--control-bg);
+  color: var(--active-text);
+  box-shadow: var(--shadow-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.backToTop:hover { background: var(--accent-soft); }
+.backToTop:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 @media (min-width: 861px) {
   body {
     height: 100dvh;
