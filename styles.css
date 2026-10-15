@@ -343,6 +343,7 @@ h1 {
 .topNav a[href$="boss-timer.html"] { --nav-icon: url("./assets/monster_frames/6130101.png"); }
 .topNav a[href$="avatar-maker.html"] { --nav-icon: url("./assets/items/5150040.png"); }
 .topNav a[href$="gacha-simulator.html"] { --nav-icon: url("./assets/items/5222214.png"); }
+.topNav a[href$="third-job.html"] { --nav-icon: url("./assets/items/4031058.png"); }
 .topNav a[href$="patch-notes.html"] { --nav-icon: url("./assets/map_marks/Event.png"); }
 .topNav a[href$="web-changelog.html"] { --nav-icon: url("./assets/map_marks/Quest.png"); }
 .topNav a:hover {
@@ -1637,6 +1638,25 @@ h3 {
 .questDialogueSection .ringDialogueText { overflow-wrap: anywhere; }
 .questDialogueEmpty { margin: 12px 0; }
 .questDialogueSection { padding: 0 16px; }
+.questAnswerList {
+  margin: 0;
+  padding-left: 24px;
+  color: var(--active-text);
+}
+.questAnswerList li { padding: 8px 0 8px 4px; }
+.questAnswerOption {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.questAnswerText {
+  color: var(--plain-text);
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.ringDialogueChoice.questDialogueCorrect { border-width: 2px; }
 .npcStatCell {
   display: grid;
   align-content: start;

@@ -729,6 +729,7 @@ function renderDetail() {
     </section>
     ${renderQuestChain(quest)}
     ${renderQuestTexts(quest)}
+    ${renderQuestDialogueAnswers(quest)}
     ${renderQuestDialogues(quest)}
     ${renderQuestMeta(quest)}
     ${renderRequirements("接取條件", quest.startRequirements)}
@@ -771,6 +772,18 @@ function renderQuestChain(quest) {
     <div class="questChainColumns">${groups.filter(([, rows]) => rows.length).map(([label, rows]) => `
       <div class="questChainGroup"><h4>${label}</h4><div class="linkGrid">${rows.map(questLink).join("")}</div></div>
     `).join("")}</div></nav>`;
+}
+
+function renderQuestDialogueAnswers(quest) {
+  const answers = (quest.dialogues || []).filter(row => row.answer).map(row => row.answer);
+  if (!answers.length) return "";
+  return `<section class="sectionBlock questAnswerSection">
+    <div class="sectionTitle"><h3>對話正確答案</h3><span>${answers.map(row => row.choiceNumber).join(" → ")}</span></div>
+    <ol class="questAnswerList">${answers.map(row => `<li>
+      <span class="questAnswerOption">第 ${formatNumber(row.choiceNumber)} 個選項</span>
+      <div class="questAnswerText">${row.html}</div>
+    </li>`).join("")}</ol>
+  </section>`;
 }
 
 function renderQuestDialogues(quest) {

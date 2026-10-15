@@ -611,6 +611,7 @@ function formatReqJob(value) {
 function itemTypeText(item) {
   const parts = [item.category || item.kind || "其他"];
   if (item.subcategory && item.subcategory !== item.category) parts.push(item.subcategory);
+  if (item.variantLabel) parts.push(item.variantLabel);
   return parts.join(" · ");
 }
 
@@ -767,6 +768,7 @@ function searchableText(item) {
     item.id,
     ...(item.mergedIds || []),
     item.name,
+    item.variantLabel,
     item.desc,
     item.kind,
     item.category,
