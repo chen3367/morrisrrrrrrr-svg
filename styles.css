@@ -1563,6 +1563,16 @@ h3 {
   overflow-x: auto;
   padding: 12px 14px 14px;
 }
+.itemTradeAttributes > p,
+.itemTradeAttributes > small,
+.itemTradeAttributes > details {
+  margin: 8px 14px;
+  overflow-wrap: anywhere;
+}
+.itemTradeAttributes > small {
+  display: block;
+  color: var(--muted);
+}
 .statCell {
   min-width: 0;
   min-height: 56px;

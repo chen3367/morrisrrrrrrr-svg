@@ -1231,6 +1231,7 @@ function renderDetail() {
         <div class="heroCounter"><strong>${escapeHtml(item.subcategory || item.kind)}</strong><span>細類</span></div>
       </div>
     </section>
+    ${renderTradeAttributes(item)}
     ${renderEquipmentStats(item)}
     ${renderSellPrice(item)}
     ${renderMonsterSources(item)}
@@ -1244,6 +1245,21 @@ function renderDetail() {
     ${renderCraftRequirementSources(item)}
     ${totalSources(item) ? "" : `<div class="empty">${questRequirementRows(item).length || craftRequirementRows(item).length ? "目前資料集中沒有取得途徑；已列出需求用途" : "目前資料集中沒有取得途徑"}</div>`}
   `;
+}
+
+function renderTradeAttributes(item) {
+  const variants = item.tradeVariants || [];
+  const selected = variants.find(row => String(row.id) === String(state.selectedId)) || item.trade;
+  const trade = selected || { label: "未確認", note: "缺少本地交易屬性資料。" };
+  const scissorsHtml = row => row.scissors ? `<p class="itemScissorsAttribute"><b>剪刀屬性：</b>${escapeHtml(row.scissors.label)}</p>` : "";
+  const rows = variants.map(row => `<div class="statCell"><span>#${row.id}</span><strong>${escapeHtml(row.label)}</strong>${row.note ? `<p>${escapeHtml(row.note)}</p>` : ""}${scissorsHtml(row)}</div>`).join("");
+  return `<section class="sectionBlock itemTradeAttributes">
+    <div class="sectionTitle"><h3>交易屬性</h3><strong>${escapeHtml(trade.label)}</strong></div>
+    ${trade.note ? `<p>${escapeHtml(trade.note)}</p>` : ""}
+    ${scissorsHtml(trade)}
+    ${trade.scissors ? `<small>依客戶端設定，實際開放情況以遊戲內為準。</small>` : ""}
+    ${rows ? `<details><summary>同名道具的交易屬性不同</summary><div class="statsGrid">${rows}</div></details>` : ""}
+  </section>`;
 }
 
 function renderSellPrice(item) {

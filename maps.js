@@ -143,11 +143,14 @@ function initialShowSpecialMaps() {
   return cookieBool("ms_show_special_maps");
 }
 
-const DEFAULT_MAP_REGIONS = ["楓之島", "維多利亞島", "奇幻村", "鯨魚號"];
+const DEFAULT_MAP_REGIONS = ["楓之島", "維多利亞島", "奇幻村", "鯨魚號", "冰原雪域", "廢礦"];
 
 function initialSelectedMapRegions() {
   const raw = cookieValue("ms_map_regions");
-  if (raw) return raw.split("|").map(value => value.trim()).filter(Boolean);
+  if (raw) {
+    const selected = raw.split("|").map(value => value.trim()).filter(Boolean);
+    return sameSelection(selected, ["楓之島", "維多利亞島", "奇幻村", "鯨魚號"]) ? [...DEFAULT_MAP_REGIONS] : selected;
+  }
   const legacy = cookieValue("ms_map_region");
   if (legacy) return [legacy];
   return [...DEFAULT_MAP_REGIONS];
