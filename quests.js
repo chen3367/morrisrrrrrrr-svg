@@ -1103,6 +1103,18 @@ function renderPartyQuestFlow(quest) {
   </section>`;
 }
 
+function scrollToPartyQuestStep() {
+  if (!location.hash.startsWith("#partyQuest-")) return;
+  const step = document.getElementById(location.hash.slice(1));
+  if (!step?.closest("#partyQuestFlow")) return;
+  for (let parent = step.parentElement; parent; parent = parent.parentElement) {
+    if (parent.tagName === "DETAILS") parent.open = true;
+  }
+  requestAnimationFrame(() => step.scrollIntoView({block: "start", behavior: "instant"}));
+}
+window.addEventListener("hashchange", scrollToPartyQuestStep);
+window.addEventListener("load", scrollToPartyQuestStep);
+
 function renderPartyQuestRewards(quest) {
   const info = quest.partyQuestRewards;
   if (!info) return "";

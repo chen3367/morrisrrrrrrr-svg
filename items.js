@@ -1376,21 +1376,22 @@ function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
   return sourceChipBlock("任務獲取", rows, "questSourceList", row => {
     const historical = row.sourceKind === "historicalPartyQuestReward";
+    const bonusBox = row.sourceKind === "partyQuestBox";
     const summary = [questStateLabel(row.state)];
     if (row.category) summary.push(row.category);
     if (state.showIds) summary.push(`ID ${row.questId}`);
-    const meta = [row.quantityLabel || `${formatNumber(row.count)} 個`];
+    const meta = bonusBox ? ["隨機掉落"] : [row.quantityLabel || `${formatNumber(row.count)} 個`];
     if (row.choice) meta.push("自選獎勵");
-    else if (row.random) meta.push("隨機獎勵");
-    if (row.sourceLabel && row.sourceLabel !== "任務獎勵" && !historical) meta.push(row.sourceLabel);
+    else if (row.random && !bonusBox) meta.push("隨機獎勵");
+    if (row.sourceLabel && row.sourceLabel !== "任務獎勵" && !historical && !bonusBox) meta.push(row.sourceLabel);
     const sourceNpc = row.sourceNpc || row.rewardNpc || null;
     if (sourceNpc?.name) meta.push(sourceNpc.name);
     const badge = questConditionBadgeHtml(row);
     return `
-    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}" href="${questUrl(row.questId)}">
-      ${questNpcImage(row)}
+    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}" href="${questUrl(row.questId)}${bonusBox ? "#partyQuest-bonus" : ""}">
+      ${bonusBox ? assetImage("./assets/map_marks/GoddessTower.png", "寶物倉庫", "箱", "sourceMonsterImage") : questNpcImage(row)}
       <div>
-        <strong>${escapeHtml(row.questName)}</strong>
+        <strong>${escapeHtml(row.questName)}${bonusBox ? "：寶物倉庫箱子" : ""}</strong>
         <span>${escapeHtml(summary.join(" · "))}</span>
         <p>${escapeHtml(meta.join(" · "))}</p>
       </div>
