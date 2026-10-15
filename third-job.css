@@ -1,0 +1,86 @@
+body.thirdJobPage { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.thirdJobPage .appHeader { flex: none; }
+.thirdJobPage .mobileDock { display: none !important; }
+.thirdJobMain { flex: 1; min-height: 0; overflow: auto; padding: 24px max(20px, calc((100% - 1240px) / 2)); background: var(--shell); color: var(--ink); }
+.thirdJobMain * { letter-spacing: 0; }
+.thirdJobMain h2, .thirdJobMain h3, .thirdJobMain p { margin: 0; }
+.thirdJobHeading { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.thirdJobHeading > img { object-fit: contain; image-rendering: pixelated; }
+.thirdJobHeading h2 { font-size: 25px; }
+.thirdJobHeading p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.thirdJobTabs { display: flex; gap: 0; margin-left: auto; border: 1px solid var(--control-border); border-radius: 6px; overflow: hidden; }
+.thirdJobTabs button { padding: 11px 16px; border: 0; border-radius: 0; background: var(--control-bg); color: var(--control-text); font: inherit; font-weight: 700; cursor: pointer; }
+.thirdJobTabs button + button { border-left: 1px solid var(--control-border); }
+.thirdJobTabs button[aria-pressed="true"] { background: var(--accent-soft); color: var(--active-text); box-shadow: inset 0 -3px var(--accent); }
+.thirdJobSearchBar { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px 0 14px; }
+.thirdJobMain label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.thirdJobSearch { flex: 1; min-width: min(100%, 280px); }
+.thirdJobMain input, .thirdJobMain select { border: 1px solid var(--control-border); background: var(--control-bg); color: var(--ink); border-radius: 6px; padding: 11px 12px; font: inherit; font-size: 16px; min-width: 0; max-width: 100%; height: 46px; }
+.thirdJobMain select { min-width: 128px; }
+.thirdJobResultsMeta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: var(--muted); padding-bottom: 14px; font-size: 14px; }
+.thirdJobResultsMeta small { font-size: 12px; }
+.thirdJobQuestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.thirdJobQuestion { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.thirdJobQuestion header { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.thirdJobQuestion h3 { font-size: 16px; line-height: 1.65; font-weight: 600; overflow-wrap: anywhere; }
+.thirdJobAnswer { display: flex; align-items: baseline; gap: 10px; margin: 14px 0; color: var(--active-text); }
+.thirdJobAnswer span { font-size: 12px; flex: none; }
+.thirdJobAnswer strong { font-size: 19px; line-height: 1.5; overflow-wrap: anywhere; }
+.thirdJobQuestion[data-status="inferred"] .thirdJobAnswer { color: var(--gold); }
+.thirdJobMain .thirdJobWarning { color: var(--gold); font-size: 13px; line-height: 1.7; margin-bottom: 12px; }
+.thirdJobMain details > summary { cursor: pointer; font-size: 13px; color: var(--muted); padding: 8px 0; }
+.thirdJobMain details > summary:hover { color: var(--active-text); }
+.thirdJobOptions { padding: 0; list-style: none; display: grid; gap: 6px; }
+.thirdJobOptions li { padding: 8px 10px; border-left: 3px solid transparent; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.thirdJobOptions li[data-answer="true"] { border-left-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+.thirdJobQuestion[data-status="inferred"] .thirdJobOptions li[data-answer="true"] { border-left-color: var(--gold); background: var(--item-glyph-bg); color: var(--item-glyph-text); }
+.thirdJobOptions .thirdJobAnswerTag { font-size: 12px; margin-left: 8px; color: var(--active-text); white-space: nowrap; }
+.thirdJobEvidence { border-top: 1px solid var(--line); padding: 12px 0 0; font-size: 13px; line-height: 1.7; color: var(--muted); }
+.thirdJobEntities { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 0; }
+.thirdJobEntity { display: inline-flex; align-items: center; gap: 7px; min-width: 0; max-width: 100%; color: var(--ink); font-size: 13px; text-decoration: none; }
+.thirdJobEntity span { overflow-wrap: anywhere; }
+.thirdJobEntity img { width: 36px; height: 40px; flex: none; object-fit: contain; image-rendering: pixelated; }
+.thirdJobMain pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--panel-soft); padding: 12px; font-size: 12px; line-height: 1.7; margin: 4px 0 8px; }
+.thirdJobEmpty { text-align: center; padding: 60px 0; color: var(--muted); }
+.thirdJobSources { padding: 20px 0; font-size: 13px; color: var(--muted); line-height: 1.7; }
+.thirdJobSources li { overflow-wrap: anywhere; }
+.thirdJobFlowToolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; padding: 20px 0 14px; }
+.thirdJobFlowToolbar a { color: var(--blue); font-size: 14px; }
+.thirdJobFlowClassField { display: grid; gap: 6px; width: 560px; max-width: 100%; min-width: 0; }
+.thirdJobFlowClassField > span { font-size: 13px; font-weight: 700; color: var(--muted); }
+.thirdJobFlowClasses { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.thirdJobFlowClasses button { min-width: 0; min-height: 46px; padding: 10px 4px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--control-bg); color: var(--control-text); font: inherit; font-size: 14px; line-height: 1.5; font-weight: 700; cursor: pointer; }
+.thirdJobFlowClasses button:hover { border-color: var(--accent); }
+.thirdJobFlowClasses button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--active-text); box-shadow: inset 0 -3px var(--accent); }
+.thirdJobSourceNote { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 880px; }
+.thirdJobSteps { list-style: none; padding: 0; margin: 18px 0 0; counter-reset: steps; }
+.thirdJobStep { padding: 22px 0; border-top: 1px solid var(--line); counter-increment: steps; }
+.thirdJobStep h3 { font-size: 18px; line-height: 1.6; }
+.thirdJobStep h3::before { content: counter(steps, decimal-leading-zero); display: inline-block; width: 38px; color: var(--blue); font-variant-numeric: tabular-nums; }
+.thirdJobStep > p { line-height: 1.8; font-size: 15px; margin: 10px 0; max-width: 960px; }
+.thirdJobStepPeople { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 10px 0; }
+.thirdJobStepPeople a { color: var(--blue); font-size: 13px; }
+.thirdJobGate { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 8px 0; }
+.thirdJobGateMap { color: var(--blue); font-size: 14px; font-weight: 700; }
+.thirdJobGate small { color: var(--muted); font-size: 13px; }
+.thirdJobDialogue { padding: 12px 0; border-bottom: 1px dotted var(--line); }
+.thirdJobDialogue small { display: block; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; margin-bottom: 8px; }
+.thirdJobDialogue p { white-space: pre-wrap; line-height: 1.9; font-size: 14px; overflow-wrap: anywhere; }
+.thirdJobArchive { padding: 16px 0; border-top: 1px solid var(--line); }
+.thirdJobArchive h3 { font-size: 16px; }
+.thirdJobMain :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 860px) {
+  body.thirdJobPage { padding-bottom: 0; }
+  .thirdJobMain { padding: 16px 14px 24px; }
+  .thirdJobHeading { gap: 10px; padding-bottom: 16px; }
+  .thirdJobHeading h2 { font-size: 22px; }
+  .thirdJobTabs { width: 100%; margin-top: 8px; }
+  .thirdJobTabs button { flex: 1; min-width: 0; padding: 12px 8px; font-size: 14px; }
+  .thirdJobSearchBar { gap: 10px; }
+  .thirdJobSearch { flex-basis: 100%; }
+  .thirdJobSearchBar label:not(.thirdJobSearch) { flex: 1; min-width: 0; }
+  .thirdJobMain select { min-width: 0; width: 100%; }
+  .thirdJobQuestions { grid-template-columns: minmax(0, 1fr); }
+  .thirdJobQuestion { padding: 15px; }
+  .thirdJobQuestion h3 { font-size: 16px; }
+}

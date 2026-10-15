@@ -1,0 +1,97 @@
+body.skillChangesPage {height: auto; min-height: 100dvh; overflow-y: auto;}
+.skillChangesPage .mobileDock {display: none !important;}
+.skillChangesPage {--sc-bg: #fff; --sc-text: #243b38; --sc-muted: #59686e; --sc-line: #d5e0e5; --sc-accent: #246d55; --sc-soft: #edf7f0; --sc-warn: #795318; --sc-warn-bg: #fff7e5; --sc-old: #82514c; --sc-new: #206848; letter-spacing: 0;}
+:root[data-theme="dark"] .skillChangesPage {--sc-bg: #182121; --sc-text: #e3ece9; --sc-muted: #b5c0c4; --sc-line: #3a4b4c; --sc-accent: #a0dec2; --sc-soft: #213b32; --sc-warn: #f0ce87; --sc-warn-bg: #383124; --sc-old: #f0b6aa; --sc-new: #a6dfbc;}
+.scMain {width: min(1120px, 100%); margin: 0 auto; padding: 24px 24px 72px; color: var(--sc-text);}
+.scMain *, .scMain *::before, .scMain *::after {box-sizing: border-box; letter-spacing: 0;}
+.scHeading {display: flex; align-items: center; gap: 14px; margin: 0 0 18px;}
+.scHeading img, .scSkillIcon {object-fit: contain; image-rendering: pixelated; flex-shrink: 0;}
+.scHeading h2 {font-size: 26px; line-height: 1.3; margin: 0 0 3px; color: var(--sc-accent);}
+.scHeading p {margin: 0; color: var(--sc-muted); font-size: 14px;}
+.scSummary {display: flex; flex-wrap: wrap; gap: 10px 28px; padding: 16px 0; border-block: 1px solid var(--sc-line); font-size: 14px;}
+.scSummary strong {font-size: 22px; margin-inline-start: 6px; color: var(--sc-accent);}
+.scNotice, .scCoverage p {font-size: 13px; line-height: 1.7; color: var(--sc-muted);}
+.scCoverage {margin: 0 0 20px; border-bottom: 1px solid var(--sc-line); padding-bottom: 14px;}
+.scCoverage summary {font-size: 14px; color: var(--sc-accent); cursor: pointer;}
+.scCoverage table {margin-block: 12px;}
+.scCoverage td small {display: block; font-size: 11px; color: var(--sc-muted);}
+.scCareers {display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; scroll-margin-top: 100px;}
+.scCareer {display: grid; grid-template-rows: 84px 36px 30px; align-items: center; justify-items: center; gap: 4px; min-width: 0; padding: 8px; border: 1px solid var(--sc-line); border-radius: 6px; background: var(--sc-bg); color: var(--sc-text); font: inherit; cursor: pointer;}
+.scCareer img {width: 100%; height: 84px; object-fit: contain;}
+.scCareer strong {display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; height: 36px; font-size: 14px; line-height: 18px; overflow-wrap: anywhere;}
+.scCareerCounts {display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 0 7px; min-width: 0; font-size: 12px; line-height: 15px; color: var(--sc-muted);}
+.scCareerCounts > span {white-space: nowrap;}
+.scCareer:hover {border-color: var(--sc-accent);}
+.scCareer[aria-pressed="true"] {background: var(--sc-soft); border-color: var(--sc-accent); box-shadow: inset 0 -3px var(--sc-accent);}
+.scMain :is(button, input, select, summary, a):focus-visible {outline: 2px solid var(--sc-accent); outline-offset: 3px;}
+.scResultsHeading {display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-block: 26px 12px; padding-top: 18px; border-top: 1px solid var(--sc-line); scroll-margin-top: 100px;}
+.scResultsHeading h3 {font-size: 17px; margin: 0;}
+.scResultsHeading > div {min-width: 0;}
+#scCareerPath {margin: 7px 0 0; font-size: 13px; line-height: 1.7; color: var(--sc-muted); overflow-wrap: anywhere;}
+.scResultsActions {display: grid; gap: 8px; flex-shrink: 0; text-align: right;}
+.scResultsActions a {font-size: 13px; color: var(--sc-accent); text-underline-offset: 3px;}
+.scStage {padding-block: 4px 16px;}
+.scStage > h4 {display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 16px; line-height: 1.5; margin: 12px 0;}
+.scStage > h4 span {flex-shrink: 0; color: var(--sc-muted); font-size: 12px; font-weight: 400;}
+.scNoChanges {font-size: 13px; color: var(--sc-muted); margin: 0; padding-bottom: 10px;}
+#scCount {font-size: 13px; color: var(--sc-muted);}
+.scSkill {background: var(--sc-bg); border: 1px solid var(--sc-line); border-radius: 6px; margin-bottom: 10px; overflow: clip; scroll-margin-top: 100px;}
+.scSkill > summary {cursor: pointer; display: grid; grid-template-columns: 18px 40px minmax(0, 1fr) auto; gap: 12px; padding: 16px; align-items: center; list-style: none;}
+.scSkill > summary::-webkit-details-marker {display: none;}
+.scSkill > summary::before {content: ""; width: 7px; height: 7px; border-right: 2px solid var(--sc-muted); border-bottom: 2px solid var(--sc-muted); transform: rotate(-45deg); margin-left: 3px;}
+.scSkill[open] > summary::before {transform: rotate(45deg);}
+.scSkill > summary strong {display: block; font-size: 16px; line-height: 1.5; overflow-wrap: anywhere;}
+.scSkill > summary small {display: block; color: var(--sc-muted); font-size: 12px; margin-top: 2px; line-height: 1.5;}
+.scReason {display: block; margin-top: 5px; font-size: 13px; line-height: 1.7; color: var(--sc-text); overflow-wrap: anywhere;}
+.scCategory {font-size: 13px; font-weight: 700; white-space: nowrap; align-self: start; line-height: 1.8;}
+.scCategory-buff {color: var(--sc-new);}
+.scCategory-nerf {color: var(--sc-old);}
+.scCategory-adjustment {color: var(--sc-warn);}
+.scBody {padding: 0 20px 22px; border-top: 1px solid var(--sc-line);}
+.scBody h4 {font-size: 15px; margin: 20px 0 8px;}
+.scBody p {font-size: 14px; line-height: 1.7;}
+.scBody a {color: var(--sc-accent); text-underline-offset: 3px;}
+.scNote {background: var(--sc-warn-bg); color: var(--sc-warn); padding: 10px 12px; border-left: 3px solid var(--sc-warn);}
+.scEvidence {color: var(--sc-muted); font-size: 12px !important;}
+.scTable {border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed;}
+.scTable th, .scTable td {border-bottom: 1px solid var(--sc-line); padding: 9px 10px; text-align: left; vertical-align: top; overflow-wrap: anywhere; line-height: 1.6;}
+.scTable th {font-weight: 600; color: var(--sc-muted); background: var(--sc-soft);}
+.scTable .scLevel {width: 64px;}
+.scTable .scField {width: 38%;}
+.scBefore {color: var(--sc-muted);}
+.scAfter {color: var(--sc-text); font-weight: 700;}
+.scArrow {color: var(--sc-muted); margin: 0 8px;}
+.scTextCompare {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;}
+.scTextCompare > div {min-width: 0;}
+.scTextCompare h5 {font-size: 13px; margin: 0; color: var(--sc-muted);}
+.scTextCompare p {white-space: pre-line; overflow-wrap: anywhere; margin-top: 6px;}
+.scLevelText {margin-top: 14px;}
+.scLevelText > summary {font-size: 14px; cursor: pointer; color: var(--sc-accent); padding-block: 8px;}
+.scLevelText tr small {display: block; color: var(--sc-muted); margin-bottom: 3px; font-size: 11px;}
+@media (min-width: 621px) and (max-width: 900px) {
+  .scCareers {grid-template-columns: repeat(4, minmax(0, 1fr));}
+}
+@media (max-width: 620px) {
+  .scMain {padding: 18px 12px 48px;}
+  .scHeading h2 {font-size: 23px;}
+  .scSummary {gap: 12px 18px;}
+  .scSummary strong {font-size: 20px;}
+  .scCareers {grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;}
+  .scCareer {grid-template-rows: 64px 36px 30px; padding: 6px;}
+  .scCareer img {height: 64px;}
+  .scCareer strong {font-size: 12px;}
+  .scCareerCounts {font-size: 11px; column-gap: 5px;}
+  .scSkill > summary {grid-template-columns: 12px 32px minmax(0, 1fr); padding: 13px 10px; gap: 9px;}
+  .scSkillIcon {width: 32px; height: 32px;}
+  .scCategory {grid-column: 3; justify-self: start;}
+  .scBody {padding: 0 12px 16px;}
+  .scTextCompare {grid-template-columns: 1fr; gap: 10px;}
+  .scTable th, .scTable td {padding: 8px 5px; font-size: 12px;}
+  .scTable .scLevel {width: 38px;}
+  .scTable .scField {width: 40%;}
+  .scArrow {margin-inline: 4px;}
+  .scLevelText table, .scLevelText tbody, .scLevelText tr, .scLevelText td {display: block; width: 100%;}
+  .scLevelText thead {display: none;}
+  .scLevelText td:first-child {font-weight: 700; background: var(--sc-soft); width: 100%;}
+  .scLevelText td[data-version]::before {content: attr(data-version); display: inline-block; color: var(--sc-muted); margin-right: 8px;}
+}

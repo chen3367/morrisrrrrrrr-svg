@@ -120,13 +120,16 @@ function bindSearchHistory() {
 const DEFAULT_HIDDEN_CONTINENTS = new Set(["楓葉世界", "日本"]);
 const EVENT_CONTINENTS = new Set(["楓葉世界"]);
 const UNKNOWN_CONTINENT_OPTION = "未知地區";
-const CURRENT_VERSION_CONTINENTS = ["楓之島", "維多利亞島", "奇幻村"];
+const CURRENT_VERSION_CONTINENTS = ["楓之島", "維多利亞島", "奇幻村", "冰原雪域", "廢礦"];
 const ELEMENT_FILTER_KEYS = ["fire", "ice", "lightning", "poison", "holy", "undead"];
 let availableContinents = [];
 
 function initialSelectedContinents() {
   const raw = cookieValue("ms_monster_continents");
-  if (raw) return raw.split("|").map(value => value.trim()).filter(Boolean);
+  if (raw) {
+    const selected = raw.split("|").map(value => value.trim()).filter(Boolean);
+    return sameSelection(selected, ["楓之島", "維多利亞島", "奇幻村"]) ? [...CURRENT_VERSION_CONTINENTS] : selected;
+  }
   const legacy = cookieValue("ms_monster_continent");
   return legacy ? [legacy] : [...CURRENT_VERSION_CONTINENTS];
 }

@@ -1090,8 +1090,8 @@ function renderPrizePool(pool, target) {
       <div class="gachaPanelHeader">
         <h2>獎池機率</h2>
         <span>
-          <a href="${escapeHtml(pool.sourceUrl)}" target="_blank" rel="noopener">${isPetFusionPool(pool) ? "音樂盒公告" : "官方公告"}</a>
-          ${pool.secondarySourceUrl ? ` · <a href="${escapeHtml(pool.secondarySourceUrl)}" target="_blank" rel="noopener">共鳴石公告</a>` : ""}
+          <span>${isPetFusionPool(pool) ? "音樂盒公告" : "官方公告"}</span>
+          ${pool.secondarySourceUrl ? " · 共鳴石公告" : ""}
         </span>
       </div>
       ${sections}

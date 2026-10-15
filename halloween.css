@@ -1,0 +1,151 @@
+.halloweenPage { height: auto; min-height: 100vh; overflow: auto; background: var(--shell); letter-spacing: 0; }
+.halloweenPage .mobileDock { display: none !important; }
+.halloweenMain { max-width: 1440px; width: 100%; margin: 0 auto; padding: 24px 28px 56px; color: var(--ink); font-size: 15px; line-height: 1.65; }
+.halloweenMain * { min-width: 0; }
+.halloweenMain [hidden] { display: none !important; }
+.halloweenMain :is(h2,h3,h4,p) { margin: 0; }
+.halloweenMain h2 { font-size: 24px; line-height: 1.4; }
+.halloweenMain h3 { font-size: 20px; line-height: 1.5; }
+.halloweenMain h4 { font-size: 15px; margin: 12px 0 8px; }
+.halloweenMain :is(p,li,span,strong,a,summary) { overflow-wrap: anywhere; }
+.halloweenMain a { color: var(--active-text); text-underline-offset: 3px; }
+.halloweenMain img { object-fit: contain; image-rendering: pixelated; flex: none; }
+.halloweenMain :is(input,select) { display: block; width: 100%; min-height: 44px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; font: inherit; transition: border-color .16s, box-shadow .16s; }
+.hwSidebar :is(input,select) { height: 44px; min-height: 44px; max-height: 44px; flex: none; }
+.halloweenMain :is(a,input,select,summary):focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.halloweenMain summary { cursor: pointer; padding: 12px 0; font-weight: 700; }
+.halloweenMain details { border-top: 1px solid var(--line); }
+.hwHeading { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.hwHeading > div { flex: 1; }
+.hwHeading p { font-size: 13px; color: var(--muted); margin-top: 5px; }
+.hwHeading > a { font-size: 13px; }
+.halloweenMain .hwNotice { margin: 20px 0; font-size: 13px; color: var(--muted); }
+.hwDailyChecklist { padding: 18px 0; border-top: 1px solid var(--line); }
+.hwDailyHeading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 20px; flex-wrap: wrap; }
+.hwDailyHeading h2 { font-size: 19px; }
+.hwDailyHeading > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 14px; font-size: 12px; color: var(--muted); }
+.hwDailyTasks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 28px; margin: 14px 0 8px; }
+.hwDailyTask { display: flex; align-items: start; gap: 10px; padding: 8px 0; }
+.hwDailyTask > div { flex: 1; }
+.hwDailyTask strong { font-size: 15px; }
+.hwDailyTask p, .hwDailyChecklist > p, .hwDailyGiftShop > p { font-size: 12px; color: var(--muted); margin: 4px 0; }
+.halloweenMain .hwDailyCheckTarget { display: flex; flex: none; align-items: center; justify-content: center; width: 44px; min-height: 44px; cursor: pointer; }
+.halloweenMain .hwDailyChecklist input[type="checkbox"] { display: inline-block; width: 20px; min-width: 20px; height: 20px; min-height: 20px; margin: 0; padding: 0; accent-color: var(--accent); flex: none; cursor: pointer; }
+.hwDailyTask:has(input:checked) > div > a { color: var(--muted); }
+.hwDailyGiftShop { margin-top: 14px; }
+.hwDailyGiftShop > summary { display: list-item; }
+.hwDailyGiftShop > summary strong { font-size: 14px; }
+.hwDailyGiftShop > summary span { float: right; margin-left: 12px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.hwDailyBoxes { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 0 16px; margin: 12px 0; }
+.hwDailyBox { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 2px; border-top: 1px solid var(--line); cursor: pointer; }
+.hwDailyBox > span { display: grid; gap: 2px; }
+.hwDailyBox strong { font-size: 13px; }
+.hwDailyBox small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hwDailyBox:has(input:checked) { background: var(--accent-soft); }
+.halloweenMain #hwDailyStorageWarning { color: var(--ink); border-left: 3px solid var(--gold); padding-left: 8px; margin-top: 8px; }
+.hwChapters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); gap: 24px; padding: 16px 0; }
+.hwChapters a { display: grid; gap: 4px; text-decoration: none; border-left: 3px solid var(--accent); padding-left: 12px; }
+.hwChapters a:nth-child(2) { border-color: var(--blue); }
+.hwChapters a:nth-child(3) { border-color: var(--gold); }
+.hwChapters small { color: var(--muted); font-size: 12px; }
+.hwChapters strong { font-size: 14px; }
+.hwLayout { display: grid; grid-template-columns: 280px minmax(0,1fr); gap: 32px; align-items: start; margin-top: 24px; }
+.hwSidebar { position: sticky; top: 12px; max-height: calc(100vh - 24px); display: flex; flex-direction: column; }
+.hwSidebar label { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+.hwSidebar select { margin-bottom: 10px; }
+.hwSidebar input { margin-bottom: 12px; }
+#hwResultCount { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+#hwQuestList { overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding-right: 7px; border-top: 1px solid var(--line); }
+.hwQuestLink { display: grid; padding: 10px 12px; border-left: 3px solid transparent; border-bottom: 1px solid var(--line); gap: 2px; text-decoration: none; }
+.hwQuestLink strong { color: var(--ink); font-size: 14px; }
+.hwQuestLink small { color: var(--muted); font-size: 11px; }
+.hwQuestLink[aria-current="page"] { background: var(--accent-soft); border-left-color: var(--accent); }
+.hwQuestLink:hover { background: var(--panel); }
+.hwEmpty { padding: 24px 0; color: var(--muted); }
+.hwDetail { background: var(--panel); padding: 24px; }
+.hwDetail, .hwArchive, #hwControls details { scroll-margin-top: 84px; }
+.hwQuestHead { display: flex; gap: 12px; align-items: start; justify-content: space-between; }
+.hwQuestHead > a { font-size: 12px; flex-shrink: 0; }
+.hwQuestHead p { font-size: 13px; color: var(--muted); margin: 5px 0; }
+.hwSchedule { font-size: 12px; color: var(--muted); margin: 12px 0 !important; }
+.hwAlert { border-left: 3px solid var(--gold); padding: 8px 12px; background: var(--gold-soft); font-size: 13px; margin: 14px 0 !important; }
+.hwSection { padding: 16px 0; border-top: 1px solid var(--line); }
+.hwSection > h4:first-child { margin-top: 0; }
+.hwEntities { display: flex; flex-wrap: wrap; gap: 10px; }
+.hwEntity { display: flex; align-items: center; gap: 10px; max-width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.hwEntity > div { flex: 1; }
+.hwEntity strong { display: block; font-size: 14px; }
+.hwEntity small { display: block; font-size: 12px; color: var(--muted); }
+.hwEntity img { width: 42px; height: 48px; }
+.hwEntity a { text-decoration: none; }
+.hwItemDrops { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 4px; font-size: 12px; color: var(--muted); }
+.hwItemDrops a { display: inline-flex; gap: 4px; align-items: center; }
+.hwItemDrops img { width: 24px; height: 28px; }
+.hwNoImage { width: 42px; font-size: 10px; text-align: center; color: var(--muted); flex-shrink: 0; }
+.hwMapLinks { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; }
+.hwNpc { align-items: flex-start; max-width: 400px; }
+.hwNpc img { height: 64px; width: 48px; }
+.hwNpc details { border: 0; }
+.hwNpc summary { padding: 3px 0; font-weight: 400; font-size: 12px; color: var(--muted); }
+.hwPrereqs { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 6px 0; font-size: 13px; }
+.hwPrereqs span { color: var(--muted); }
+.hwSteps { padding-left: 24px; margin: 0; }
+.hwSteps li { margin: 10px 0; white-space: pre-line; }
+.hwLocationPreview > a { font-size: 13px; }
+.hwMapFrame { margin-top: 12px; padding: 28px 16px 40px; border: 1px solid var(--line); border-radius: 6px; background: var(--shell); }
+.hwMapCanvas { position: relative; width: 100%; }
+.hwMapCanvas > img { position: absolute; object-fit: fill; }
+.hwMapPoint { position: absolute; width: 0; height: 0; color: var(--ink); z-index: 1; }
+.hwMapDot { position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #d84040; border: 1px solid #fff; }
+.hwMapLeader { position: absolute; left: 0; top: -1px; height: 2px; background: #d84040; transform-origin: 0 50%; }
+.hwMapNumber { position: absolute; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid #fff; border-radius: 50%; background: #a92525; color: #fff; font-size: 13px; font-weight: 700; transform: translate(-50%, -50%); }
+.hwMapPoint:focus-visible .hwMapNumber { outline: 3px solid var(--accent); outline-offset: 3px; }
+.hwMapCoordinates { display: flex; flex-wrap: wrap; gap: 12px 24px; list-style: none; margin: 14px 0 0; padding: 0; }
+.hwMapCoordinates li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.hwCoordinateNumber { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; background: #a92525; color: #fff; font-weight: 700; }
+.hwMapCoordinates strong, .hwMapCoordinates li > div > span { display: block; }
+.hwMapCoordinates li > div > span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.hwRewardStats { display: flex; gap: 20px; flex-wrap: wrap; margin: 6px 0 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hwMuted { color: var(--muted); font-size: 13px; }
+.hwDialogue { margin: 0; padding: 0; list-style: none; }
+.hwDialogue li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.hwDialogue small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; overflow-wrap: anywhere; }
+.hwDialogue p { font-size: 14px; white-space: pre-wrap; }
+.hwPager { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; margin-top: 20px; font-size: 13px; }
+.hwArchive { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+.hwArchive > h2 { font-size: 20px; }
+.hwArchive > p { font-size: 13px; color: var(--muted); margin: 10px 0 18px; }
+.hwArchive .hwScriptBody { padding-bottom: 20px; }
+.hwScriptBody > label { display: block; font-size: 13px; margin: 12px 0 6px; }
+.hwScriptCount { font-size: 12px; color: var(--muted); margin: 8px 0 !important; }
+.hwScriptRows { max-height: 600px; overflow-y: auto; scrollbar-gutter: stable; padding: 0 12px; background: var(--panel); overscroll-behavior: contain; }
+#hwAuditContent { padding-bottom: 20px; font-size: 13px; }
+#hwAuditContent p { margin: 10px 0; }
+.hwAuditRows { list-style: none; padding: 0; }
+.hwAuditRows li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.hwAuditRows strong { display: block; }
+.hwRaw { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; background: var(--panel); padding: 12px; }
+.hwHash { overflow-wrap: anywhere; }
+@media (max-width: 900px) {
+  .hwDailyBoxes { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .halloweenMain { padding: 20px 16px 40px; }
+  .hwLayout { grid-template-columns: 230px minmax(0,1fr); gap: 18px; }
+  .hwDetail { padding: 18px; }
+  .hwChapters { gap: 12px; }
+}
+@media (max-width: 680px) {
+  .hwDailyTasks { grid-template-columns: minmax(0,1fr); gap: 4px; }
+  .hwDailyBoxes { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .halloweenMain h2 { font-size: 22px; }
+  .hwHeading > div { flex-basis: calc(100% - 70px); }
+  .hwHeading > a { margin-left: 62px; }
+  .hwChapters { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .hwLayout { grid-template-columns: minmax(0,1fr); gap: 20px; }
+  .hwSidebar { position: static; max-height: none; }
+  #hwQuestList { max-height: 220px; }
+  .hwDetail { padding: 16px; }
+  .hwQuestHead { flex-direction: column; gap: 4px; }
+  .hwDetail h3 { font-size: 19px; }
+  .hwNpc { width: 100%; }
+  .hwArchive { margin-top: 24px; }
+}

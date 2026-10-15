@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="查詢查理中士交換與艾溫的玻璃鞋任務，設定初始等級、經驗百分比及材料數量，試算結算後等級與經驗。" />
+  <meta name="keywords" content="經典服, 楓之谷經典服, 經典服資料庫, 新楓之谷經典版, MapleStory Classic, 怪物掉落, 道具資料庫, 任務資料庫" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://morrisrrrrrrr-svg.github.io/exp-exchange.html" />
+  <meta property="og:title" content="經驗物工具｜楓憶MapleMemory｜新楓之谷：經典版資料庫" />
+  <meta property="og:description" content="查詢查理中士交換與艾溫的玻璃鞋任務，設定初始等級、經驗百分比及材料數量，試算結算後等級與經驗。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://morrisrrrrrrr-svg.github.io/exp-exchange.html" />
+  <meta property="og:image" content="https://morrisrrrrrrr-svg.github.io/assets/items/4031456.png" />
+  <meta name="twitter:card" content="summary" />
+  <title>經驗物工具｜楓憶MapleMemory｜新楓之谷：經典版資料庫</title>
+  <script>
+    try {
+      var match = document.cookie.match(/(?:^|; )ms_theme=([^;]+)/);
+      document.documentElement.dataset.theme = (match ? decodeURIComponent(match[1]) : localStorage.getItem("ms-theme")) === "dark" ? "dark" : "light";
+    } catch (_) {}
+  </script>
+  <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
+  <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
+  <link rel="stylesheet" href="./styles.css?v=20261015201732" />
+  <link rel="stylesheet" href="./exp-exchange.css?v=a8dfa74d6cd1" />
+</head>
+<body class="expExchangePage">
+  <header class="appHeader">
+    <div class="titleArea">
+      <h1 class="siteBrandTitle"><img class="siteBrandIcon" src="./assets/items/4031456.png" alt="" loading="lazy" /><span class="siteBrandText"><strong class="siteBrandMain">楓憶MapleMemory</strong><span class="siteBrandSubtitle">新楓之谷：經典版資料庫</span></span></h1>
+      <button id="navDrawerToggle" class="navDrawerToggle" type="button" aria-expanded="false" aria-controls="siteNavigation" aria-label="開啟選單" title="開啟選單">☰</button>
+      <div class="headerActions"><button id="themeToggle" class="themeIconButton toggleThemeButton" type="button" aria-pressed="false" aria-label="切換為黑底" title="切換為黑底">☾</button></div>
+      <nav id="siteNavigation" class="topNav groupedTopNav" aria-label="頁面切換">
+        <details class="navMenuGroup">
+          <summary>楓葉圖鑑</summary>
+          <div class="navMenuLinks">
+          <a href="./index.html">怪物</a>
+          <a href="./items.html">道具</a>
+          <a href="./quests.html">任務</a>
+          <a href="./maps.html">地圖</a>
+          <a href="./skills.html">技能</a>
+          </div>
+        </details>
+        <details class="navMenuGroup active">
+          <summary>實用工具</summary>
+          <div class="navMenuLinks">
+          <a href="./scroll-simulator.html">卷軸模擬器</a>
+          <a href="./damage-calculator.html">戰鬥力計算機</a>
+          <a href="./combat-analysis.html">戰鬥分析</a>
+          <a href="./avatar-maker.html">線上紙娃娃</a>
+          <a href="./boss-timer.html">Boss 計時器</a>
+          <a href="./gacha-simulator.html">轉蛋模擬器</a>
+          <a href="./third-job.html">三轉題庫</a>
+          <a href="./goddess-tower.html">女神組隊</a>
+          <a class="active" href="./exp-exchange.html">經驗物工具</a>
+          </div>
+        </details>
+        <details class="navMenuGroup">
+          <summary>其他</summary>
+          <div class="navMenuLinks">
+          <a href="./skill-changes.html">技改資訊</a>
+          <a href="./halloween.html">萬聖節活動</a>
+          <a href="./patch-notes.html">遊戲更新日誌</a>
+          <a href="./web-changelog.html">網頁更新日誌</a>
+          </div>
+        </details>
+      </nav>
+    </div>
+  </header>
+  <main class="expMain">
+    <header class="expHeading"><img src="./assets/items/4001000.png" width="40" height="40" alt="玻璃鞋" /><div><h2>經驗物工具</h2><p id="expVersion">查理中士交換 · 艾溫的玻璃鞋</p></div></header>
+    <form id="expForm" novalidate>
+      <section class="expOverview" aria-labelledby="expInitialTitle">
+        <div class="expInitial"><h3 id="expInitialTitle">初始角色</h3><div class="expInitialFields">
+          <label>等級<input id="expLevel" name="level" type="number" min="1" max="200" step="1" value="25" required inputmode="numeric" /></label>
+          <label>經驗百分比 (%)<input id="expPercent" name="percent" type="number" min="0" max="99.999999" step="0.000001" value="0" required inputmode="decimal" /></label>
+        </div><p class="expMinor">先結算中士交換，再依結算後等級檢查玻璃鞋條件。</p></div>
+        <div class="expResult" aria-live="polite" aria-atomic="true"><h3>推估結算</h3><div id="expFinal"><strong id="expFinalLevel">Lv.25</strong><span id="expFinalPercent">0.0000%</span></div><dl><div><dt>總獎勵經驗</dt><dd id="expTotal">0 EXP</dd></div><div><dt>提升等級</dt><dd id="expLevelGain">0</dd></div><div><dt>本級經驗</dt><dd id="expProgress">0 / 47,216</dd></div></dl><p id="expCapNote" class="expMinor" hidden></p></div>
+      </section>
+      <p id="expError" class="expError" role="alert" hidden></p>
+      <p class="expEstimate">結算結果為推估，實際以遊戲為準。</p>
+      <section class="expShoes" aria-labelledby="expShoeTitle">
+        <div id="expShoeIdentity" class="expIdentity"></div>
+        <div class="expShoeControl"><label for="expShoes">玻璃鞋數量</label><input id="expShoes" name="shoes" type="number" min="0" max="1000000000" step="1" value="0" required inputmode="numeric" /></div>
+        <div class="expShoeStats"><strong id="expShoeTotal">0 EXP</strong><span id="expShoeCount">完成 0 次 · 剩餘 0 個</span></div>
+        <p id="expShoeWarning" class="expWarning" hidden></p>
+      </section>
+      <section class="expCharlie" aria-labelledby="expCharlieTitle">
+        <header class="expSectionHeading"><div id="expCharlieIdentity" class="expIdentity"></div><div class="expRate"><label for="expCharlieRate">每次交換 EXP</label><input id="expCharlieRate" name="charlieExp" type="number" min="0" max="10000000" step="1" value="500" required inputmode="numeric" /></div></header>
+        <p class="expEstimate">每次交換預設 500 EXP（待確認）。不同材料分開計算，不合併餘數。</p>
+        <p class="expRewardNotice">隨機獎勵清單僅供參考，實際品項與機率待確認。</p>
+        <div class="expMaterialToolbar"><label for="expSearch">材料／獎勵名稱或 ID<input id="expSearch" type="search" placeholder="搜尋材料或獎勵" /></label><span id="expCharlieTotal">0 次 · 0 EXP</span></div>
+        <div class="expMaterialHeader" aria-hidden="true"><span>交換材料</span><span>持有數量</span><span>次數／餘數</span></div>
+        <div id="expMaterials" class="expMaterials"></div><p id="expSearchEmpty" class="expMinor" hidden>沒有符合的材料。</p>
+      </section>
+    </form>
+    <section class="expReferences" aria-labelledby="expReferenceTitle"><h3 id="expReferenceTitle">任務流程與對話</h3>
+      <details id="expCharlieDialogue"><summary>查理中士：交換條件與完整對話</summary><div id="expCharlieScript"></div></details>
+      <details id="expShoeDialogue"><summary>艾溫的玻璃鞋：任務流程與完整對話</summary><div id="expShoeScript"></div></details>
+    </section>
+    <noscript>請啟用 JavaScript 進行經驗試算。<a href="./quests.html?quest=2017">艾溫的玻璃鞋任務索引</a></noscript>
+  </main>
+  <script src="./exp-exchange-data.js?v=419ab0de230b"></script>
+  <script src="./exp-exchange-logic.js?v=10c64d334836"></script>
+  <script src="./exp-exchange.js?v=cf523041b958"></script>
+  <script src="./mobile.js?v=20261015201732"></script>
+</body>
+</html>

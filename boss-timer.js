@@ -9,6 +9,12 @@ const COOKIE_MAX_CHUNKS = 24;
 const SETTINGS_KEY = "ms-boss-timer-settings-v1";
 const CHANNEL_COUNT = 60;
 const LOG_LIMIT = 60;
+const LEGACY_BOSS_KEYS = {
+  "5220002:100040105": "5220002",
+  "5220002:100040106": "5220002",
+  "6220000:107000300": "6220000",
+  "6220000:107000400": "6220000",
+};
 
 const DEFAULT_BOSSES = [
   {
@@ -45,26 +51,16 @@ const DEFAULT_BOSSES = [
     note: "固定重生時間",
   },
   {
-    key: "5220002:100040105",
+    key: "5220002",
     id: "5220002",
     name: "殭屍猴王",
     type: "fixed",
     minMinutes: 45,
     maxMinutes: 45,
-    mapLabel: "隱密之地 / 巫婆森林Ⅰ",
+    mapLabel: "隱密之地 / 巫婆森林Ⅰ、Ⅱ",
     mapUrl: "./maps.html?map=100040105",
-    note: "固定重生時間",
-  },
-  {
-    key: "5220002:100040106",
-    id: "5220002",
-    name: "殭屍猴王",
-    type: "fixed",
-    minMinutes: 45,
-    maxMinutes: 45,
-    mapLabel: "隱密之地 / 巫婆森林Ⅱ",
-    mapUrl: "./maps.html?map=100040106",
-    note: "固定重生時間",
+    note: "兩張地圖共用重生計時，每次只會在其中一張地圖出現。",
+    sharedSpawn: true,
   },
   {
     key: "6130101",
@@ -89,26 +85,16 @@ const DEFAULT_BOSSES = [
     note: "浮動重生窗口",
   },
   {
-    key: "6220000:107000300",
+    key: "6220000",
     id: "6220000",
     name: "沼澤巨鱷",
     type: "fixed",
     minMinutes: 45,
     maxMinutes: 45,
-    mapLabel: "戰火之地 / 鱷魚潭Ⅰ",
+    mapLabel: "戰火之地 / 鱷魚潭Ⅰ、Ⅱ",
     mapUrl: "./maps.html?map=107000300",
-    note: "固定重生時間",
-  },
-  {
-    key: "6220000:107000400",
-    id: "6220000",
-    name: "沼澤巨鱷",
-    type: "fixed",
-    minMinutes: 45,
-    maxMinutes: 45,
-    mapLabel: "戰火之地 / 鱷魚潭Ⅱ",
-    mapUrl: "./maps.html?map=107000400",
-    note: "固定重生時間",
+    note: "兩張地圖共用重生計時，每次只會在其中一張地圖出現。",
+    sharedSpawn: true,
   },
   {
     key: "8130100",
@@ -120,6 +106,28 @@ const DEFAULT_BOSSES = [
     mapLabel: "迷霧森林 / 被詛咒的寺院",
     mapUrl: "./maps.html?map=105090900",
     note: "浮動重生窗口",
+  },
+  {
+    key: "8220000",
+    id: "8220000",
+    name: "艾利傑",
+    type: "fixed",
+    minMinutes: 45,
+    maxMinutes: 45,
+    mapLabel: "天空之城 / 天空階梯 II",
+    mapUrl: "./maps.html?map=200010300",
+    note: "固定重生時間",
+  },
+  {
+    key: "8220001",
+    id: "8220001",
+    name: "雪毛怪人",
+    type: "fixed",
+    minMinutes: 45,
+    maxMinutes: 45,
+    mapLabel: "冰原雪域 / 雪人之谷",
+    mapUrl: "./maps.html?map=211040101",
+    note: "固定重生時間",
   },
 ];
 
@@ -274,12 +282,13 @@ function saveCookieJson(value) {
 }
 
 function bossKey(bossOrId) {
-  if (bossOrId && typeof bossOrId === "object") return String(bossOrId.key || bossOrId.id);
-  return String(bossOrId ?? "");
+  const key = bossOrId && typeof bossOrId === "object"
+    ? String(bossOrId.key || bossOrId.id) : String(bossOrId ?? "");
+  return LEGACY_BOSS_KEYS[key] || key;
 }
 
 function resolveBossKey(value) {
-  const key = String(value ?? "");
+  const key = bossKey(value);
   const exact = DEFAULT_BOSSES.find(boss => bossKey(boss) === key);
   if (exact) return bossKey(exact);
   const byMonsterId = DEFAULT_BOSSES.find(boss => String(boss.id) === key);
@@ -287,14 +296,40 @@ function resolveBossKey(value) {
 }
 
 function migrateLegacyTimerKeys() {
-  const legacyZombieKey = "5220002";
-  const firstZombieSpawnKey = "5220002:100040105";
-  if (state.timers[legacyZombieKey] && !state.timers[firstZombieSpawnKey]) {
-    state.timers[firstZombieSpawnKey] = state.timers[legacyZombieKey];
+  let changed = false;
+  for (const [oldKey, key] of Object.entries(LEGACY_BOSS_KEYS)) {
+    if (Object.hasOwn(state.timers, oldKey)) {
+      const records = state.timers[oldKey];
+      const merged = allChannelsForBoss(key);
+      // A channel shares one spawn across both maps; keep its latest kill.
+      for (const [channel, record] of Object.entries(records || {})) {
+        if (!/^\d+$/.test(channel) || Number(channel) < 1 || Number(channel) > CHANNEL_COUNT) continue;
+        const at = Number(record?.lastKillAt);
+        const current = Number(merged[channel]?.lastKillAt);
+        if (record?.lastKillAt != null && Number.isFinite(at) && (!Number.isFinite(current) || at > current)) {
+          merged[channel] = { lastKillAt: at };
+        }
+      }
+      // Remove aliases so a later reset cannot resurrect an old map's timer.
+      delete state.timers[oldKey];
+      changed = true;
+    }
+    if (Object.hasOwn(state.settings, oldKey)) {
+      state.settings[key] = { ...state.settings[oldKey], ...state.settings[key] };
+      delete state.settings[oldKey];
+      changed = true;
+    }
+    if (state.favoriteIds.delete(oldKey)) {
+      state.favoriteIds.add(key);
+      changed = true;
+    }
   }
-  if (state.settings[legacyZombieKey] && !state.settings[firstZombieSpawnKey]) {
-    state.settings[firstZombieSpawnKey] = state.settings[legacyZombieKey];
-  }
+  state.logs = state.logs.map(row => {
+    if (!LEGACY_BOSS_KEYS[row?.bossId]) return row;
+    changed = true;
+    return { ...row, bossId: bossKey(row.bossId) };
+  });
+  return changed;
 }
 
 function normalizeLoadedState(payload) {
@@ -323,7 +358,6 @@ function persistState() {
 function loadSettings() {
   const saved = loadJson(SETTINGS_KEY, {});
   state.settings = saved && typeof saved === "object" ? saved : {};
-  migrateLegacyTimerKeys();
 }
 
 function persistSettings() {
@@ -331,7 +365,7 @@ function persistSettings() {
 }
 
 function baseBossById(id) {
-  const key = String(id ?? "");
+  const key = bossKey(id);
   return DEFAULT_BOSSES.find(boss => bossKey(boss) === key)
     || DEFAULT_BOSSES.find(boss => String(boss.id) === key)
     || DEFAULT_BOSSES[0];
@@ -694,6 +728,7 @@ function renderDetail() {
             <p class="patchEyebrow">Boss 計時器</p>
             <h2>${escapeHtml(boss.name)}</h2>
             <p>${escapeHtml([bossLevelText(boss), boss.mapLabel].filter(Boolean).join(" · "))}</p>
+            ${boss.sharedSpawn ? `<p>${escapeHtml(boss.note)}</p>` : ""}
             <a class="bossTimerMapLink" href="${escapeHtml(bossMonsterUrl(boss))}">查看 Boss 資訊</a>
           </div>
         </div>
@@ -800,6 +835,11 @@ function startTicker() {
 state.favoriteIds = parseCookieSet(FAVORITE_COOKIE_KEY);
 normalizeLoadedState(loadCookieJson(loadJson(STORAGE_KEY, {})));
 loadSettings();
+if (migrateLegacyTimerKeys()) {
+  persistState();
+  persistSettings();
+  writeCookieSet(FAVORITE_COOKIE_KEY, state.favoriteIds);
+}
 setupTheme();
 render();
 startTicker();

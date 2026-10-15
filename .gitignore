@@ -1,4 +1,5 @@
 drops.json
 ux-check/
 reports/*.diff
+reports/game-data-diff-*
 assets/map_renders/*.json

@@ -1,441 +1,441 @@
 {
-  "poolId": "royal-beauty-20260924",
+  "poolId": "royal-beauty-20261007",
   "eventAdId": 18938,
-  "period": "2026/09/24 00:00 ~ 2026/10/06 23:59",
+  "period": "2026/10/07 00:00 ~ 2026/10/21 23:59",
   "renderer": "avatar-maker.js",
-  "rendererHash": "2d138b17fc1167aa52d87740e215af0711b6e855b1d47da4ee557b384057b64f",
+  "rendererHash": "cd49d755fe1f2f61bcf44b779cb3dd990ee491078a89b9fd5d63b6d42119e067",
   "entries": {
     "royal-001.png": {
       "id": "royal-001",
-      "itemId": 42550,
-      "name": "芙莉蓮髮型(睡衣)",
+      "itemId": 33400,
+      "name": "黑色帥氣管家造型",
       "group": "皇家美髮 (男)",
-      "hairId": 42550,
+      "hairId": 33400,
       "faceId": 20000,
-      "contentHash": "74f909377e713c3c"
+      "contentHash": "1d0eedf98e89a610"
     },
     "royal-002.png": {
       "id": "royal-002",
-      "itemId": 42570,
-      "name": "費倫髮型券",
+      "itemId": 40610,
+      "name": "黑色雙色馬尾髮型",
       "group": "皇家美髮 (男)",
-      "hairId": 42570,
+      "hairId": 40610,
       "faceId": 20000,
-      "contentHash": "993603a054082e1a"
+      "contentHash": "b96af18365a373d1"
     },
     "royal-003.png": {
       "id": "royal-003",
-      "itemId": 42580,
-      "name": "修塔爾克髮型",
+      "itemId": 40270,
+      "name": "黑色奶油造型",
       "group": "皇家美髮 (男)",
-      "hairId": 42580,
+      "hairId": 40270,
       "faceId": 20000,
-      "contentHash": "7e3546a11c9e9790"
+      "contentHash": "0c6871395549290d"
     },
     "royal-004.png": {
       "id": "royal-004",
-      "itemId": 33000,
-      "name": "黑色金賢重造型",
+      "itemId": 40440,
+      "name": "黑色閃亮亮男孩髮型",
       "group": "皇家美髮 (男)",
-      "hairId": 33000,
+      "hairId": 40440,
       "faceId": 20000,
-      "contentHash": "cd4c2045959702d5"
+      "contentHash": "55eb7aaee4454e52"
     },
     "royal-005.png": {
       "id": "royal-005",
-      "itemId": 36810,
-      "name": "黑色飛翹年輕造型",
+      "itemId": 36690,
+      "name": "黑色妖狐少年造型",
       "group": "皇家美髮 (男)",
-      "hairId": 36810,
+      "hairId": 36690,
       "faceId": 20000,
-      "contentHash": "2e6014c3b314fc8d"
+      "contentHash": "85ee64dbd7cc51a0"
     },
     "royal-006.png": {
       "id": "royal-006",
-      "itemId": 33990,
-      "name": "黑色火焰造型",
+      "itemId": 35050,
+      "name": "黑色颶風造型",
       "group": "皇家美髮 (男)",
-      "hairId": 33990,
+      "hairId": 35050,
       "faceId": 20000,
-      "contentHash": "2aa3ab4751a97f75"
+      "contentHash": "00f814e460a26178"
     },
     "royal-007.png": {
       "id": "royal-007",
-      "itemId": 40480,
-      "name": "黑色森林之精靈",
+      "itemId": 36410,
+      "name": "黑色飛鷹之翼造型",
       "group": "皇家美髮 (男)",
-      "hairId": 40480,
+      "hairId": 36410,
       "faceId": 20000,
-      "contentHash": "5a51b03bdf9f711a"
+      "contentHash": "f8e3a6a431bde68e"
     },
     "royal-008.png": {
       "id": "royal-008",
-      "itemId": 35510,
-      "name": "黑色迪倫頭",
+      "itemId": 36210,
+      "name": "黑色柳葉造型",
       "group": "皇家美髮 (男)",
-      "hairId": 35510,
+      "hairId": 36210,
       "faceId": 20000,
-      "contentHash": "2a563c4cc79bed1c"
+      "contentHash": "242e8fee55979d62"
     },
     "royal-009.png": {
       "id": "royal-009",
-      "itemId": 33770,
-      "name": "黑色魅力側分造型",
+      "itemId": 35070,
+      "name": "黑色煩惱退散造型",
       "group": "皇家美髮 (男)",
-      "hairId": 33770,
+      "hairId": 35070,
       "faceId": 20000,
-      "contentHash": "5a75f3dfc43d8655"
+      "contentHash": "819c101b6a4e5625"
     },
     "royal-010.png": {
       "id": "royal-010",
-      "itemId": 33090,
-      "name": "黑色獅子長鬃造型",
+      "itemId": 33170,
+      "name": "黑色陽光少年造型",
       "group": "皇家美髮 (男)",
-      "hairId": 33090,
+      "hairId": 33170,
       "faceId": 20000,
-      "contentHash": "c4a814e26f786186"
+      "contentHash": "97bcbee4f52ee496"
     },
     "royal-011.png": {
       "id": "royal-011",
-      "itemId": 36430,
-      "name": "黑色橡果造型",
+      "itemId": 36330,
+      "name": "黑色午夜狂熱造型",
       "group": "皇家美髮 (男)",
-      "hairId": 36430,
+      "hairId": 36330,
       "faceId": 20000,
-      "contentHash": "c95c00ea3e3906bb"
+      "contentHash": "37e548649cb1c00b"
     },
     "royal-012.png": {
       "id": "royal-012",
-      "itemId": 30950,
-      "name": "黑色波浪劉海造型",
+      "itemId": 33480,
+      "name": "黑色酷紈子弟造型",
       "group": "皇家美髮 (男)",
-      "hairId": 30950,
+      "hairId": 33480,
       "faceId": 20000,
-      "contentHash": "e7d3a8cc975802ff"
+      "contentHash": "49715e13fbaa9e44"
     },
     "royal-013.png": {
       "id": "royal-013",
-      "itemId": 42550,
-      "name": "芙莉蓮髮型(睡衣)",
+      "itemId": 31230,
+      "name": "黑色俏麗捲辮造型",
       "group": "皇家美髮 (女)",
-      "hairId": 42550,
+      "hairId": 31230,
       "faceId": 21000,
-      "contentHash": "9e83115e21ff57b5"
+      "contentHash": "d225148deb941da2"
     },
     "royal-014.png": {
       "id": "royal-014",
-      "itemId": 42570,
-      "name": "費倫髮型券",
+      "itemId": 38810,
+      "name": "黑色春漾髮型",
       "group": "皇家美髮 (女)",
-      "hairId": 42570,
+      "hairId": 38810,
       "faceId": 21000,
-      "contentHash": "a4f293c7203eea68"
+      "contentHash": "e5e056cef5cd8bbd"
     },
     "royal-015.png": {
       "id": "royal-015",
-      "itemId": 42580,
-      "name": "修塔爾克髮型",
+      "itemId": 38060,
+      "name": "黑色螺旋尾捲造型",
       "group": "皇家美髮 (女)",
-      "hairId": 42580,
+      "hairId": 38060,
       "faceId": 21000,
-      "contentHash": "ba084f0b30ac0f24"
+      "contentHash": "8b80bd1b9aa83dc0"
     },
     "royal-016.png": {
       "id": "royal-016",
-      "itemId": 38570,
-      "name": "黑色彩虹頭",
+      "itemId": 38120,
+      "name": "黑色澎柔雙辮造型",
       "group": "皇家美髮 (女)",
-      "hairId": 38570,
+      "hairId": 38120,
       "faceId": 21000,
-      "contentHash": "492ee1a03e6b1814"
+      "contentHash": "94678d725a8035e8"
     },
     "royal-017.png": {
       "id": "royal-017",
-      "itemId": 34060,
-      "name": "黑色蝴蝶髮束造型",
+      "itemId": 37630,
+      "name": "黑色貴族千金造型",
       "group": "皇家美髮 (女)",
-      "hairId": 34060,
+      "hairId": 37630,
       "faceId": 21000,
-      "contentHash": "6dd16a4b4f648afc"
+      "contentHash": "7f273e3826e7668f"
     },
     "royal-018.png": {
       "id": "royal-018",
-      "itemId": 34870,
-      "name": "黑色繽紛髮尾造型",
+      "itemId": 31470,
+      "name": "黑色中國女孩造型",
       "group": "皇家美髮 (女)",
-      "hairId": 34870,
+      "hairId": 31470,
       "faceId": 21000,
-      "contentHash": "d062fc230ed8e98a"
+      "contentHash": "a755a8a134bbe257"
     },
     "royal-019.png": {
       "id": "royal-019",
-      "itemId": 34490,
-      "name": "黑色俐落尾捲造型",
+      "itemId": 38110,
+      "name": "黑色清湯掛麵造型",
       "group": "皇家美髮 (女)",
-      "hairId": 34490,
+      "hairId": 38110,
       "faceId": 21000,
-      "contentHash": "6a0948e84d56360b"
+      "contentHash": "c39cf0dd80b30cfa"
     },
     "royal-020.png": {
       "id": "royal-020",
-      "itemId": 37210,
-      "name": "黑色捲燙髮結造型",
+      "itemId": 34890,
+      "name": "黑色惺忪妹妹造型",
       "group": "皇家美髮 (女)",
-      "hairId": 37210,
+      "hairId": 34890,
       "faceId": 21000,
-      "contentHash": "23e7fc9067cda476"
+      "contentHash": "79397b3d30228873"
     },
     "royal-021.png": {
       "id": "royal-021",
-      "itemId": 34360,
-      "name": "黑色夢想少女造型",
+      "itemId": 34560,
+      "name": "黑色自然梳理造型",
       "group": "皇家美髮 (女)",
-      "hairId": 34360,
+      "hairId": 34560,
       "faceId": 21000,
-      "contentHash": "172ef06302e787a2"
+      "contentHash": "52a85cd94e7093cd"
     },
     "royal-022.png": {
       "id": "royal-022",
-      "itemId": 34710,
-      "name": "黑色天線髮捲造型",
+      "itemId": 37760,
+      "name": "黑色少女小花造型",
       "group": "皇家美髮 (女)",
-      "hairId": 34710,
+      "hairId": 37760,
       "faceId": 21000,
-      "contentHash": "ee008691dc1398e1"
+      "contentHash": "83df283e047e1cb7"
     },
     "royal-023.png": {
       "id": "royal-023",
-      "itemId": 31840,
-      "name": "黑色不良少女造型",
+      "itemId": 34010,
+      "name": "黑色捲燙中造型",
       "group": "皇家美髮 (女)",
-      "hairId": 31840,
+      "hairId": 34010,
       "faceId": 21000,
-      "contentHash": "01dbec0e507c0e58"
+      "contentHash": "6f8d092ac84ad8db"
     },
     "royal-024.png": {
       "id": "royal-024",
-      "itemId": 37280,
-      "name": "黑色便條造型",
+      "itemId": 31920,
+      "name": "黑色魅力上捲造型",
       "group": "皇家美髮 (女)",
-      "hairId": 37280,
+      "hairId": 31920,
       "faceId": 21000,
-      "contentHash": "f9452db0f41de431"
+      "contentHash": "0da43a4f0cbfd45d"
     },
     "royal-025.png": {
       "id": "royal-025",
-      "itemId": 22036,
-      "name": "費倫臉型",
+      "itemId": 25073,
+      "name": "強烈睫毛臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 22036,
-      "contentHash": "4807bc80f7834905"
+      "faceId": 25073,
+      "contentHash": "1dcd4aa4376b4579"
     },
     "royal-026.png": {
       "id": "royal-026",
-      "itemId": 22037,
-      "name": "修塔爾克臉型",
+      "itemId": 23024,
+      "name": "愛睏的臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 22037,
-      "contentHash": "d306b18bb2fa44c4"
+      "faceId": 23024,
+      "contentHash": "2cc23bb8e057c65f"
     },
     "royal-027.png": {
       "id": "royal-027",
-      "itemId": 22040,
-      "name": "阿烏拉臉型",
+      "itemId": 23086,
+      "name": "閃亮的臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 22040,
-      "contentHash": "e2f3da4d882c4c1c"
+      "faceId": 23086,
+      "contentHash": "b8b9426b2bf1b3c7"
     },
     "royal-028.png": {
       "id": "royal-028",
-      "itemId": 22041,
-      "name": "莉妮耶臉型",
+      "itemId": 23023,
+      "name": "好無聊臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 22041,
-      "contentHash": "053dd0a17645b14b"
+      "faceId": 23023,
+      "contentHash": "2bdf3c4276b9d0dc"
     },
     "royal-029.png": {
       "id": "royal-029",
-      "itemId": 20097,
-      "name": "很憂慮臉型",
+      "itemId": 20050,
+      "name": "看不見臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 20097,
-      "contentHash": "bcb542d25b382923"
+      "faceId": 20050,
+      "contentHash": "9c38cac3cec3aa7b"
     },
     "royal-030.png": {
       "id": "royal-030",
-      "itemId": 20010,
-      "name": "不耐煩臉型",
+      "itemId": 23006,
+      "name": "閃耀的臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 20010,
-      "contentHash": "e2bff7aab466c237"
+      "faceId": 23006,
+      "contentHash": "2bb3e51392e9ef6e"
     },
     "royal-031.png": {
       "id": "royal-031",
-      "itemId": 23002,
-      "name": "清晰的臉型",
+      "itemId": 20064,
+      "name": "聰明的臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 23002,
-      "contentHash": "0b1a691aefcee270"
+      "faceId": 20064,
+      "contentHash": "d087d4f38bb85372"
     },
     "royal-032.png": {
       "id": "royal-032",
-      "itemId": 20055,
-      "name": "平凡的臉型",
+      "itemId": 20001,
+      "name": "有自信臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 20055,
-      "contentHash": "6c69bf2c00d349b7"
+      "faceId": 20001,
+      "contentHash": "355eaf88dc0351a3"
     },
     "royal-033.png": {
       "id": "royal-033",
-      "itemId": 20046,
-      "name": "朦朧美臉型",
+      "itemId": 20019,
+      "name": "小眼睛臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 20046,
-      "contentHash": "c7ed6d0fcd4098ed"
+      "faceId": 20019,
+      "contentHash": "3e884ed6a7121f86"
     },
     "royal-034.png": {
       "id": "royal-034",
-      "itemId": 23069,
-      "name": "有恆心的臉形",
+      "itemId": 23099,
+      "name": "覺醒者臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 23069,
-      "contentHash": "52036a44a3c75363"
+      "faceId": 23099,
+      "contentHash": "e426481b68f54669"
     },
     "royal-035.png": {
       "id": "royal-035",
-      "itemId": 23010,
-      "name": "瞭望的臉型",
+      "itemId": 20082,
+      "name": "守護者臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 23010,
-      "contentHash": "0cbd22b0ddface96"
+      "faceId": 20082,
+      "contentHash": "ab7412754bc6ab32"
     },
     "royal-036.png": {
       "id": "royal-036",
-      "itemId": 20081,
-      "name": "很純粹臉型",
+      "itemId": 20093,
+      "name": "染眉毛臉型",
       "group": "皇家整形 (男)",
       "hairId": 30000,
-      "faceId": 20081,
-      "contentHash": "642f16cd815933c4"
+      "faceId": 20093,
+      "contentHash": "618643cfac26c36e"
     },
     "royal-037.png": {
       "id": "royal-037",
-      "itemId": 22036,
-      "name": "費倫臉型",
+      "itemId": 26076,
+      "name": "強烈睫毛臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 22036,
-      "contentHash": "20f869caab2dfb35"
+      "faceId": 26076,
+      "contentHash": "8df9215c3ac5e222"
     },
     "royal-038.png": {
       "id": "royal-038",
-      "itemId": 22037,
-      "name": "修塔爾克臉型",
+      "itemId": 24020,
+      "name": "愛睏的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 22037,
-      "contentHash": "c341d3f136d61baa"
+      "faceId": 24020,
+      "contentHash": "9dea0cc65e67634f"
     },
     "royal-039.png": {
       "id": "royal-039",
-      "itemId": 22040,
-      "name": "阿烏拉臉型",
+      "itemId": 24079,
+      "name": "閃亮的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 22040,
-      "contentHash": "d94ebfa233986670"
+      "faceId": 24079,
+      "contentHash": "6495db500288ee5d"
     },
     "royal-040.png": {
       "id": "royal-040",
-      "itemId": 22041,
-      "name": "莉妮耶臉型",
+      "itemId": 21078,
+      "name": "寧靜的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 22041,
-      "contentHash": "7c4d8de55a88b76a"
+      "faceId": 21078,
+      "contentHash": "3ba006a9b9728a4f"
     },
     "royal-041.png": {
       "id": "royal-041",
-      "itemId": 21010,
-      "name": "不耐煩臉型",
+      "itemId": 21053,
+      "name": "平凡的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21010,
-      "contentHash": "1826b2e8775df866"
+      "faceId": 21053,
+      "contentHash": "6367556787aca188"
     },
     "royal-042.png": {
       "id": "royal-042",
-      "itemId": 21089,
-      "name": "粉紅眼影臉型",
+      "itemId": 21004,
+      "name": "瞪著你臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21089,
-      "contentHash": "3d55e72d1ca27f95"
+      "faceId": 21004,
+      "contentHash": "13669262c5aa76eb"
     },
     "royal-043.png": {
       "id": "royal-043",
-      "itemId": 21049,
-      "name": "狐狸眼臉型",
+      "itemId": 21082,
+      "name": "天真的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21049,
-      "contentHash": "c4840c5e02c82ad9"
+      "faceId": 21082,
+      "contentHash": "676d51af367e70f6"
     },
     "royal-044.png": {
       "id": "royal-044",
-      "itemId": 21042,
-      "name": "惹人愛臉型",
+      "itemId": 21011,
+      "name": "大眼睛臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21042,
-      "contentHash": "e7b23ea1d0afad74"
+      "faceId": 21011,
+      "contentHash": "7cd531a24fe4e56a"
     },
     "royal-045.png": {
       "id": "royal-045",
-      "itemId": 21022,
-      "name": "丹鳳眼臉型",
+      "itemId": 21064,
+      "name": "扁嘴的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21022,
-      "contentHash": "d2bfe1a60eecd0de"
+      "faceId": 21064,
+      "contentHash": "77ecc89c5c92e4cf"
     },
     "royal-046.png": {
       "id": "royal-046",
-      "itemId": 24004,
-      "name": "上眼影臉型",
+      "itemId": 21048,
+      "name": "看不見臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 24004,
-      "contentHash": "bb2cb062847c6249"
+      "faceId": 21048,
+      "contentHash": "040c9ada7549ff4b"
     },
     "royal-047.png": {
       "id": "royal-047",
-      "itemId": 21058,
-      "name": "乖女孩臉型",
+      "itemId": 21038,
+      "name": "明亮的臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21058,
-      "contentHash": "c821dedaf60a330b"
+      "faceId": 21038,
+      "contentHash": "ff1e01ef47737360"
     },
     "royal-048.png": {
       "id": "royal-048",
-      "itemId": 21050,
-      "name": "仁王眼臉型",
+      "itemId": 21054,
+      "name": "娃娃臉臉型",
       "group": "皇家整形 (女)",
       "hairId": 31050,
-      "faceId": 21050,
-      "contentHash": "258d48cf99e0ea60"
+      "faceId": 21054,
+      "contentHash": "718305b0397a9a87"
     }
   }
 }

@@ -51,6 +51,9 @@
     petAction: document.getElementById("avatarPetAction"),
     petCanvas: document.getElementById("avatarPetCanvas"),
     petStatus: document.getElementById("avatarPetStatus"),
+    chairSelection: document.getElementById("avatarChairSelection"),
+    chairName: document.getElementById("avatarChairName"),
+    removeChair: document.getElementById("removeAvatarChair"),
   };
 
   const itemById = new Map((DB.items || []).map(item => [Number(item.id), item]));
@@ -85,6 +88,8 @@
   const dataCache = new Map();
   const imageCache = new Map();
   const effectCache = new Map();
+  const chairCache = new Map();
+  const chairFailures = new Set();
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
@@ -139,7 +144,7 @@
       image.onload = () => resolve(image);
       image.onerror = reject;
       const override = Object.values(state.effectOverrides).map(row => row.images?.[outlink]).find(Boolean);
-      image.src = override || (outlink.startsWith('./assets/avatar-local/') ? outlink : apiUrl(`node/image/${outlink}?force_parse=true`));
+      image.src = override || (/^\.\/assets\/avatar-(local|chairs)\//.test(outlink) ? outlink : apiUrl(`node/image/${outlink}?force_parse=true`));
     }).catch(error => {
       imageCache.delete(outlink);
       throw error;
@@ -208,7 +213,8 @@
     }
     if (item.slot === "Face") {
       if (state.hideFace) return [];
-      const expression = data[state.expression] ? state.expression : "default";
+      const requested = state.poseExpression || state.expression;
+      const expression = data[requested] ? requested : "default";
       const keys = Object.keys(data[expression] || {}).filter(key => /^\d+$/.test(key));
       const duration = keys.reduce((sum, key) => sum + Math.abs(data[expression][key].delay || 100), 0);
       let time = duration ? state.elapsed % duration : 0;
@@ -217,7 +223,7 @@
         time -= Math.abs(data[expression][keys[faceFrame]].delay || 100);
         faceFrame += 1;
       }
-      nodes.push(frameNode(data, expression, faceFrame));
+      nodes.push(frameNode(data, expression, state.poseExpressionFrame ?? faceFrame));
     } else if (item.slot === "Head") {
       const headNode = frameNode(data, action, frame) || (state.hideFace ? data?.back : data?.front);
       nodes.push(headNode?.head, headNode?.humanEar);
@@ -298,16 +304,78 @@
     return index < 0 ? Math.floor(state.zmap.length / 2) : index;
   }
 
+  function chairTracks(data) {
+    return Object.entries(data).filter(([key]) => /^effect\d*$/.test(key)).map(([, node]) => node);
+  }
+
+  function mountPieces(frame) {
+    return Object.values(frame || {}).filter(piece => piece?._outlink);
+  }
+
+  async function loadChair(item) {
+    const entry = DB.chairs?.[item.id];
+    if (!entry) throw new Error('此椅子尚無可用的預覽動畫。');
+    if (entry.unavailable) throw new Error(entry.unavailable);
+    if (!chairCache.has(item.id)) {
+      chairCache.set(item.id, fetch(`${entry.url}?v=${entry.revision}`).then(async response => {
+        if (!response.ok) throw new Error('椅子動畫載入失敗，請重新選取。');
+        const data = await response.json();
+        const frames = chairTracks(data).flatMap(node => Object.values(node).filter(frame => frame?._outlink));
+        frames.push(...Object.values(data.mount?.sit || {}).flatMap(mountPieces));
+        if (!frames.length) throw new Error('此椅子尚無可用的預覽動畫。');
+        await Promise.all(frames.map(frame => loadImage(frame._outlink)));
+        return data;
+      }).catch(error => { chairFailures.add(item.id); throw error; }));
+    }
+    return chairCache.get(item.id);
+  }
+
+  function chairPiece(frame, track, info, item, mountAnchor = null) {
+    let x = -Number(frame.origin?.x || 0), y = -Number(frame.origin?.y || 0);
+    const move = info.bodyRelMove;
+    // Chair effects use the ground origin, not the character's navel anchor.
+    if (move && !info.sitAction && Number(track.pos || 0) < 2) {
+      x += move.x; y += move.y - (track.pos === 1 ? 50 : 0);
+    } else if (!move && track.pos === 1 && !info.tamingMob) y -= 50;
+    if (mountAnchor && track.pos === 1) { x += mountAnchor.x; y += mountAnchor.y; }
+    const depth = Number(track.z || -1);
+    return { ...frame, x, y, source: item, chair: true,
+      sceneLayer: info.effectBehindAll || depth < 0 ? -100 + depth : 100 + depth };
+  }
+
   async function renderAvatar() {
     const token = ++state.renderToken;
     const failures = [];
     const skin = state.selected.Skin || BASE_SKIN;
     const body = { ...skin, id: skin.bodyId || Number(skin.id) - 10000, slot: 'Body' };
+    const chairItem = state.selected.Chair;
+    let chair = null, chairError = '', bodyOrigin = {x:0,y:0};
+    if (chairItem) {
+      try { chair = await loadChair(chairItem); }
+      catch (error) { chairError = error.message || '椅子動畫載入失敗，請重新選取。'; }
+    }
+    if (token !== state.renderToken) return;
+    const chairInfo = chair?.info || {};
+    const mountFrame = timedFrame(chair?.mount?.sit, state.elapsed, 100);
+    const mountNavel = mountPieces(mountFrame).find(piece => piece.map?.navel)?.map.navel || {x:0,y:0};
+    const mountAnchor = chair?.mount?.sit?.[0]?.[0]?.width === 4 ? mountNavel : null;
+    const forcedAction = mountFrame?.forceCharacterAction || chairInfo.sitAction || 'sit';
+    const action = chair ? (forcedAction === 'stand' ? 'stand1' : forcedAction) : state.action;
+    const emotions = ['default','blink','hit','smile','troubled','cry','angry','bewildered','stunned','vomit','oops','cheers','chu','wink','pain','glitter','despair','love','shine','blaze'];
+    state.poseExpression = mountFrame?.forceCharacterFace || (chairInfo.sitEmotion != null ? (emotions[chairInfo.sitEmotion] || chairInfo.sitEmotion) : null);
+    state.poseExpressionFrame = mountFrame?.forceCharacterFaceFrameIndex;
+    el.chairSelection.hidden = !chairItem;
+    el.chairName.textContent = chairItem?.name || '';
+    el.action.disabled = Boolean(chair);
+    el.expression.disabled = Boolean(state.poseExpression);
+    el.expression.value = state.poseExpression || state.expression;
+    if (chair && [...el.action.options].some(option => option.value === action)) el.action.value = action;
+    else el.action.value = state.action;
     try {
       const data = await fetchJson(itemPath(body));
       if (token !== state.renderToken) return;
-      state.poseAction = state.action;
-      state.poseFrame = state.frame;
+      state.poseAction = action;
+      state.poseFrame = mountFrame ? Number(mountFrame.forceCharacterActionFrameIndex || 0) : state.frame;
       let pose = frameNode(data, state.poseAction, state.poseFrame);
       // Composite attacks sequence existing poses, not independent image layers.
       for (let depth = 0; pose?.action && depth < 16; depth++) {
@@ -316,12 +384,17 @@
         pose = frameNode(data, state.poseAction, state.poseFrame);
       }
       state.hideFace = pose?.face === 0;
+      bodyOrigin = pose?.body?.map?.navel || bodyOrigin;
+      state.frameCount = Object.keys(data[action] || {}).filter(key => /^\d+$/.test(key)).length || 1;
+      state.frameDelay = Math.abs(frameNode(data, action, state.frame)?.delay || 100);
     } catch (error) { if (state.previewStrict) throw error; }
     const renderItems = [
       { ...skin, id: skin.bodyId || Number(skin.id) - 10000, slot: "Body", name: skin.name },
       { ...skin, slot: "Head" },
-      ...Object.values(state.selected).filter(item => item && !['Skin', 'Pet'].includes(item.slot)),
-    ];
+      ...Object.values(state.selected).filter(item => item && !['Skin', 'Pet', 'Chair'].includes(item.slot)),
+    ].filter(item => !(chairInfo.invisibleWeapon && ['Weapon', 'Shield'].includes(item.slot))
+      && !(chairInfo.invisibleCape && item.slot === 'Cape')
+      && !(chairInfo.removeEffect && item.slot === 'Effect'));
     const uniqueItems = Array.from(new Map(renderItems.map(item => [`${item.slot}:${item.id}`, item])).values());
     const results = await Promise.all(uniqueItems.map(async item => {
       try {
@@ -339,16 +412,12 @@
           const image = await loadImage(sample._outlink);
           return [{ ...sample, origin: {x: image.width / 2, y: item.slot === 'NameRing' ? -38 : image.height + 72}, source:item, effect:true, z:'effectFront', map:{navel:{x:0,y:0}} }];
         }
-        if (item.slot === "Body") {
-          state.frameCount = Object.keys(data[state.action] || {}).filter(key => /^\d+$/.test(key)).length || 1;
-          state.frameDelay = Math.abs(frameNode(data, state.action, state.frame)?.delay || 100);
-        }
         const parts = pieceNodesFor(item, data, state.frame);
         // Some equipment intentionally omits individual frames (e.g. a hidden claw).
         const actionData = data[state.poseAction] || Object.values(data).find(node => node?.[state.poseAction])?.[state.poseAction];
         const hiddenFrame = !['Body','Head','Face'].includes(item.slot) && actionData && !Object.hasOwn(actionData, String(state.poseFrame));
         if (!parts.length && !(item.slot === 'Face' && state.hideFace) && !hiddenFrame) throw new Error(`Missing layers: ${item.slot} ${item.id}`);
-        return [...parts, ...await itemEffect(item), ...await itemEffect(item, true)];
+        return chairInfo.removeEffect ? parts : [...parts, ...await itemEffect(item), ...await itemEffect(item, true)];
       } catch (_error) {
         if (state.previewStrict) throw _error;
         failures.push(item.name || String(item.id));
@@ -362,7 +431,34 @@
       catch (_error) { if (state.previewStrict) throw new Error(`Missing image: ${piece._outlink}`); failures.push(piece.source.name || String(piece.source.id)); return null; }
     }));
     if (token !== state.renderToken) return;
-    const visible = loaded.filter(Boolean).sort((a, b) => zRank(b.z) - zRank(a.z) || (a.effectOrder || 0) - (b.effectOrder || 0));
+    const visible = loaded.filter(piece => piece && !(chairInfo.removeBody && ['Body','Head'].includes(piece.source.slot)));
+    const chairBounds = [];
+    if (chair) {
+      const move = mountFrame ? mountNavel : (chairInfo.bodyRelMove || chairInfo.floatingBodyRelMove || {x:0,y:0});
+      const shift = mountFrame ? {x:0,y:0} : bodyOrigin;
+      const flip = Boolean(mountFrame?.forceCharacterFlip);
+      for (const piece of visible) {
+        piece.x += Number(shift.x) + Number(move.x);
+        piece.y += Number(shift.y) + Number(move.y);
+        if (flip) { piece.x = -piece.x - piece.image.width + 2 * Number(move.x); piece.flip = true; }
+      }
+      const mountPiece = piece => ({...piece, x:-Number(piece.origin?.x || 0), y:-Number(piece.origin?.y || 0),
+        source:chairItem, sceneLayer: piece.z === 'tamingMobFront' || Number(piece.z) > 0 ? 50 : -50});
+      for (const frame of Object.values(chair.mount?.sit || {})) {
+        for (const piece of mountPieces(frame)) chairBounds.push({...mountPiece(piece), image:{width:piece.width,height:piece.height}});
+      }
+      for (const piece of mountPieces(mountFrame)) visible.push({...mountPiece(piece),image:await loadImage(piece._outlink)});
+      for (const track of chairTracks(chair)) {
+        for (const frame of Object.values(track).filter(frame => frame?._outlink)) {
+          const piece = chairPiece(frame, track, chairInfo, chairItem, mountAnchor);
+          chairBounds.push({...piece, image: {width: frame.width, height: frame.height}});
+        }
+        const frame = timedFrame(track, state.elapsed, Number(track.delay || 100));
+        if (frame?._outlink) visible.push({...chairPiece(frame, track, chairInfo, chairItem, mountAnchor), image: await loadImage(frame._outlink)});
+      }
+    }
+    if (token !== state.renderToken) return;
+    visible.sort((a, b) => (a.sceneLayer || 0) - (b.sceneLayer || 0) || zRank(b.z) - zRank(a.z) || (a.effectOrder || 0) - (b.effectOrder || 0));
     const ctx = el.canvas.getContext("2d");
     ctx.clearRect(0, 0, el.canvas.width, el.canvas.height);
     ctx.imageSmoothingEnabled = false;
@@ -370,7 +466,7 @@
       el.status.textContent = "角色圖層載入失敗，請稍後再試。";
       return;
     }
-    const bounds = visible.reduce((box, piece) => ({
+    const bounds = [...visible, ...chairBounds].reduce((box, piece) => ({
       left: Math.min(box.left, piece.x),
       top: Math.min(box.top, piece.y),
       right: Math.max(box.right, piece.x + piece.image.width),
@@ -378,7 +474,8 @@
     }), { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity });
     const width = Math.max(1, bounds.right - bounds.left);
     const height = Math.max(1, bounds.bottom - bounds.top);
-    const scale = Math.max(1, state.previewNative ? 1 : Math.min(5, Math.floor(Math.min((el.canvas.width - 72) / width, (el.canvas.height - 72) / height))));
+    const fit = Math.min((el.canvas.width - 72) / width, (el.canvas.height - 72) / height);
+    const scale = state.previewNative ? 1 : (fit < 1 ? fit : Math.min(5, Math.floor(fit)));
     const offsetX = (el.canvas.width - width * scale) / 2 - bounds.left * scale;
     const offsetY = (el.canvas.height - height * scale) / 2 - bounds.top * scale;
     ctx.save();
@@ -386,20 +483,27 @@
       ctx.translate(el.canvas.width, 0);
       ctx.scale(-1, 1);
     }
-    for (const piece of visible) ctx.drawImage(piece.image, Math.round(offsetX + piece.x * scale), Math.round(offsetY + piece.y * scale), piece.image.width * scale, piece.image.height * scale);
+    for (const piece of visible) {
+      ctx.save();
+      const x = Math.round(offsetX + piece.x * scale), y = Math.round(offsetY + piece.y * scale);
+      if (piece.flip) { ctx.translate(x + piece.image.width * scale, y); ctx.scale(-1, 1); }
+      ctx.drawImage(piece.image, piece.flip ? 0 : x, piece.flip ? 0 : y, piece.image.width * scale, piece.image.height * scale);
+      ctx.restore();
+    }
     ctx.restore();
-    el.status.textContent = failures.length ? `此動作缺少圖層或載入失敗：${[...new Set(failures)].join('、')}` : "";
+    el.download.disabled = false;
+    el.status.textContent = chairError || (failures.length ? `此動作缺少圖層或載入失敗：${[...new Set(failures)].join('、')}` : "");
     await renderPet();
   }
 
-  function timedFrame(node, elapsed) {
+  function timedFrame(node, elapsed, fallbackDelay = 120) {
     if (!node) return null;
     if (node._outlink) return node;
     const keys = Object.keys(node).filter(key => /^\d+$/.test(key)).sort((a,b) => a-b);
-    const duration = keys.reduce((sum,key) => sum + Math.max(1, Math.abs(node[key].delay || 120)), 0);
+    const duration = keys.reduce((sum,key) => sum + Math.max(1, Math.abs(node[key].delay || fallbackDelay)), 0);
     let time = duration ? elapsed % duration : 0;
     for (const key of keys) {
-      const delay = Math.max(1, Math.abs(node[key].delay || 120));
+      const delay = Math.max(1, Math.abs(node[key].delay || fallbackDelay));
       if (time < delay) return node[key];
       time -= delay;
     }
@@ -545,6 +649,12 @@
     }
     state.selected[item.slot] = item;
     state.frame = 0;
+    if (item.slot === 'Chair') {
+      if (chairFailures.delete(item.id)) chairCache.delete(item.id);
+      state.elapsed = 0; state.frameTimer = 0;
+      el.status.textContent = '載入椅子…';
+      el.download.disabled = true;
+    }
     saveState();
     renderItems();
     renderEquipped();
@@ -591,6 +701,11 @@
   }
 
   function bindEvents() {
+    el.removeChair.addEventListener('click', () => {
+      delete state.selected.Chair;
+      state.frame = 0;
+      saveState(); renderItems(); renderEquipped(); renderAvatar();
+    });
     el.petAction.addEventListener('change', () => { state.petAction = el.petAction.value; state.elapsed = 0; renderPet(); });
     el.categories.addEventListener("click", event => {
       const button = event.target.closest("[data-category]");

@@ -254,7 +254,8 @@
     ensureNavBackdrop();
     setNavDrawer(false);
     const stored = readStoredPane();
-    const initial = stored === "filters" ? lastContentPane : stored || "list";
+    const partyQuestLink = location.hash === "#partyQuestFlow" && document.getElementById("partyQuestFlow");
+    const initial = partyQuestLink ? "detail" : stored === "filters" ? lastContentPane : stored || "list";
     setPane(initial, { settings: "keep", scrollTop: false });
     toggleSettings(currentPane() === "filters");
     updateDock();
