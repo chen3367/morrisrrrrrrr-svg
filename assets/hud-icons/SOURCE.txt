@@ -1,0 +1,6 @@
+Official Lucide SVGs, unmodified.
+Upstream: https://github.com/lucide-icons/lucide
+Revision: f77124396196a3c83035054b251efc734864f384
+Source: https://raw.githubusercontent.com/lucide-icons/lucide/f77124396196a3c83035054b251efc734864f384/icons/
+The accompanying LICENSE contains Lucide ISC and applicable Feather MIT notices.
+Deploy this entire directory to assets/hud-icons/, including LICENSE and SOURCE.txt.
