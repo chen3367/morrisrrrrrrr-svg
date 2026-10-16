@@ -42,7 +42,7 @@
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css?v=ccc1dc2b96ce" />
-  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-16T02:32:00+08:00","updatedAtText":"2026-10-16 02:32:00 GMT+8"};</script>
+  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-16T12:52:18+08:00","updatedAtText":"2026-10-16 12:52:18 GMT+8"};</script>
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -86,13 +86,14 @@
           </div>
         </details>
       </nav>
-      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-16 02:32:00 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
+      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-16 12:52:18 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
     </div>
   </header>
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#c6c38cccb"><strong>6c38cccb</strong><span>2026-10-16</span></a>
+      <a class="patchVersionRow active" href="#c39e5eff8"><strong>39e5eff8</strong><span>2026-10-16</span></a>
+      <a class="patchVersionRow" href="#c6c38cccb"><strong>6c38cccb</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#c0277f757"><strong>0277f757</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#cbef4a064"><strong>bef4a064</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#c1312c9f2"><strong>1312c9f2</strong><span>2026-10-16</span></a>
@@ -183,10 +184,20 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>80</strong>
+            <strong>81</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="c39e5eff8" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/39e5eff8636d5ce75af0394621bdbecc425a6cff">39e5eff8</a> 技能計算、學習條件與每日清單修正</h3>
+          <ul class="patchChangeList">
+            <li><strong>修正技能熟練度計算</strong>：精準暗器第 19、20 級正確套用 60%，同步核對計算機 45 個相關技能的逐級數值。區分武器熟練度、暗之靈魂加成、魔法技能與楓幣炸彈，並補上弓／弩術精通的攻擊力加成。</li>
+            <li><strong>配點遵守技能前置需求</strong>：校正前置技能名稱及等級，未達需求時不能增加點數，並以彈窗說明原因。降低前置技能時會檢查已學技能；舊存檔不符合條件的點數會退回並提示。</li>
+            <li><strong>技改資訊補齊官方調整</strong>：新增系統調整與六個技能的公告內容；雙子星攻擊及火槍近距離攻擊只列在火槍分支。技能詳細內容預設折疊，直接連到技能時只展開該項。</li>
+            <li><strong>萬聖節禮物箱依序勾選</strong>：先完成當日「漫漫長夜的守護者」才能記錄禮物箱；勾選第八箱會一併勾選前七箱，取消前面的箱子也會取消後續紀錄。保留跨分頁同步與每日重置。</li>
+          </ul>
+        </section>
 
         <section id="c6c38cccb" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/6c38cccb6ae8cf0113619cd0ced3ca8291c3e247">6c38cccb</a> 2.0 道具圖示全面校正</h3>
