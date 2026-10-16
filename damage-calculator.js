@@ -104,6 +104,9 @@ const el = {
   skillReset: document.querySelector("#skillReset"),
   skillBudgetSummary: document.querySelector("#skillBudgetSummary"),
   skillLevelList: document.querySelector("#skillLevelList"),
+  skillNotice: document.querySelector("#skillNotice"),
+  skillNoticeTitle: document.querySelector("#skillNoticeTitle"),
+  skillNoticeReasons: document.querySelector("#skillNoticeReasons"),
   specialBuffList: document.querySelector("#specialBuffList"),
   normalBuffHint: document.querySelector("#normalBuffHint"),
   normalBuffPicker: document.querySelector("#normalBuffPicker"),
@@ -568,12 +571,72 @@ function skillGateReason(skill) {
   const advancement = skillAdvancement(skill);
   const stageIndex = advancementIndex(advancement);
   if (stageIndex < 0) return "";
-  if (stageIndex > 0 && characterLevel() < advancementStartLevel(advancement)) return "等級不足";
+  if (stageIndex > 0 && characterLevel() < advancementStartLevel(advancement)) return `需角色等級 ${advancementStartLevel(advancement)} 級（目前 ${characterLevel()} 級）`;
   if (!previousAdvancementsComplete(stageIndex)) {
     const previous = ADVANCEMENT_ORDER[stageIndex - 1] || "";
-    return `需先用盡${previous}點數`;
+    return `需先用盡${previous}及之前的點數（尚餘 ${skillBudgetThrough(stageIndex - 1) - skillUsedThrough(stageIndex - 1)} 點）`;
   }
-  return "";
+  return prerequisiteWarnings(skill).join("；");
+}
+
+function skillIncreaseReason(skill, requested = skillLevel(skill?.id) + 1) {
+  if (!skill || !jobSkills().some(row => row.id === skill.id)) return "此職業無法學習此技能。";
+  const gate = skillGateReason(skill);
+  if (gate) return gate;
+  if (requested > Number(skill.maxLevel || 0)) return `技能最高為 ${skill.maxLevel} 級。`;
+  const remaining = Math.max(0, totalSkillBudget() - skillTotalUsed());
+  const needed = requested - skillLevel(skill.id);
+  return needed > remaining ? `技能點數不足：尚餘 ${remaining} 點，本次需要 ${needed} 點。` : "";
+}
+
+function showSkillNotice(title, reasons) {
+  el.skillNoticeTitle.textContent = title;
+  el.skillNoticeReasons.replaceChildren(...reasons.map(reason => {
+    const li = document.createElement("li");
+    li.textContent = reason;
+    return li;
+  }));
+  if (!el.skillNotice.open) el.skillNotice.showModal();
+}
+
+function skillChangeReasons(skill, requested) {
+  if (!skill) return ["此職業無法學習此技能。"];
+  const current = skillLevel(skill.id);
+  let reasons = [];
+  if (!Number.isInteger(requested) || requested < 0) reasons = ["技能等級必須是 0 以上的整數。"];
+  else if (requested > current) {
+    const reason = skillIncreaseReason(skill, requested);
+    if (reason) reasons.push(reason);
+  } else if (requested < current) {
+    reasons = jobSkills().filter(row => skillLevel(row.id) > 0).flatMap(row =>
+      (row.prerequisites || []).filter(req => Number(req.skillId) === Number(skill.id) && requested < Number(req.level))
+        .map(req => `${row.name}已學習 ${skillLevel(row.id)} 級，需保留${skill.name} ${req.level} 級。請先將${row.name}退回 0 級。`));
+  }
+  return reasons;
+}
+
+function changeSkillLevel(skill, requested) {
+  if (!skill) return false;
+  const current = skillLevel(skill.id);
+  const reasons = skillChangeReasons(skill, requested);
+  if (reasons.length) {
+    const input = el.skillLevelList.querySelector(`[data-skill-level="${skill.id}"]`);
+    if (input) {
+      input.value = String(current);
+      delete input.dataset.pendingSkillChange;
+    }
+    showSkillNotice(`${skill.name}：無法調整點數`, reasons);
+    return false;
+  }
+  state.skillLevels[String(skill.id)] = requested;
+  clampSkillLevelsToBudgets(skill.id);
+  persistSkillLevels();
+  const editing = document.activeElement?.dataset?.skillLevel === String(skill.id);
+  const scrollTop = el.skillLevelList.scrollTop;
+  renderAll();
+  el.skillLevelList.scrollTop = scrollTop;
+  if (editing) el.skillLevelList.querySelector(`[data-skill-level="${skill.id}"]`)?.focus({preventScroll: true});
+  return true;
 }
 
 function skillAssignableMax(skill) {
@@ -609,8 +672,6 @@ function levelRow(skill, level) {
 function parseLevelText(text) {
   const values = {};
   const source = String(text || "");
-  const mastery = source.match(/熟練度\s*[+提升]*\s*(\d+)\s*%/);
-  if (mastery) values.M = Number(mastery[1]);
   const attack = source.match(/物理攻擊力\s*(?:上升|增加|[+＋])\s*(\d+)/) || source.match(/(?:^|[^魔法])攻擊力\s*(?:上升|增加|[+＋])\s*(\d+)/);
   if (attack) values.pad = Number(attack[1]);
   const magic = source.match(/(?:魔法攻擊力|魔力)\s*(?:上升|增加|[+＋])\s*(\d+)/);
@@ -622,7 +683,7 @@ function parseLevelText(text) {
 
 function skillValues(skill, level) {
   const row = levelRow(skill, level);
-  return { ...(row?.values || {}), ...parseLevelText(row?.description || "") };
+  return { ...parseLevelText(row?.description || ""), ...(row?.values || {}) };
 }
 
 function skillLevel(skillId) {
@@ -731,11 +792,25 @@ function clampSkillLevelsToBudgets(changedSkillId = null) {
   let overBudget = skillTotalUsed() - totalSkillBudget();
   if (overBudget > 0) reducePoints(skills, overBudget);
 
-  for (let index = 1; index < ADVANCEMENT_ORDER.length; index += 1) {
-    if (previousAdvancementsComplete(index)) continue;
-    const lockedSkills = skills.filter(skill => advancementIndex(skillAdvancement(skill)) >= index);
-    reducePoints(lockedSkills, skillTotalUsed());
-  }
+  // A refunded prerequisite may invalidate a chain or a later advancement.
+  let changed;
+  do {
+    changed = false;
+    for (const skill of skills) {
+      if (skillLevel(skill.id) && prerequisiteWarnings(skill).length) {
+        state.skillLevels[String(skill.id)] = 0;
+        changed = true;
+      }
+    }
+    for (let index = 1; index < ADVANCEMENT_ORDER.length; index += 1) {
+      if (previousAdvancementsComplete(index) && characterLevel() >= advancementStartLevel(ADVANCEMENT_ORDER[index])) continue;
+      const lockedSkills = skills.filter(skill => advancementIndex(skillAdvancement(skill)) >= index && skillLevel(skill.id) > 0);
+      if (lockedSkills.length) {
+        reducePoints(lockedSkills, skillTotalUsed());
+        changed = true;
+      }
+    }
+  } while (changed);
 }
 
 function renderSkillBudgetSummary() {
@@ -804,6 +879,7 @@ function improveBuffTotals(totals, effects, source) {
 function ownSkillBuffCandidates() {
   const partySkillIds = new Set((db.partySkillBuffs || []).flatMap(buff => buff.skillIds || []).map(Number));
   return jobSkills().filter(skill => {
+    if (["weapon", "additive", "magicPassive"].includes(skill.mastery?.type)) return false;
     if (partySkillIds.has(Number(skill.id))) return false;
     const level = skillLevel(skill.id);
     if (!level) return false;
@@ -813,10 +889,7 @@ function ownSkillBuffCandidates() {
 }
 
 function isWeaponMatch(skill, weaponType) {
-  const formula = WEAPON_FORMULAS[weaponType];
-  if (!formula) return false;
-  const haystack = `${skill.name || ""} ${skill.description || ""} ${skill.formula || ""}`;
-  return formula.mastery.some(token => haystack.includes(token));
+  return (skill.mastery?.weapons || []).includes(weaponType);
 }
 
 function getStatTotals() {
@@ -868,12 +941,12 @@ function getPassiveSkillAttackBonus(weaponType) {
     const level = skillLevel(skill.id);
     if (!level) continue;
     const values = selectedSkillValues(skill);
-    if (!isWeaponMatch(skill, weaponType)) continue;
-    if (values.pad && /精通|熟練/.test(`${skill.name} ${skill.description}`)) {
+    if (skill.mastery?.type !== "weapon" || !isWeaponMatch(skill, weaponType)) continue;
+    if (values.pad) {
       pad += Number(values.pad);
       sources.push(`${skill.name} +${values.pad}`);
     }
-    if (values.mad && /精通|熟練/.test(`${skill.name} ${skill.description}`)) {
+    if (values.mad) {
       mad += Number(values.mad);
       sources.push(`${skill.name} +${values.mad}`);
     }
@@ -889,12 +962,12 @@ function getMastery(weaponType) {
     const level = skillLevel(skill.id);
     if (!level) continue;
     const values = selectedSkillValues(skill);
-    if (!values.M) continue;
-    if ((skill.name || "").includes("暗之靈魂")) {
+    if (!values.M || !isWeaponMatch(skill, weaponType)) continue;
+    if (skill.mastery?.type === "additive") {
       additive = Math.max(additive, Number(values.M) / 100);
       continue;
     }
-    if (!isWeaponMatch(skill, weaponType)) continue;
+    if (skill.mastery?.type !== "weapon") continue;
     const value = Number(values.M) / 100;
     if (value > mastery) {
       mastery = value;
@@ -943,11 +1016,12 @@ function getAttackRange() {
 }
 
 function isDamageSkill(skill) {
+  if (["weapon", "additive", "magicPassive"].includes(skill.mastery?.type)) return false;
   if (isCriticalPassiveSkill(skill)) return false;
   if (isSpecialFormulaSkill(skill)) return true;
   if (isHealDamageSkill(skill)) return true;
   return (skill.levels || []).some(row => {
-    const values = { ...(row.values || {}), ...parseLevelText(row.description || "") };
+    const values = skillValues(skill, row.level);
     return values.damage || values.mad || values.pad || values.z || values.fixdamage;
   });
 }
@@ -1008,7 +1082,8 @@ function throwingSkillDamage(skill, values, range) {
 
 function magicSkillDamage(skill, values, range) {
   const basic = Number(values.mad || 0);
-  const mastery = Number(values.M || 60) / 100;
+  if (!Number.isFinite(values.M)) return formulaOnlySkillDamage("尚無此技能的熟練度資料");
+  const mastery = values.M / 100;
   const magic = range.magicAttack;
   const intValue = range.stats.int;
   const max = Math.floor(((magic * magic / 1000 + magic) / 30 + intValue / 200) * basic);
@@ -1218,7 +1293,7 @@ function prerequisiteWarnings(skill) {
   for (const req of skill.prerequisites || []) {
     const level = skillLevel(req.skillId);
     if (level < Number(req.level || 0)) {
-      warnings.push(`${req.skillName} 需要 ${req.level} 級`);
+      warnings.push(`需${skillById(req.skillId)?.name || req.skillName} ${req.level} 級（目前 ${level} 級）`);
     }
   }
   return warnings;
@@ -1276,23 +1351,23 @@ function renderSkills() {
   const rows = jobSkills().filter(skill => skillAdvancement(skill) === activeTab);
   el.skillLevelList.innerHTML = rows.map(skill => {
     const level = skillLevel(skill.id);
-    const warnings = level ? prerequisiteWarnings(skill) : [];
     const maxAllowed = skillAssignableMax(skill);
-    const gateReason = skillGateReason(skill);
+    const gateReason = skillIncreaseReason(skill);
     const isLocked = (Boolean(gateReason) || maxAllowed <= 0) && level <= 0;
-    const lockText = gateReason ? ` · ${gateReason}` : "";
+    const lockText = gateReason && isLocked ? ` · ${gateReason}` : "";
+    const requirements = (skill.prerequisites || []).map(req => `${skillById(req.skillId)?.name || req.skillName} ${req.level} 級`).join("、");
     const idText = state.showIds ? ` · ID ${skill.id}` : "";
     return `<div class="skillLevelRow${isLocked ? " isLocked" : ""}">
       <img src="${escapeHtml(skill.image || "")}" alt="" loading="lazy" />
       <span>
         <strong>${escapeHtml(skill.name)}</strong>
         <small>${escapeHtml(skill.jobName || "")} · ${escapeHtml(skillAdvancement(skill))} · ${level}/${skill.maxLevel || 0}${lockText}${idText}</small>
+        ${requirements ? `<small class="skillRequirement">前置：${escapeHtml(requirements)}</small>` : ""}
       </span>
       <span class="skillLevelControl">
-        <input data-skill-level="${escapeHtml(skill.id)}" type="number" min="0" max="${maxAllowed}" step="1" value="${level}" inputmode="numeric" autocomplete="off" ${isLocked ? "disabled" : ""} />
-        <button class="skillMaxButton" type="button" data-skill-max="${escapeHtml(skill.id)}" ${maxAllowed <= level ? "disabled" : ""}>MAX</button>
+        <input data-skill-level="${escapeHtml(skill.id)}" type="number" min="0" step="1" value="${level}" inputmode="numeric" autocomplete="off" aria-label="${escapeHtml(skill.name)} 等級" ${isLocked ? 'readonly aria-disabled="true"' : ""} />
+        <button class="skillMaxButton" type="button" data-skill-max="${escapeHtml(skill.id)}" aria-disabled="${maxAllowed <= level}" aria-label="${escapeHtml(skill.name)} 加至可分配上限">MAX</button>
       </span>
-      ${warnings.length ? `<em class="damageWarning">${escapeHtml(warnings.join("、"))}</em>` : ""}
     </div>`;
   }).join("") || `<p class="emptyState">此階段沒有技能</p>`;
 }
@@ -1493,6 +1568,19 @@ function setupTheme() {
 }
 
 function setupEvents() {
+  el.skillLevelList.addEventListener("keydown", event => {
+    const input = event.target.closest("[data-skill-level]");
+    if (!input || event.ctrlKey || event.metaKey || event.altKey) return;
+    const skill = skillById(input.dataset.skillLevel);
+    if ((input.readOnly && /^(?:ArrowUp|ArrowDown|Enter| |Backspace|Delete|[0-9])$/.test(event.key))
+        || (event.key === "ArrowUp" && skillIncreaseReason(skill))) {
+      event.preventDefault();
+      showSkillNotice(`${skill.name}：無法增加點數`, [skillIncreaseReason(skill)]);
+    } else if (event.key === "Enter" && input.dataset.pendingSkillChange) {
+      event.preventDefault();
+      changeSkillLevel(skill, input.value === "" ? 0 : Number(input.value));
+    }
+  });
   el.settingsToggle?.addEventListener("click", () => {
     const next = el.settingsPanel.hidden;
     el.settingsPanel.hidden = !next;
@@ -1570,11 +1658,14 @@ function setupEvents() {
     const skillId = target.dataset.skillLevel;
     if (skillId) {
       const skill = skillById(skillId);
-      const max = skillAssignableMax(skill);
-      const value = Math.max(0, Math.min(max, Number(target.value || 0)));
-      state.skillLevels[String(skillId)] = value;
-      clampSkillLevelsToBudgets(skillId);
-      persistSkillLevels();
+      const value = target.value === "" ? 0 : Number(target.value);
+      // Let incomplete edits finish, e.g. replacing a prerequisite's 5 with 10.
+      if (target.value === "" || skillChangeReasons(skill, value).length) {
+        target.dataset.pendingSkillChange = "true";
+      } else {
+        changeSkillLevel(skill, value);
+      }
+      return;
     }
     const partyBuffId = target.dataset.partySkillBuffLevel;
     if (partyBuffId) {
@@ -1594,6 +1685,10 @@ function setupEvents() {
   document.addEventListener("change", event => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement)) return;
+    if (target.dataset.skillLevel) {
+      if (target.dataset.pendingSkillChange) changeSkillLevel(skillById(target.dataset.skillLevel), target.value === "" ? 0 : Number(target.value));
+      return;
+    }
     const skillBuff = target.dataset.skillBuff;
     if (skillBuff) {
       state.activeSkillBuffs[String(skillBuff)] = target.checked;
@@ -1607,6 +1702,12 @@ function setupEvents() {
     }
   });
   document.addEventListener("click", event => {
+    const lockedInput = event.target.closest("[data-skill-level][readonly]");
+    if (lockedInput) {
+      const skill = skillById(lockedInput.dataset.skillLevel);
+      showSkillNotice(`${skill.name}：無法增加點數`, [skillIncreaseReason(skill)]);
+      return;
+    }
     const tabButton = event.target.closest("[data-skill-tab]");
     if (tabButton) {
       state.skillTab = tabButton.dataset.skillTab || "零轉";
@@ -1619,10 +1720,9 @@ function setupEvents() {
       const skillId = maxButton.dataset.skillMax;
       const skill = skillById(skillId);
       if (skill) {
-        state.skillLevels[String(skillId)] = skillAssignableMax(skill);
-        clampSkillLevelsToBudgets(skillId);
-        persistSkillLevels();
-        renderAll();
+        const reason = skillIncreaseReason(skill);
+        if (reason) showSkillNotice(`${skill.name}：無法增加點數`, [reason]);
+        else changeSkillLevel(skill, skillAssignableMax(skill));
       }
       return;
     }
@@ -1654,10 +1754,16 @@ function init() {
   setSpiritBlessingLevel(readCookie("ms_damage_spirit_blessing_level") || 0, false);
   restoreDamageInputs();
   applyJobDefaults();
+  const rememberedLevels = {...state.skillLevels};
   clampSkillLevelsToBudgets();
   setupTheme();
   setupEvents();
   renderAll();
+  const refunds = Object.entries(rememberedLevels).filter(([id, level]) => Number(level) > skillLevel(id));
+  if (refunds.length) {
+    persistSkillLevels();
+    showSkillNotice("已退回不符合學習條件的配點", refunds.map(([id, level]) => `${skillById(id)?.name || "未收錄技能"}：${level} 級 → ${skillLevel(id)} 級`));
+  }
 }
 
 init();

@@ -15,6 +15,10 @@ body.skillChangesPage {height: auto; min-height: 100dvh; overflow-y: auto;}
 .scCoverage summary {font-size: 14px; color: var(--sc-accent); cursor: pointer;}
 .scCoverage table {margin-block: 12px;}
 .scCoverage td small {display: block; font-size: 11px; color: var(--sc-muted);}
+.scSystemChanges {margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--sc-line);}
+.scSystemChanges h3 {margin: 0 0 8px; font-size: 15px;}
+.scSystemChanges ul {margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8;}
+.scSystemChanges li + li {margin-top: 4px;}
 .scCareers {display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; scroll-margin-top: 100px;}
 .scCareer {display: grid; grid-template-rows: 84px 36px 30px; align-items: center; justify-items: center; gap: 4px; min-width: 0; padding: 8px; border: 1px solid var(--sc-line); border-radius: 6px; background: var(--sc-bg); color: var(--sc-text); font: inherit; cursor: pointer;}
 .scCareer img {width: 100%; height: 84px; object-fit: contain;}
@@ -51,6 +55,12 @@ body.skillChangesPage {height: auto; min-height: 100dvh; overflow-y: auto;}
 .scBody h4 {font-size: 15px; margin: 20px 0 8px;}
 .scBody p {font-size: 14px; line-height: 1.7;}
 .scBody a {color: var(--sc-accent); text-underline-offset: 3px;}
+.scOfficial {padding-bottom: 16px; border-bottom: 1px solid var(--sc-line);}
+.scOfficial ul {margin: 10px 0 0; padding-left: 20px; font-size: 14px; line-height: 1.8;}
+.scSharedChange {display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 12px 0 18px;}
+.scSharedChange h5 {display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin: 0; font-size: 15px;}
+.scSharedChange small {color: var(--sc-muted); font-size: 12px;}
+.scSharedChange p {font-size: 14px; line-height: 1.7; margin: 6px 0 0; overflow-wrap: anywhere;}
 .scNote {background: var(--sc-warn-bg); color: var(--sc-warn); padding: 10px 12px; border-left: 3px solid var(--sc-warn);}
 .scEvidence {color: var(--sc-muted); font-size: 12px !important;}
 .scTable {border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed;}

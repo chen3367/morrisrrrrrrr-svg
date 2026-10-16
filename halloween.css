@@ -42,6 +42,8 @@
 .hwDailyBox strong { font-size: 13px; }
 .hwDailyBox small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .hwDailyBox:has(input:checked) { background: var(--accent-soft); }
+.hwDailyBox:has(input:disabled) { color: var(--muted); cursor: not-allowed; }
+.halloweenMain .hwDailyChecklist input[type="checkbox"]:disabled { cursor: not-allowed; }
 .halloweenMain #hwDailyStorageWarning { color: var(--ink); border-left: 3px solid var(--gold); padding-left: 8px; margin-top: 8px; }
 .hwChapters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); gap: 24px; padding: 16px 0; }
 .hwChapters a { display: grid; gap: 4px; text-decoration: none; border-left: 3px solid var(--accent); padding-left: 12px; }

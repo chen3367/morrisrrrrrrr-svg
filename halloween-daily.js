@@ -7,7 +7,9 @@
 
   const cookieName = "mm_halloween_2026_daily_v1";
   const quests = new Map(db.quests.map(quest => [quest.id, quest]));
-  const ids = [...config.quests.map(quest => `quest-${quest.id}`), ...config.giftShop.prices.map((_, i) => `box-${i + 1}`)];
+  const boxIds = config.giftShop.prices.map((_, i) => `box-${i + 1}`);
+  const giftQuestId = `quest-${config.giftShop.unlockQuestId}`;
+  const ids = [...config.quests.map(quest => `quest-${quest.id}`), ...boxIds];
   const allowed = new Set(ids);
   const escape = value => String(value).replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[char]));
   const link = id => `<a href="#quest-${id}" data-quest="${id}">${escape(quests.get(id).name)}</a>`;
@@ -24,7 +26,7 @@
   root.innerHTML = `<header class="hwDailyHeading"><h2 id="hwDailyTitle">每日清單</h2><div><time id="hwDailyDate"></time><span>清單每日 00:00 重置（台灣）</span></div></header>
     <div class="hwDailyTasks">${config.quests.map(quest => `<div class="hwDailyTask"><label class="hwDailyCheckTarget"><input type="checkbox" data-daily-id="quest-${quest.id}" aria-label="${escape(quests.get(quest.id).name)}已完成" /></label><div><a href="#quest-${quest.id}" data-quest="${quest.id}"><strong>${escape(quests.get(quest.id).name)}</strong></a><p>完成${link(quest.prerequisiteId)}後解鎖 · 每日 ${quest.dailyLimit} 次</p><p>${escape(quest.objective)}</p><p>獎勵：${escape(quest.reward)}</p></div></div>`).join("")}</div>
     <p>${escape(config.experienceNote)}</p><p>${escape(config.monsterRangeNote)}</p>
-    <details class="hwDailyGiftShop"><summary><strong>禮物箱領取／購買</strong><span id="hwDailyBoxCount">0 / ${config.giftShop.dailyLimit}</span></summary><p>首次完成${link(config.giftShop.unlockQuestId)}後，向${escape(config.giftShop.npcName)}領取或購買。</p><p>${escape(config.giftShop.note)}</p><div class="hwDailyBoxes">${config.giftShop.prices.map((price, i) => `<label class="hwDailyBox"><input type="checkbox" data-daily-id="box-${i + 1}" aria-label="第 ${i + 1} 箱已${price ? "購買" : "領取"}" /><span><strong>第 ${i + 1} 箱</strong><small>${price ? `${price.toLocaleString("zh-TW")} 楓幣` : "免費"}</small></span></label>`).join("")}</div></details>
+    <details class="hwDailyGiftShop"><summary><strong>禮物箱領取／購買</strong><span id="hwDailyBoxCount">0 / ${config.giftShop.dailyLimit}</span></summary><p id="hwDailyGiftRequirement">完成當日${link(config.giftShop.unlockQuestId)}後，才可記錄向${escape(config.giftShop.npcName)}領取或購買的禮物箱。</p><p>${escape(config.giftShop.note)}</p><div class="hwDailyBoxes">${config.giftShop.prices.map((price, i) => `<label class="hwDailyBox"><input type="checkbox" data-daily-id="box-${i + 1}" aria-label="第 ${i + 1} 箱已${price ? "購買" : "領取"}" aria-describedby="hwDailyGiftRequirement" disabled /><span><strong>第 ${i + 1} 箱</strong><small>${price ? `${price.toLocaleString("zh-TW")} 楓幣` : "免費"}</small></span></label>`).join("")}</div></details>
     <p>活動期間：${escape(config.activityPeriod)}</p><p id="hwDailyStorageWarning" role="status" hidden>無法儲存勾選，僅當次頁面有效。</p>`;
 
   function readCookie() {
@@ -33,12 +35,19 @@
     return entry ? entry.slice(prefix.length) : "";
   }
 
+  function normalizeDone(values) {
+    const done = new Set(values);
+    const lastBox = done.has(giftQuestId) ? boxIds.reduce((last, id, i) => done.has(id) ? i : last, -1) : -1;
+    boxIds.forEach((id, i) => { if (i <= lastBox) done.add(id); else done.delete(id); });
+    return ids.filter(id => done.has(id));
+  }
+
   function parseCookie(value, day) {
     try {
       if (!value || value.length > 2048) return blank(day);
       const saved = JSON.parse(decodeURIComponent(value));
       if (saved.v !== 1 || saved.day !== day || !Array.isArray(saved.done)) return blank(day);
-      return {v: 1, day, done: ids.filter(id => saved.done.includes(id))};
+      return {v: 1, day, done: normalizeDone(saved.done)};
     } catch (_) {
       return blank(day);
     }
@@ -66,7 +75,10 @@
   }
 
   function paint() {
-    root.querySelectorAll("[data-daily-id]").forEach(input => { input.checked = state.done.includes(input.dataset.dailyId); });
+    root.querySelectorAll("[data-daily-id]").forEach(input => {
+      input.checked = state.done.includes(input.dataset.dailyId);
+      input.disabled = boxIds.includes(input.dataset.dailyId) && !state.done.includes(giftQuestId);
+    });
     const date = document.getElementById("hwDailyDate");
     date.dateTime = state.day;
     date.textContent = state.day.replaceAll("-", "/");
@@ -96,9 +108,18 @@
     // Read the latest cookie before editing to preserve changes from other tabs.
     reconcile();
     const done = new Set(state.done);
-    if (checked) done.add(id);
+    const boxIndex = boxIds.indexOf(id);
+    if (boxIndex >= 0) {
+      // Recheck after cookie sync: another tab or midnight may have relocked gifts.
+      if (done.has(giftQuestId)) {
+        boxIds.forEach((boxId, i) => {
+          if (checked && i <= boxIndex) done.add(boxId);
+          else if (!checked && i >= boxIndex) done.delete(boxId);
+        });
+      }
+    } else if (checked) done.add(id);
     else done.delete(id);
-    state.done = ids.filter(value => done.has(value));
+    state.done = normalizeDone([...done]);
     save();
     paint();
     scheduleReset();
