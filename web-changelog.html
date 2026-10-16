@@ -42,7 +42,7 @@
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css?v=ccc1dc2b96ce" />
-  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-16T23:50:17+08:00","updatedAtText":"2026-10-16 23:50:17 GMT+8"};</script>
+  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-17T01:32:09+08:00","updatedAtText":"2026-10-17 01:32:09 GMT+8"};</script>
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -86,13 +86,14 @@
           </div>
         </details>
       </nav>
-      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-16 23:50:17 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
+      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-17 01:32:09 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
     </div>
   </header>
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#ce8f2ad0a"><strong>e8f2ad0a</strong><span>2026-10-16</span></a>
+      <a class="patchVersionRow active" href="#ccf47803b"><strong>cf47803b</strong><span>2026-10-17</span></a>
+      <a class="patchVersionRow" href="#ce8f2ad0a"><strong>e8f2ad0a</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#c39e5eff8"><strong>39e5eff8</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#c6c38cccb"><strong>6c38cccb</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#c0277f757"><strong>0277f757</strong><span>2026-10-16</span></a>
@@ -185,10 +186,20 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>82</strong>
+            <strong>83</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="ccf47803b" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/cf47803b6998dc1b1e138ed299a4006cd2a9f378">cf47803b</a> 爆擊、怪物傷害模擬與達標交換組數</h3>
+          <ul class="patchChangeList">
+            <li><strong>戰鬥力計算機新增爆擊試算</strong>：顯示爆擊率與爆擊傷害加成，並在符合條件的技能附上爆擊傷害範圍；特殊 BUFF 新增可調整等級的「會心之眼」。</li>
+            <li><strong>新增怪物傷害與擊殺次數模擬</strong>：搜尋怪物並選擇技能後，依等級差、防禦、屬性與爆擊計算最小、最大、平均及中位數傷害，估算對應的擊殺施放次數。多段攻擊按一次完整施放計算；特殊機制未支援時另行提示。</li>
+            <li><strong>經驗物工具新增達標所需組數</strong>：分別列出目前及交換結算後，達到目標等級還需要的查理中士經驗物或玻璃鞋組數與個數，未滿一次交換的需求向上取整。</li>
+            <li><strong>每組依一次交換計算</strong>：查理中士為同種材料 100 個、玻璃鞋為 1 個；兩者是獨立方案。玻璃鞋未達任務等級時顯示限制，已達目標時顯示 0 組。</li>
+          </ul>
+        </section>
 
         <section id="ce8f2ad0a" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/e8f2ad0a4532380d6288ae95ee1f3949c62a7e3e">e8f2ad0a</a> 目標等級試算與三轉題庫更正</h3>
