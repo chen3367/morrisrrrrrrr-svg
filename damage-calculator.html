@@ -38,7 +38,7 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20261016124145" />
+  <link rel="stylesheet" href="./styles.css?v=20261017010338" />
   <style>
     .damageLayout {
       grid-template-columns: minmax(360px, 460px) minmax(0, 1fr);
@@ -710,6 +710,45 @@
         grid-column: 2 / -1;
       }
     }
+    .damageContent > .damagePanel {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    .damageContent > .damagePanel + .damagePanel { border-top: 1px solid var(--line); }
+    .combatInputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .combatInputs > :last-child { grid-column: 1 / -1; }
+    .combatInputs input[type="search"] { text-align: left; }
+    .combatInputs select { text-overflow: ellipsis; }
+    .combatCheck { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--plain-text); font-size: 14px; }
+    .combatCheck[hidden] { display: none; }
+    .combatTarget { display: flex; align-items: center; gap: 14px; margin: 18px 0; min-width: 0; }
+    .combatTarget > img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; flex: 0 0 64px; }
+    .combatTarget a { font-size: 18px; font-weight: 800; color: var(--active-text); }
+    .combatTarget p, .combatNote, .combatAssumptions p { color: var(--muted); font-size: 13px; line-height: 1.65; margin: 6px 0; overflow-wrap: anywhere; }
+    .combatAttack { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--plain-text); }
+    .combatAttack span { color: var(--muted); font-size: 13px; }
+    .combatSkillIcon { width: 32px; height: 32px; object-fit: contain; }
+    .combatStats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 10px 0 20px; }
+    .combatStats > div { min-width: 0; padding-left: 10px; border-left: 2px solid var(--line); }
+    .combatStats dt { color: var(--muted); font-size: 12px; }
+    .combatStats dd { margin: 4px 0 0; color: var(--plain-text); font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    #combatResults h4 { margin: 18px 0 8px; color: var(--plain-text); font-size: 14px; }
+    .combatAssumptions { font-size: 12px; color: var(--muted); }
+    .combatAssumptions summary { cursor: pointer; }
+    .criticalSummary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; padding: 12px 22px; border-bottom: 1px solid var(--line); color: var(--plain-text); }
+    .criticalSummary small { color: var(--muted); line-height: 1.5; }
+    .damagePill.isCritical { color: var(--gold-text); border-color: var(--gold-line); background: var(--gold-card); }
+    .damageSkillNumbers .damagePill { border-radius: 4px; overflow-wrap: anywhere; }
+    @media (max-width: 1200px) {
+      .combatStats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      .combatInputs { grid-template-columns: minmax(0, 1fr); }
+      .combatStats dd { font-size: 17px; }
+      .damageSkillGrid, .formulaGrid { grid-template-columns: minmax(0, 1fr); }
+      .criticalSummary { padding: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -858,8 +897,8 @@
     <ul id="skillNoticeReasons"></ul>
     <form method="dialog"><button type="submit" autofocus>知道了</button></form>
   </dialog>
-  <script src="./damage-calculator-data.js?v=20261016124145"></script>
-  <script src="./damage-calculator.js?v=20261016124145"></script>
-  <script src="./mobile.js?v=20261016124145"></script>
+  <script src="./damage-calculator-data.js?v=20261017010338"></script>
+  <script src="./damage-calculator.js?v=20261017010338"></script>
+  <script src="./mobile.js?v=20261017010338"></script>
 </body>
 </html>

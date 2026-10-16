@@ -29,6 +29,15 @@
 .expResult dt { color: var(--muted); }
 .expResult dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .expTargetStart { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.expTargetPlan { padding: 20px 0; border-top: 1px solid var(--line); }
+.expPlanTable { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+.expPlanTable th, .expPlanTable td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: middle; overflow-wrap: anywhere; }
+.expPlanTable th:first-child { width: 40%; text-align: left; padding-left: 0; }
+.expPlanTable thead th { color: var(--muted); font-size: 12px; font-weight: 500; }
+.expPlanTable td strong { display: block; font-size: 18px; color: var(--active-text); font-variant-numeric: tabular-nums; }
+.expPlanTable small { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.expPlanIdentity { display: flex; align-items: center; gap: 10px; font-weight: 650; }
+.expPlanIdentity span { min-width: 0; }
 .expEstimate { font-size: 12px; color: var(--muted); margin: 0 0 18px; }
 .expError { color: #ab2c27; background: #fcebe9; border-left: 3px solid #b63b36; padding: 10px 14px; font-size: 14px; }
 .expWarning { color: #82531a; font-size: 13px; margin: 0; }
@@ -95,6 +104,10 @@
   .expMain { padding: 18px 16px 36px; }
   .expOverview { gap: 24px; grid-template-columns: minmax(0, 1fr); }
   .expResult { padding-left: 16px; }
+  .expPlanTable th, .expPlanTable td { padding: 12px 5px; }
+  .expPlanTable th:first-child { width: 38%; }
+  .expPlanTable td strong { font-size: 16px; }
+  .expPlanIdentity { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 13px; }
   .expShoes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
   .expShoes > .expIdentity { grid-column: 1 / -1; }
   .expShoeStats { padding-top: 20px; }

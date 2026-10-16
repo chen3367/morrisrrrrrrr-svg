@@ -22,8 +22,8 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20261016231457" />
-  <link rel="stylesheet" href="./exp-exchange.css?v=fcb1a09aaac7" />
+  <link rel="stylesheet" href="./styles.css?v=20261017011432" />
+  <link rel="stylesheet" href="./exp-exchange.css?v=b8c1906b9bec" />
 </head>
 <body class="expExchangePage">
   <header class="appHeader">
@@ -81,6 +81,17 @@
       </section>
       <p id="expError" class="expError" role="alert" hidden></p>
       <p class="expEstimate">結算結果為推估，實際以遊戲為準。</p>
+      <section class="expTargetPlan" aria-labelledby="expPlanTitle" aria-live="polite">
+        <h3 id="expPlanTitle">達標所需組數</h3>
+        <p class="expMinor">1 組 = 1 次交換。以下為兩種獨立方案，不需兩者都準備。</p>
+        <table class="expPlanTable">
+          <thead><tr><th scope="col">交換方式</th><th scope="col">目前所需</th><th scope="col">結算後還需</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" id="expPlanCharlieIdentity"></th><td id="expPlanCharlieStart">待計算</td><td id="expPlanCharlieFinal">待計算</td></tr>
+            <tr><th scope="row" id="expPlanShoesIdentity"></th><td id="expPlanShoesStart">待計算</td><td id="expPlanShoesFinal">待計算</td></tr>
+          </tbody>
+        </table>
+      </section>
       <section class="expShoes" aria-labelledby="expShoeTitle">
         <div id="expShoeIdentity" class="expIdentity"></div>
         <div class="expShoeControl"><label for="expShoes">玻璃鞋數量</label><input id="expShoes" name="shoes" type="number" min="0" max="1000000000" step="1" value="0" required inputmode="numeric" /></div>
@@ -103,8 +114,8 @@
     <noscript>請啟用 JavaScript 進行經驗試算。<a href="./quests.html?quest=2017">艾溫的玻璃鞋任務索引</a></noscript>
   </main>
   <script src="./exp-exchange-data.js?v=ef73b20bde49"></script>
-  <script src="./exp-exchange-logic.js?v=ed0d80389c26"></script>
-  <script src="./exp-exchange.js?v=b8f272655185"></script>
-  <script src="./mobile.js?v=20261016231457"></script>
+  <script src="./exp-exchange-logic.js?v=c107722b6233"></script>
+  <script src="./exp-exchange.js?v=bc762d464c62"></script>
+  <script src="./mobile.js?v=20261017011432"></script>
 </body>
 </html>

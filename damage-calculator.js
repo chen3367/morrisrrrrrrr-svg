@@ -241,7 +241,7 @@ function allowedItemBuffIds() {
 
 function isSpecialPartyBuff(buff) {
   const values = partyBuffValues(buff);
-  return Boolean(values.statPercent || values.padPercent || values.madPercent || ["maple_warrior", "hero_echo"].includes(String(buff?.id)));
+  return Boolean(values.statPercent || values.padPercent || values.madPercent || ["maple_warrior", "hero_echo", "sharp_eyes"].includes(String(buff?.id)));
 }
 
 function normalBuffKind() {
@@ -867,7 +867,7 @@ function partyBuffValues(buff) {
 }
 
 function improveBuffTotals(totals, effects, source) {
-  for (const key of ["pad", "mad", "padPercent", "madPercent", "statPercent"]) {
+  for (const key of ["pad", "mad", "padPercent", "madPercent", "statPercent", "critRate", "critBonus"]) {
     const value = Number(effects?.[key] || 0);
     if (value > Number(totals[key] || 0)) {
       totals[key] = value;
@@ -1016,6 +1016,8 @@ function getAttackRange() {
 }
 
 function isDamageSkill(skill) {
+  if (COMBAT_NON_ATTACKS.has(Number(skill.id))) return false;
+  if ((db.partySkillBuffs || []).some(buff => (buff.skillIds || []).includes(Number(skill.id)))) return false;
   if (["weapon", "additive", "magicPassive"].includes(skill.mastery?.type)) return false;
   if (isCriticalPassiveSkill(skill)) return false;
   if (isSpecialFormulaSkill(skill)) return true;
@@ -1036,16 +1038,14 @@ function isSpecialFormulaSkill(skill) {
 }
 
 function isCriticalPassiveSkill(skill) {
-  const name = skill?.name || "";
-  if (/強力投擲|霸王箭|致命箭|致命暗襲/.test(name)) return true;
-  const text = `${name} ${skill?.description || ""} ${skill?.formula || ""}`;
-  return /(爆擊|暴擊|臨界|致命一擊|出現比率)/.test(text) && !/消耗\s*(?:HP|MP|HP、MP|MP、HP)/.test(text);
+  return [3000001, 4100001, 5110000, 3110001, 3210001].includes(Number(skill?.id));
 }
 
 function hitCount(skill, values) {
   for (const [pattern, count] of SPECIAL_HIT_COUNTS) {
     if (pattern.test(skill.name || "")) return count;
   }
+  if (values.attackCount) return Number(values.attackCount);
   if (values.bulletCount) return Number(values.bulletCount);
   if ((skill.name || "").includes("龍魂之箭")) return 1;
   if ((skill.name || "").includes("魔力爪")) return 2;
@@ -1186,7 +1186,7 @@ function shadowMesoSkillDamage(skill, values) {
   const maxCost = Number(values.z || values.moneyCon || minCost);
   const prop = Number(values.prop || 0);
   const min = Math.floor(minCost * 10);
-  const max = Math.floor(maxCost * 10 * (prop ? 1.5 : 1));
+  const max = Math.floor(maxCost * 10);
   return {
     min,
     max,
@@ -1256,6 +1256,8 @@ function flashFistSkillDamage(skill, values, range) {
 
 function specialSkillDamage(skill, values, range) {
   const name = skill.name || "";
+  if (COMBAT_SUMMONS.has(Number(skill.id)) && values.pad) return summonPhysicalSkillDamage(skill, values, range);
+  if (Number(skill.id) === 2101005) return magicSkillDamage(skill, values, range);
   const fixed = fixedDamageSkillDamage(skill, values);
   if (fixed) return fixed;
   if (/雙飛斬|三飛閃/.test(name)) return throwingSkillDamage(skill, values, range);
@@ -1397,6 +1399,8 @@ function formatBuffEffects(effects) {
   if (effects?.padPercent) parts.push(`攻擊力 +${effects.padPercent}%`);
   if (effects?.madPercent) parts.push(`魔法攻擊力 +${effects.madPercent}%`);
   if (effects?.statPercent) parts.push(`全屬性 +${effects.statPercent}%`);
+  if (effects?.critRate) parts.push(`爆擊率 +${effects.critRate}%`);
+  if (effects?.critBonus) parts.push(currentJob()?.kind === "magic" ? `爆擊傷害 ${effects.critBonus}%` : `爆擊加成 +${effects.critBonus} 百分點`);
   return parts.join(" · ") || "BUFF";
 }
 
@@ -1444,6 +1448,7 @@ function renderNormalBuffPicker() {
 function renderDetail() {
   const job = currentJob();
   const range = getAttackRange();
+  const critical = criticalTotals(range);
   const damageSkills = jobSkills().filter(isDamageSkill);
   const activeDamageRows = damageSkills.map(skill => ({ skill, result: skillDamage(skill, range) })).filter(row => row.result);
   const formula = WEAPON_FORMULAS[state.weaponType] || {};
@@ -1462,7 +1467,9 @@ function renderDetail() {
       </div>
       <div class="damageResultCards">${attackCards}</div>
     </header>
+    <div class="criticalSummary"><strong>爆擊率 ${critical.rate}%</strong><strong>${critical.magic ? `爆擊傷害 ${critical.rate ? 100 + critical.bonus : 100}%` : `爆擊加成 +${critical.bonus} 百分點`}</strong><small>${critical.magic ? "魔法爆擊按一般傷害倍率計算" : "物理爆擊加成加到技能倍率，非最終傷害倍數"}${skillLevel(5110000) && jobSkills().some(skill => Number(skill.id) === 5110000) ? "；致命暗襲另依怪物暈眩狀態計算" : ""}</small></div>
     <div class="damageContent">
+      ${renderCombatShell()}
       <section class="damagePanel">
         <div class="damagePanelHeader"><h3>表攻公式</h3><small>${escapeHtml(formula.source || state.weaponType)}</small></div>
         <div class="damagePanelBody formulaGrid">
@@ -1474,22 +1481,27 @@ function renderDetail() {
       <section class="damagePanel">
         <div class="damagePanelHeader"><h3>技能傷害</h3><small>${formatNumber(activeDamageRows.length)} 個技能已設定點數</small></div>
         <div class="damagePanelBody damageSkillGrid">
-          ${activeDamageRows.map(row => renderSkillDamageCard(row.skill, row.result)).join("") || `<p class="emptyState">設定技能點數後會顯示技能傷害</p>`}
+          ${activeDamageRows.map(row => renderSkillDamageCard(row.skill, row.result, range)).join("") || `<p class="emptyState">設定技能點數後會顯示技能傷害</p>`}
         </div>
       </section>
     </div>
   </article>`;
+  renderCombatMonsterOptions();
 }
 
-function renderSkillDamageCard(skill, result) {
+function renderSkillDamageCard(skill, result, range = getAttackRange()) {
+  const profile = combatProfile(skill, range);
+  const crit = profile.segments?.[0];
+  const criticalText = crit?.rate > 0 ? `<span class="damagePill isCritical">爆擊率 ${profile.critical.rate}% · 爆擊單段 ${formatNumber(crit.critMin)} ~ ${formatNumber(crit.critMax)}</span>` : "";
   const idText = state.showIds ? ` · ID ${skill.id}` : "";
-  const totalMin = result.totalMin ?? result.min * result.hits;
-  const totalMax = result.totalMax ?? result.max * result.hits;
-  const hitLabel = result.hitLabel || `${result.hits} 段合計`;
-  const numbers = result.formulaOnly
-    ? `<span class="damagePill damagePillWide">${escapeHtml(result.note)}</span>`
-    : `<span class="damagePill">單段 ${formatNumber(result.min)} ~ ${formatNumber(result.max)}</span>
+  const totalMin = profile.segments?.reduce((sum, segment) => sum + segment.min, 0) ?? result.min * result.hits;
+  const totalMax = profile.segments?.reduce((sum, segment) => sum + segment.max, 0) ?? result.max * result.hits;
+  const hitLabel = `${result.hits} 段合計（單一目標）`;
+  const numbers = result.formulaOnly || profile.unavailable
+    ? `<span class="damagePill damagePillWide">${escapeHtml(profile.unavailable || result.note)}</span>`
+    : `<span class="damagePill">一般單段 ${formatNumber(profile.normal?.min ?? result.min)} ~ ${formatNumber(profile.normal?.max ?? result.max)}</span>
         <span class="damagePill">${escapeHtml(hitLabel)} ${formatNumber(totalMin)} ~ ${formatNumber(totalMax)}</span>
+        ${criticalText}
         <span class="damagePill">${escapeHtml(result.note || `${result.percent}%`)}</span>`;
   return `<div class="damageSkillCard">
     <img src="${escapeHtml(skill.image || "")}" alt="" loading="lazy" />
@@ -1514,6 +1526,11 @@ function renderAll() {
 
 function clearAll() {
   const job = currentJob();
+  combatState.monsterId = "";
+  combatState.skillId = "";
+  combatState.stunned = false;
+  writeCookie("ms_damage_monster", "");
+  writeCookie("ms_damage_sim_skill", "");
   clearDamageInputCookies();
   setCharacterLevel(DEFAULT_CHARACTER_LEVEL, true);
   state.skillLevels = {};
@@ -1616,6 +1633,7 @@ function setupEvents() {
   });
   document.addEventListener("input", event => {
     const target = event.target;
+    if (target.id?.startsWith("combat")) return;
     if (!(target instanceof HTMLInputElement)) return;
     if (target.id === "characterLevel") {
       setCharacterLevel(target.value, true);
@@ -1677,6 +1695,8 @@ function setupEvents() {
       if (selected?.type === "skill" && String(selected.rawId) === String(partyBuffId)) {
         el.normalBuffHint.textContent = `目前套用：${selected.name}，${normalBuffEffectText(selected, normalBuffKind())}`;
       }
+      const hint = target.closest("[data-special-skill-buff-row]")?.querySelector(".specialBuffInfo small");
+      if (hint) hint.textContent = formatBuffEffects(partyBuffValues(buff));
       renderDetail();
       return;
     }
@@ -1758,12 +1778,312 @@ function init() {
   clampSkillLevelsToBudgets();
   setupTheme();
   setupEvents();
+  setupCombatEvents();
   renderAll();
   const refunds = Object.entries(rememberedLevels).filter(([id, level]) => Number(level) > skillLevel(id));
   if (refunds.length) {
     persistSkillLevels();
     showSkillNotice("已退回不符合學習條件的配點", refunds.map(([id, level]) => `${skillById(id)?.name || "未收錄技能"}：${level} 級 → ${skillLevel(id)} 級`));
   }
+}
+
+/* Pure distribution math; bounds are inclusive integer damage estimates.
+ * Target formula reference: https://mxdc.dvg.cn/tools/damage/ (2026-10-17).
+ * Pre-BB critical stacking: https://oddjobs-maple.github.io/dmg-calc/.
+ * Skill values and monster stats are from the local client, not the reference server.
+ */
+const DamageCombat = (() => {
+  function rng(seed = 0x6D2B79F5) {
+    return () => {
+      seed |= 0;
+      seed = seed + 0x6D2B79F5 | 0;
+      let value = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      value = value + Math.imul(value ^ value >>> 7, 61 | value) ^ value;
+      return ((value ^ value >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function variants(segment) {
+    const rate = Math.max(0, Math.min(1, segment.rate || 0));
+    return [{min: segment.min, max: segment.max, p: 1 - rate},
+      {min: segment.critMin, max: segment.critMax, p: rate}].filter(row => row.p > 0);
+  }
+  function sample(segments, random) {
+    return segments.reduce((total, segment) => {
+      const critical = random() < segment.rate;
+      const min = critical ? segment.critMin : segment.min;
+      const max = critical ? segment.critMax : segment.max;
+      return total + min + Math.floor(random() * (max - min + 1));
+    }, 0);
+  }
+  function median(samples) {
+    samples.sort((a, b) => a - b);
+    const i = Math.floor(samples.length / 2);
+    return (samples[i] + samples[(samples.length - 1) >> 1]) / 2;
+  }
+  function stats(segments) {
+    let min = 0, max = 0, mean = 0, variance = 0;
+    for (const segment of segments) {
+      const rows = variants(segment);
+      min += Math.min(...rows.map(row => row.min));
+      max += Math.max(...rows.map(row => row.max));
+      const average = rows.reduce((sum, row) => sum + row.p * (row.min + row.max) / 2, 0);
+      mean += average;
+      variance += rows.reduce((sum, row) => {
+        const center = (row.min + row.max) / 2;
+        const width = row.max - row.min + 1;
+        return sum + row.p * ((width * width - 1) / 12 + center * center);
+      }, 0) - average * average;
+    }
+    let mid = min;
+    if (min !== max && segments.length === 1) {
+      const rows = variants(segments[0]);
+      let lo = min, hi = max;
+      while (lo < hi) {
+        const at = Math.floor((lo + hi) / 2);
+        const cdf = rows.reduce((sum, row) => sum + row.p * Math.max(0, Math.min(1, (at - row.min + 1) / (row.max - row.min + 1))), 0);
+        if (cdf >= 0.5) hi = at; else lo = at + 1;
+      }
+      mid = lo;
+    } else if (min !== max) {
+      const random = rng();
+      mid = median(Array.from({length: 8192}, () => sample(segments, random)));
+    }
+    return {min, max, mean, median: mid, variance: Math.max(0, variance)};
+  }
+  function kills(segments, hp, distribution = stats(segments)) {
+    if (!Number.isFinite(hp) || hp <= 0) return {min: 0, max: 0, mean: 0, median: 0, method: 'exact'};
+    const {min, max, mean, variance} = distribution;
+    if (max <= 0 || mean <= 0) return {impossible: true};
+    const least = Math.ceil(hp / max), most = min > 0 ? Math.ceil(hp / min) : Infinity;
+    if (least === most) return {min: least, max: most, mean: least, median: least, method: 'exact'};
+    const estimated = hp / mean;
+    // Bound work independently of HP. Renewal approximation is used only for long fights.
+    if (estimated * segments.length * 4096 > 2000000) {
+      const average = estimated + (variance + mean * mean) / (2 * mean * mean) - 1 / (2 * mean);
+      return {min: least, max: most, mean: Math.min(most, Math.max(least, average)),
+        median: Math.min(most, Math.max(least, Math.ceil(estimated))), method: 'approximation'};
+    }
+    const random = rng(0x1234abcd), results = [];
+    let operations = 0;
+    for (let i = 0; i < 4096; i++) {
+      let remaining = hp, count = 0;
+      while (remaining > 0) {
+        remaining -= sample(segments, random);
+        count++;
+        operations += segments.length;
+        if (operations > 4000000) return {min: least, max: most,
+          mean: Math.min(most, Math.max(least, estimated + (variance + mean * mean) / (2 * mean * mean) - 1 / (2 * mean))),
+          median: Math.min(most, Math.max(least, Math.ceil(estimated))), method: 'approximation'};
+      }
+      results.push(count);
+    }
+    return {min: least, max: most, mean: results.reduce((a, b) => a + b, 0) / results.length,
+      median: median(results), method: 'simulation'};
+  }
+  function targetRange(min, max, {monster, level, magic = false, element = 1, ignoreDefense = false}) {
+    if (element === 0) return {min: 0, max: 0};
+    const difference = Math.max(0, Number(monster?.level || 0) - level);
+    const defense = ignoreDefense ? 0 : Number(magic ? monster?.magicDefense || 0 : monster?.physicalDefense || 0);
+    const penalty = ignoreDefense || magic ? 1 : Math.max(0, 1 - difference * 0.01);
+    const defenseFactor = magic ? 1 + difference * 0.01 : 1;
+    return {min: min * element * penalty - defense * 0.6 * defenseFactor,
+      max: max * element * penalty - defense * 0.5 * defenseFactor};
+  }
+  return {rng, sample, stats, kills, targetRange};
+})();
+
+const COMBAT_NO_CRIT = new Set([1000, 3211003, 2121005, 2221005, 2311006, 2321003,
+  3111005, 3121006, 3211005, 3221005, 5211001, 5211002, 5220002]);
+const COMBAT_SUMMONS = new Set([2121005, 2221005, 2311006, 2321003, 3111005, 3121006, 3211005, 3221005, 5211001, 5211002, 5220002]);
+const COMBAT_NON_ATTACKS = new Set([1111002, 1120003, 1120004, 1201006, 1211003, 1211004,
+  1211005, 1211006, 1211007, 1211008, 1211009, 1220010, 1221003, 1221004, 1311007, 1311008,
+  1320006, 1320009, 2301003, 3121008, 4111001, 5110001, 5220001, 5220011]);
+const COMBAT_RANGED_CRIT = new Set([3001004, 3001005, 3101005, 3110001, 3111003, 3111004,
+  3111006, 3121003, 3121004, 3201005, 3210001, 3211004, 3211006, 3221001, 3221003,
+  4001344, 4101005, 4111005, 4121007, 3100001, 3200001]);
+const COMBAT_ELEMENT_NAMES = {f: 'fire', i: 'ice', l: 'lightning', s: 'poison', h: 'holy'};
+const COMBAT_ELEMENT_LABELS = {fire: '火', ice: '冰', lightning: '雷', poison: '毒', holy: '聖'};
+const combatState = {monsterId: readCookie('ms_damage_monster') || '', skillId: readCookie('ms_damage_sim_skill') || '', stunned: false};
+let combatCache = {key: '', value: null};
+
+function criticalTotals(range, {stunned = false, passive = true} = {}) {
+  let rate = Number(range.buff?.critRate || 0), bonus = Number(range.buff?.critBonus || 0);
+  const sharpEyes = rate > 0;
+  if (range.job.kind === 'magic') return {rate, bonus: sharpEyes ? Math.max(0, bonus - 100) : 0, magic: true};
+  const passiveId = ['弓', '弩'].includes(range.weaponType) ? 3000001 : range.weaponType === '拳套' ? 4100001 : null;
+  if (passive && passiveId && jobSkills().some(skill => Number(skill.id) === passiveId) && skillLevel(passiveId)) {
+    const values = selectedSkillValues(skillById(passiveId));
+    rate += Number(values.prop || 0);
+    bonus += Math.max(0, Number(values.damage || 100) - 100);
+  }
+  if (passive && stunned && range.weaponType === '指虎' && jobSkills().some(skill => Number(skill.id) === 5110000) && skillLevel(5110000)) {
+    const values = selectedSkillValues(skillById(5110000));
+    rate += Number(values.prop || 0);
+    bonus += Math.max(0, Number(values.damage || 100) - 100) + (sharpEyes ? 100 : 0);
+  }
+  return {rate: Math.min(100, rate), bonus, magic: false};
+}
+
+function combatElement(skill, monster) {
+  if (!monster) return 1;
+  const elements = [...String(skill.element || '').toLowerCase()].map(key => COMBAT_ELEMENT_NAMES[key]).filter(Boolean);
+  if (!elements.length) return 1;
+  return elements.reduce((total, element) => {
+    const status = monster.elements?.[element];
+    if (status === 'immune') return total;
+    const delta = [3111003, 3211003].includes(Number(skill.id)) ? (10 + skillLevel(skill.id) * 0.5) / 100 : 0.5;
+    return total + (status === 'weak' ? 1 + delta : ['resist', 'strong'].includes(status) ? 1 - delta : 1);
+  }, 0) / elements.length;
+}
+
+function combatProfile(skill, range, monster = null) {
+  const id = Number(skill.id), values = id ? selectedSkillValues(skill) : {damage: 100};
+  const result = id ? skillDamage(skill, range) : {min: range.min, max: range.max, hits: 1, percent: 100};
+  if (!result || result.formulaOnly) return {unavailable: result?.note || '此技能尚無可計算的傷害公式'};
+  if ([4120005, 4220005, 4121004, 4221004].includes(id)) return {unavailable: '持續傷害不以施放次數推算擊殺'};
+  if ([4221001, 1221011].includes(id)) return {unavailable: '此技能的蓄力或特殊擊殺條件尚未納入模擬'};
+  const summon = COMBAT_SUMMONS.has(id);
+  const heal = isHealDamageSkill(skill);
+  const magic = Boolean(id && !summon && !values.fixdamage && (range.job.kind === 'magic' || values.mad));
+  let coefficient = magic || summon || values.fixdamage || id === 4111004 ? 1 : Number(values.damage || values.z || 100) / 100;
+  let baseMin = result.min / coefficient, baseMax = result.max / coefficient;
+  if (!magic && !summon && !values.fixdamage && id !== 4111004) {
+    baseMin = range.min; baseMax = range.max;
+    if ([1311001, 1311002, 1311003, 1311004].includes(id) && ['槍', '矛'].includes(range.weaponType)) {
+      const stab = [1311001, 1311002].includes(id);
+      const factor = (range.weaponType === '槍') === stab ? 5 : 3;
+      baseMin = (range.stats.str * factor * range.mastery * 0.9 + range.stats.dex) * range.attack / 100;
+      baseMax = (range.stats.str * factor + range.stats.dex) * range.attack / 100;
+    }
+    if ([4001344, 4121007].includes(id)) {
+      baseMin = range.stats.luk * 2.5 * range.attack / 100;
+      baseMax = range.stats.luk * 5 * range.attack / 100;
+    } else if (id === 1311006) {
+      baseMin = (range.stats.str * 4 * range.mastery * 0.9 + range.stats.dex) * range.attack / 100;
+      baseMax = (range.stats.str * 4 + range.stats.dex) * range.attack / 100;
+    } else if ([3101003, 3201003].includes(id)) {
+      baseMin = (range.stats.dex * 3.4 * 0.1 * 0.9 + range.stats.str) * range.attack / 150;
+      baseMax = (range.stats.dex * 3.4 + range.stats.str) * range.attack / 150;
+    }
+  }
+  if (magic && !heal) {
+    const matk = range.magicAttack, mastery = values.M / 100;
+    if (!Number.isFinite(mastery)) return {unavailable: '尚無此技能的熟練度資料'};
+    baseMin = ((matk * matk / 1000 + matk * mastery * 0.9) / 30 + range.stats.int / 200) * Number(values.mad || 0);
+    baseMax = ((matk * matk / 1000 + matk) / 30 + range.stats.int / 200) * Number(values.mad || 0);
+    const amplification = jobSkills().find(row => [2110001, 2210001].includes(Number(row.id)) && skillLevel(row.id));
+    if (amplification) {
+      const factor = Number(selectedSkillValues(amplification).y || 100) / 100;
+      baseMin *= factor; baseMax *= factor;
+    }
+  }
+  const critical = criticalTotals(range, {stunned: Boolean(monster && !monster.boss && combatState.stunned),
+    passive: id === 0 || COMBAT_RANGED_CRIT.has(id) || range.weaponType === '指虎'});
+  if (COMBAT_NO_CRIT.has(id) || values.fixdamage) { critical.rate = 0; critical.bonus = 0; }
+  if (id === 4111004) { critical.rate = Number(values.prop || 0); critical.bonus = 50; }
+  const element = heal ? (monster && !monster.undead ? 0 : 1) : combatElement(skill, monster);
+  const target = DamageCombat.targetRange(baseMin, baseMax, {monster, level: characterLevel(), magic,
+    element, ignoreDefense: Boolean(summon || values.fixdamage || id === 4111004 || (id === 1311005 && !monster?.boss))});
+  const floor = value => element === 0 || baseMax <= 0 ? 0 : Math.max(1, Math.floor(value + Math.abs(value) * Number.EPSILON * 4));
+  const weights = id === 5121007 ? [1, 1, 1, 1, 2, 4] : Array.from({length: Math.max(1, result.hits)}, () => 1);
+  const segments = weights.map(weight => ({min: floor(target.min * coefficient * weight), max: floor(target.max * coefficient * weight),
+    critMin: floor(target.min * (coefficient + critical.bonus / 100) * weight),
+    critMax: floor(target.max * (coefficient + critical.bonus / 100) * weight), rate: critical.rate / 100}));
+  return {segments, critical, element, magic, summon, heal, normal: {min: segments[0].min, max: segments[0].max}};
+}
+
+function activeCombatSkills() {
+  return [{id: 0, name: '普通攻擊', image: currentJob()?.image || ''}, ...jobSkills().filter(skill => skillLevel(skill.id) && isDamageSkill(skill) && !/^終極之/.test(skill.name))];
+}
+
+function combatMonster() {
+  return (db.monsters || []).find(mob => String(mob.id) === combatState.monsterId);
+}
+
+function combatNumber(value, digits = 0) {
+  return Number.isFinite(value) ? value.toLocaleString('zh-TW', {maximumFractionDigits: digits}) : '無有限上限';
+}
+
+function renderCombatShell() {
+  const skills = activeCombatSkills();
+  if (!skills.some(skill => String(skill.id) === combatState.skillId)) combatState.skillId = String(skills.find(skill => skill.id)?.id || 0);
+  const monster = combatMonster();
+  return `<section class="damagePanel combatPanel" aria-labelledby="combatTitle">
+    <div class="damagePanelHeader"><h3 id="combatTitle">怪物模擬</h3><small>單一目標 · 公式推估</small></div>
+    <div class="damagePanelBody">
+      <div class="combatInputs">
+        <label class="damageField"><span>搜尋怪物</span><input id="combatSearch" type="search" placeholder="名稱或怪物 ID" autocomplete="off" /></label>
+        <label class="damageField"><span>怪物</span><select id="combatMonster" aria-label="模擬怪物"></select></label>
+        <label class="damageField"><span>攻擊技能</span><select id="combatSkill">${skills.map(skill => `<option value="${skill.id}"${String(skill.id) === combatState.skillId ? ' selected' : ''}>${escapeHtml(skill.name)}${skill.id ? ` Lv.${skillLevel(skill.id)}` : ''}</option>`).join('')}</select></label>
+      </div>
+      <label class="combatCheck"${currentJob().id === 'buccaneer' && skillLevel(5110000) ? '' : ' hidden'}><input id="combatStunned" type="checkbox"${combatState.stunned && !monster?.boss ? ' checked' : ''}${monster?.boss ? ' disabled' : ''} />怪物已暈眩（致命暗襲）</label>
+      <div id="combatResults" aria-live="polite"></div>
+    </div>
+  </section>`;
+}
+
+function renderCombatMonsterOptions(query = '') {
+  const select = document.querySelector('#combatMonster');
+  if (!select) return;
+  const text = query.trim().toLocaleLowerCase();
+  const matches = (db.monsters || []).filter(mob => `${mob.name} ${mob.id}`.toLocaleLowerCase().includes(text));
+  select.innerHTML = '<option value="">選擇怪物</option>' + matches.map(mob => `<option value="${escapeHtml(mob.id)}">Lv.${mob.level} ${escapeHtml(mob.name)}${state.showIds ? ` · ${mob.id}` : ''}</option>`).join('');
+  if (matches.some(mob => String(mob.id) === combatState.monsterId)) select.value = combatState.monsterId;
+  else if (text) {
+    combatState.monsterId = String(matches[0]?.id || '');
+    select.value = combatState.monsterId;
+  }
+  if (!matches.length) select.innerHTML = '<option value="">沒有符合的怪物</option>';
+  renderCombatResults();
+}
+
+function renderCombatResults() {
+  const target = document.querySelector('#combatResults');
+  if (!target) return;
+  const monster = combatMonster();
+  if (!monster) { target.innerHTML = '<p class="emptyState">尚未選擇怪物</p>'; return; }
+  const stunInput = document.querySelector('#combatStunned');
+  if (stunInput) { stunInput.disabled = monster.boss; stunInput.checked = combatState.stunned && !monster.boss; }
+  const skill = activeCombatSkills().find(row => String(row.id) === combatState.skillId);
+  const profile = combatProfile(skill, getAttackRange(), monster);
+  const summary = `<div class="combatTarget"><img src="${escapeHtml(monster.image || '')}" alt="" /><div><a href="./index.html?monster=${monster.id}">${escapeHtml(monster.name)}</a><p>Lv.${monster.level} · HP ${formatNumber(monster.hp)}${monster.boss ? ' · BOSS' : ''}<br />物理防禦 ${formatNumber(monster.physicalDefense)} · 魔法防禦 ${formatNumber(monster.magicDefense)}</p></div></div>`;
+  if (profile.unavailable) { target.innerHTML = summary + `<p class="combatNote">${escapeHtml(profile.unavailable)}</p>`; return; }
+  const key = JSON.stringify([profile.segments, monster.hp]);
+  if (combatCache.key !== key) {
+    const distribution = DamageCombat.stats(profile.segments);
+    combatCache = {key, value: {distribution, kills: DamageCombat.kills(profile.segments, monster.hp, distribution)}};
+  }
+  const {distribution, kills} = combatCache.value;
+  const critical = profile.segments[0];
+  const criticalText = profile.critical.rate > 0 ? ` · 爆擊率 ${profile.critical.rate}% · 爆擊 ${formatNumber(critical.critMin)} ~ ${formatNumber(critical.critMax)}` : ' · 不發生爆擊';
+  const skillImage = `<img class="combatSkillIcon" src="${escapeHtml(skill.image)}" alt="" />`;
+  const stats = [['最小傷害', distribution.min], ['最大傷害', distribution.max], ['平均傷害', distribution.mean], ['傷害中位數', distribution.median]];
+  const counts = kills.impossible ? [] : [['最少次數', kills.min], ['最多次數', kills.max], ['平均次數', kills.mean], ['次數中位數', kills.median]];
+  const note = kills.method === 'approximation' ? '長時間戰鬥：平均與中位擊殺次數採近似估算。' : '平均與中位擊殺次數以 4,096 次戰鬥估算。';
+  const elementNames = [...String(skill.element || '').toLowerCase()].map(key => COMBAT_ELEMENT_LABELS[COMBAT_ELEMENT_NAMES[key]]).filter(Boolean).join('／');
+  target.innerHTML = `${summary}<div class="combatAttack">${skillImage}<strong>${escapeHtml(skill.name)}</strong><span>${profile.segments.length} 段${elementNames ? ` · ${elementNames}屬性 ×${profile.element}` : ''}</span></div>
+    <p class="combatNote">一般單段 ${formatNumber(profile.normal.min)} ~ ${formatNumber(profile.normal.max)}${criticalText}</p>
+    <h4>每次${profile.summon ? '召喚物攻擊' : '施放'}傷害</h4><dl class="combatStats">${stats.map(([label, value]) => `<div><dt>${label}</dt><dd>${combatNumber(value, 1)}</dd></div>`).join('')}</dl>
+    <h4>擊殺所需${profile.summon ? '召喚物攻擊' : '施放'}次數</h4>${kills.impossible ? '<p class="combatNote">無法對此怪物造成傷害，無法擊殺。</p>' : `<dl class="combatStats">${counts.map(([label, value], index) => `<div><dt>${label}</dt><dd>${index > 1 && kills.method !== 'exact' ? '約 ' : ''}${combatNumber(value, 2)}</dd></div>`).join('')}</dl>`}
+    ${kills.method === 'approximation' ? '<p class="combatNote">長時間戰鬥的平均與中位次數採近似估算。</p>' : ''}
+    <details class="combatAssumptions"><summary>計算條件</summary><p>包含爆擊、等級差、防禦及屬性相剋；假設每段命中、傷害區間內均勻分布。一次施放僅計此怪物受到的段數，不加總其他目標。未計入怪物回血、臨時免疫、終極攻擊、影分身、未設定的增傷效果與單段傷害上限。${kills.impossible || kills.method === 'exact' ? '' : note}多段傷害中位數採抽樣估算。</p></details>`;
+}
+
+function setupCombatEvents() {
+  document.addEventListener('input', event => {
+    if (event.target.id === 'combatSearch') renderCombatMonsterOptions(event.target.value);
+  });
+  document.addEventListener('change', event => {
+    if (event.target.id === 'combatMonster') {
+      combatState.monsterId = event.target.value;
+      writeCookie('ms_damage_monster', combatState.monsterId);
+    } else if (event.target.id === 'combatSkill') {
+      combatState.skillId = event.target.value;
+      writeCookie('ms_damage_sim_skill', combatState.skillId);
+    } else if (event.target.id === 'combatStunned') combatState.stunned = event.target.checked;
+    else return;
+    renderCombatResults();
+  });
 }
 
 init();

@@ -51,6 +51,27 @@
     }
     return Math.max(0, required - state.exp);
   }
+  function exchangePlan(state, targetLevel, levels, exchange) {
+    const required = remainingToLevel(state, targetLevel, levels);
+    const batch = integer(exchange.batch, "每組需求", 1000000000, 1);
+    const rate = integer(exchange.exp, "每組 EXP", 10000000);
+    if (!required) return { groups: 0, quantity: 0, batch, blocked: "" };
+    if (exchange.minLevel && state.level < exchange.minLevel) {
+      return { groups: null, quantity: null, batch, blocked: `需先達到 Lv.${exchange.minLevel}` };
+    }
+    if (exchange.maxLevel && state.level > exchange.maxLevel) {
+      return { groups: null, quantity: null, batch, blocked: `已超過任務上限 Lv.${exchange.maxLevel}` };
+    }
+    if (!rate) return { groups: null, quantity: null, batch, blocked: "此交換不提供經驗值" };
+    const groups = Math.ceil(required / rate);
+    if (exchange.maxLevel && exchange.maxLevel < levels.length) {
+      const eligible = Math.ceil(remainingToLevel(state, exchange.maxLevel + 1, levels) / rate);
+      if (groups > eligible) {
+        return { groups: null, quantity: null, batch, blocked: `受 Lv.${exchange.maxLevel} 任務上限限制，無法僅靠此任務達標` };
+      }
+    }
+    return { groups, quantity: safe(groups * batch), batch, blocked: "" };
+  }
   function calculate(data, input) {
     const levels = table(data);
     const start = initialState(input.level, input.percent, levels);
@@ -90,7 +111,14 @@
     const shoeExp = safe(completions * shoeRate);
     const final = advance(afterCharlie, shoeExp, levels);
     const totalExp = safe(charlieExp + shoeExp);
+    const batches = [...new Set(data.charlie.materials.map(material => material.batch))];
+    if (batches.length !== 1) throw new Error("交換材料的每組需求不一致，請確認資料。");
+    const targetPlans = Object.fromEntries([["start", start], ["final", final]].map(([key, state]) => [key, {
+      charlie: exchangePlan(state, targetLevel, levels, { batch: batches[0], exp: rate }),
+      shoes: exchangePlan(state, targetLevel, levels, shoes),
+    }]));
     return { start, afterCharlie, final, rows, charlieExp, charlieCompletions, totalExp,
+      targetPlans,
       target: { level: targetLevel, startRemainingExp: remainingToLevel(start, targetLevel, levels),
         finalRemainingExp: remainingToLevel(final, targetLevel, levels) },
       appliedExp: totalExp - final.discarded, gainedLevels: final.level - start.level,
@@ -99,5 +127,5 @@
       shoes: { quantity: shoeQuantity, completions, used: completions * shoeBatch,
         remainder: shoeQuantity - completions * shoeBatch, exp: shoeExp, blocked } };
   }
-  return Object.freeze({ integer, initialState, advance, remainingToLevel, calculate });
+  return Object.freeze({ integer, initialState, advance, remainingToLevel, exchangePlan, calculate });
 });

@@ -45,6 +45,12 @@
   $("expTargetLevel").max = data.levelCap;
   $("expTargetLevel").value = Math.min(30, data.levelCap);
   $("expCharlieExp").textContent = n(charlie.exp);
+  for (const [id, image, label, batch, exp] of [
+    ["expPlanCharlieIdentity", charlie.npc.image, "查理中士經驗物", charlie.materials[0].batch, charlie.exp],
+    ["expPlanShoesIdentity", shoes.item.image, "玻璃鞋", shoes.batch, shoes.exp],
+  ]) {
+    $(id).innerHTML = `<div class="expPlanIdentity"><img src="${escape(image)}" width="32" height="36" alt="" /><span>${escape(label)}<small>${n(batch)} 個／組 · ${n(exp)} EXP</small></span></div>`;
+  }
   $("expShoeIdentity").innerHTML = `<img src="${escape(shoes.item.image)}" alt="" width="48" height="48" /><div><h3 id="expShoeTitle"><a href="./quests.html?quest=${shoes.questId}">${escape(shoes.name)}</a></h3><p>${shoes.batch} 個 / ${n(shoes.exp)} EXP · Lv.${shoes.minLevel}${shoes.maxLevel ? `～${shoes.maxLevel}` : " 以上"} · 可重複</p></div>`;
   $("expCharlieIdentity").innerHTML = `<img src="${escape(charlie.npc.image)}" alt="" width="48" height="58" /><div><h3 id="expCharlieTitle">${escape(charlie.npc.name)}交換</h3><p>${locations(charlie.npc)} · ${charlie.materials.length} 種材料</p></div>`;
   $("expMaterials").innerHTML = charlie.materials.map(row => `<div class="expMaterialRow" data-material="${row.id}"><div class="expMaterialName"><img src="${escape(row.image)}" width="36" height="36" alt="" /><div><a href="${escape(row.href)}">${escape(row.name)}</a><small>${row.id} · 每 ${row.batch} 個</small></div></div><div class="expMaterialQuantity"><label for="expQty${row.id}">${escape(row.name)}數量</label><input id="expQty${row.id}" name="qty${row.id}" type="number" min="0" max="1000000000" step="1" value="0" required inputmode="numeric" /></div><output class="expMaterialResult" id="expRow${row.id}" for="expQty${row.id}"><span>0 次</span><small>剩餘 0 個</small></output>${rewardDetails(row)}</div>`).join("");
@@ -72,6 +78,15 @@
       for (const [id, remaining] of [["expTargetStart", result.target.startRemainingExp], ["expTargetFinal", result.target.finalRemainingExp]]) {
         $(id).textContent = remaining === 0 ? "0 EXP（已達目標）" : `${n(remaining)} EXP`;
       }
+      $("expPlanTitle").textContent = `達到 Lv.${result.target.level} 所需組數`;
+      for (const [phase, suffix] of [["start", "Start"], ["final", "Final"]]) {
+        for (const [kind, label] of [["charlie", "Charlie"], ["shoes", "Shoes"]]) {
+          const plan = result.targetPlans[phase][kind];
+          $("expPlan" + label + suffix).innerHTML = plan.blocked
+            ? `<span class="expWarning">${escape(plan.blocked)}</span>`
+            : `<strong>${n(plan.groups)} 組</strong><small>${plan.groups ? `${n(plan.quantity)} 個` : "已達目標"}</small>`;
+        }
+      }
       $("expCapNote").hidden = !result.final.capped;
       $("expCapNote").textContent = `有效計入 ${n(result.appliedExp)} EXP；超出上限 ${n(result.final.discarded)} EXP 不計入。`;
       $("expShoeTotal").textContent = `${n(result.shoes.exp)} EXP`;
@@ -83,7 +98,8 @@
     } catch (error) {
       $("expError").textContent = error.message;
       $("expError").hidden = false;
-      for (const id of ["expFinalLevel", "expFinalPercent", "expTotal", "expLevelGain", "expProgress", "expTargetStart", "expTargetFinal", "expShoeTotal", "expShoeCount", "expCharlieTotal"]) $(id).textContent = "待修正輸入";
+      for (const id of ["expFinalLevel", "expFinalPercent", "expTotal", "expLevelGain", "expProgress", "expTargetStart", "expTargetFinal", "expShoeTotal", "expShoeCount", "expCharlieTotal", "expPlanCharlieStart", "expPlanCharlieFinal", "expPlanShoesStart", "expPlanShoesFinal"]) $(id).textContent = "待修正輸入";
+      $("expPlanTitle").textContent = "達標所需組數";
       $("expTargetStartLabel").textContent = "目前距離目標";
       $("expTargetFinalLabel").textContent = "結算後距離目標";
       $("expCapNote").hidden = true;
