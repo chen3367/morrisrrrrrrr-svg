@@ -43,10 +43,19 @@
     const capped = level === levels.length;
     return { level, exp: capped ? 0 : exp, capped, discarded: safe(state.discarded + (capped ? exp : 0)) };
   }
+  function remainingToLevel(state, targetLevel, levels) {
+    targetLevel = integer(targetLevel, "目標等級", levels.length, 1);
+    let required = 0;
+    for (let level = state.level; level < targetLevel; level++) {
+      required = safe(required + levels[level - 1]);
+    }
+    return Math.max(0, required - state.exp);
+  }
   function calculate(data, input) {
     const levels = table(data);
     const start = initialState(input.level, input.percent, levels);
-    const rate = integer(input.charlieExp, "中士每次 EXP", 10000000);
+    const targetLevel = integer(input.targetLevel ?? Math.min(start.level + 1, levels.length), "目標等級", levels.length, 1);
+    const rate = integer(data.charlie.exp, "中士每次 EXP", 10000000);
     const quantities = input.quantities || {};
     let charlieExp = 0, charlieCompletions = 0;
     const rows = data.charlie.materials.map(material => {
@@ -82,11 +91,13 @@
     const final = advance(afterCharlie, shoeExp, levels);
     const totalExp = safe(charlieExp + shoeExp);
     return { start, afterCharlie, final, rows, charlieExp, charlieCompletions, totalExp,
+      target: { level: targetLevel, startRemainingExp: remainingToLevel(start, targetLevel, levels),
+        finalRemainingExp: remainingToLevel(final, targetLevel, levels) },
       appliedExp: totalExp - final.discarded, gainedLevels: final.level - start.level,
       finalPercent: final.capped ? null : final.exp / levels[final.level - 1] * 100,
       nextLevelExp: final.capped ? null : levels[final.level - 1],
       shoes: { quantity: shoeQuantity, completions, used: completions * shoeBatch,
         remainder: shoeQuantity - completions * shoeBatch, exp: shoeExp, blocked } };
   }
-  return Object.freeze({ integer, initialState, advance, calculate });
+  return Object.freeze({ integer, initialState, advance, remainingToLevel, calculate });
 });

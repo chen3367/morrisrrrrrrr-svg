@@ -42,7 +42,9 @@
 
   $("expVersion").textContent = `查理中士交換 · 艾溫的玻璃鞋 · 遊戲 ${data.gameVersion}`;
   $("expLevel").max = data.levelCap;
-  $("expCharlieRate").value = charlie.exp;
+  $("expTargetLevel").max = data.levelCap;
+  $("expTargetLevel").value = Math.min(30, data.levelCap);
+  $("expCharlieExp").textContent = n(charlie.exp);
   $("expShoeIdentity").innerHTML = `<img src="${escape(shoes.item.image)}" alt="" width="48" height="48" /><div><h3 id="expShoeTitle"><a href="./quests.html?quest=${shoes.questId}">${escape(shoes.name)}</a></h3><p>${shoes.batch} 個 / ${n(shoes.exp)} EXP · Lv.${shoes.minLevel}${shoes.maxLevel ? `～${shoes.maxLevel}` : " 以上"} · 可重複</p></div>`;
   $("expCharlieIdentity").innerHTML = `<img src="${escape(charlie.npc.image)}" alt="" width="48" height="58" /><div><h3 id="expCharlieTitle">${escape(charlie.npc.name)}交換</h3><p>${locations(charlie.npc)} · ${charlie.materials.length} 種材料</p></div>`;
   $("expMaterials").innerHTML = charlie.materials.map(row => `<div class="expMaterialRow" data-material="${row.id}"><div class="expMaterialName"><img src="${escape(row.image)}" width="36" height="36" alt="" /><div><a href="${escape(row.href)}">${escape(row.name)}</a><small>${row.id} · 每 ${row.batch} 個</small></div></div><div class="expMaterialQuantity"><label for="expQty${row.id}">${escape(row.name)}數量</label><input id="expQty${row.id}" name="qty${row.id}" type="number" min="0" max="1000000000" step="1" value="0" required inputmode="numeric" /></div><output class="expMaterialResult" id="expRow${row.id}" for="expQty${row.id}"><span>0 次</span><small>剩餘 0 個</small></output>${rewardDetails(row)}</div>`).join("");
@@ -56,7 +58,8 @@
     for (const input of inputs) input.setAttribute("aria-invalid", String(!input.validity.valid));
     try {
       const result = logic.calculate(data, { level: $("expLevel").value, percent: $("expPercent").value,
-        charlieExp: $("expCharlieRate").value, shoes: $("expShoes").value,
+        targetLevel: $("expTargetLevel").value,
+        shoes: $("expShoes").value,
         quantities: Object.fromEntries(charlie.materials.map(row => [row.id, $("expQty" + row.id).value])) });
       $("expError").hidden = true;
       $("expFinalLevel").textContent = `Lv.${result.final.level}`;
@@ -64,6 +67,11 @@
       $("expTotal").textContent = `${n(result.totalExp)} EXP`;
       $("expLevelGain").textContent = `+${n(result.gainedLevels)}`;
       $("expProgress").textContent = result.final.capped ? "已達計算上限" : `${n(result.final.exp)} / ${n(result.nextLevelExp)}`;
+      $("expTargetStartLabel").textContent = `目前距離 Lv.${result.target.level}`;
+      $("expTargetFinalLabel").textContent = `結算後距離 Lv.${result.target.level}`;
+      for (const [id, remaining] of [["expTargetStart", result.target.startRemainingExp], ["expTargetFinal", result.target.finalRemainingExp]]) {
+        $(id).textContent = remaining === 0 ? "0 EXP（已達目標）" : `${n(remaining)} EXP`;
+      }
       $("expCapNote").hidden = !result.final.capped;
       $("expCapNote").textContent = `有效計入 ${n(result.appliedExp)} EXP；超出上限 ${n(result.final.discarded)} EXP 不計入。`;
       $("expShoeTotal").textContent = `${n(result.shoes.exp)} EXP`;
@@ -75,7 +83,9 @@
     } catch (error) {
       $("expError").textContent = error.message;
       $("expError").hidden = false;
-      for (const id of ["expFinalLevel", "expFinalPercent", "expTotal", "expLevelGain", "expProgress", "expShoeTotal", "expShoeCount", "expCharlieTotal"]) $(id).textContent = "待修正輸入";
+      for (const id of ["expFinalLevel", "expFinalPercent", "expTotal", "expLevelGain", "expProgress", "expTargetStart", "expTargetFinal", "expShoeTotal", "expShoeCount", "expCharlieTotal"]) $(id).textContent = "待修正輸入";
+      $("expTargetStartLabel").textContent = "目前距離目標";
+      $("expTargetFinalLabel").textContent = "結算後距離目標";
       $("expCapNote").hidden = true;
       $("expShoeWarning").hidden = true;
       for (const row of charlie.materials) $("expRow" + row.id).textContent = "待計算";
