@@ -9,12 +9,16 @@
   const locations = npc => npc.maps.map(map => `<a href="${escape(map.href)}">${escape(map.name)}</a>`).join("、");
   const dialogue = rows => rows.map(row => `<div class="expDialogue"><small>${escape(row.key)}${row.fragment ? " · 伺服器拼接用片段" : ""}</small><p>${escape(row.text)}</p><details><summary>原始字串</summary><pre>${escape(row.raw)}</pre></details></div>`).join("");
   const shoes = data.shoes, charlie = data.charlie;
+  const params = new URLSearchParams(location.search);
+  const linkedMaterial = charlie.materials.find(row => String(row.id) === params.get("material"));
+  const linkedReward = linkedMaterial?.rewardReference?.rewards.find(row => String(row.id) === params.get("reward"));
   function rewardDetails(material) {
     const pool = material.rewardReference;
     if (!pool) return '<details class="expRewardDetails"><summary>隨機獎勵 · 暫無資料</summary><p class="expMinor">獎勵內容待確認。</p></details>';
     const rows = pool.rewards.map(row => {
       const tag = row.href ? "a" : "span";
-      return `<li><${tag}${row.href ? ` href="${escape(row.href)}"` : ""} class="expRewardItem">${row.image ? `<img src="${escape(row.image)}" width="32" height="32" alt="" loading="lazy" />` : '<span class="expMissingImage" aria-label="尚無本地圖示">?</span>'}<span>${escape(row.name)}${row.localStatus !== "完整" ? `<small>${escape(row.localStatus)}</small>` : ""}</span></${tag}><strong>×${n(row.count)}</strong></li>`;
+      const selected = material === linkedMaterial && row === linkedReward;
+      return `<li${selected ? ' class="expLinkedReward"' : ""}><${tag}${row.href ? ` href="${escape(row.href)}"` : ""} class="expRewardItem">${row.image ? `<img src="${escape(row.image)}" width="32" height="32" alt="" loading="lazy" />` : '<span class="expMissingImage" aria-label="尚無本地圖示">?</span>'}<span>${escape(row.name)}${row.localStatus !== "完整" ? `<small>${escape(row.localStatus)}</small>` : ""}</span></${tag}><strong>×${n(row.count)}</strong></li>`;
     }).join("");
     const issues = pool.issues.length ? `<p class="expWarning">另有 ${pool.issues.length} 項獎勵尚待確認，暫不列出。</p>` : "";
     return `<details class="expRewardDetails"><summary>隨機獎勵 <span>${pool.rewards.length} 項${pool.issues.length ? ` · ${pool.issues.length} 項待確認` : ""}</span></summary><p class="expMinor">每 ${material.batch} 個材料，隨機獲得一項獎勵。</p><ul class="expRewardList">${rows}</ul>${issues}</details>`;
@@ -38,7 +42,15 @@
 
   $("expVersion").textContent = `查理中士交換 · 艾溫的玻璃鞋 · 遊戲 ${data.gameVersion}`;
   $("expLevel").max = data.levelCap;
-  $("expCharlieRate").value = charlie.exp;
+  $("expTargetLevel").max = data.levelCap;
+  $("expTargetLevel").value = Math.min(30, data.levelCap);
+  $("expCharlieExp").textContent = n(charlie.exp);
+  for (const [id, image, label, batch, exp] of [
+    ["expPlanCharlieIdentity", charlie.npc.image, "查理中士經驗物", charlie.materials[0].batch, charlie.exp],
+    ["expPlanShoesIdentity", shoes.item.image, "玻璃鞋", shoes.batch, shoes.exp],
+  ]) {
+    $(id).innerHTML = `<div class="expPlanIdentity"><img src="${escape(image)}" width="32" height="36" alt="" /><span>${escape(label)}<small>${n(batch)} 個／組 · ${n(exp)} EXP</small></span></div>`;
+  }
   $("expShoeIdentity").innerHTML = `<img src="${escape(shoes.item.image)}" alt="" width="48" height="48" /><div><h3 id="expShoeTitle"><a href="./quests.html?quest=${shoes.questId}">${escape(shoes.name)}</a></h3><p>${shoes.batch} 個 / ${n(shoes.exp)} EXP · Lv.${shoes.minLevel}${shoes.maxLevel ? `～${shoes.maxLevel}` : " 以上"} · 可重複</p></div>`;
   $("expCharlieIdentity").innerHTML = `<img src="${escape(charlie.npc.image)}" alt="" width="48" height="58" /><div><h3 id="expCharlieTitle">${escape(charlie.npc.name)}交換</h3><p>${locations(charlie.npc)} · ${charlie.materials.length} 種材料</p></div>`;
   $("expMaterials").innerHTML = charlie.materials.map(row => `<div class="expMaterialRow" data-material="${row.id}"><div class="expMaterialName"><img src="${escape(row.image)}" width="36" height="36" alt="" /><div><a href="${escape(row.href)}">${escape(row.name)}</a><small>${row.id} · 每 ${row.batch} 個</small></div></div><div class="expMaterialQuantity"><label for="expQty${row.id}">${escape(row.name)}數量</label><input id="expQty${row.id}" name="qty${row.id}" type="number" min="0" max="1000000000" step="1" value="0" required inputmode="numeric" /></div><output class="expMaterialResult" id="expRow${row.id}" for="expQty${row.id}"><span>0 次</span><small>剩餘 0 個</small></output>${rewardDetails(row)}</div>`).join("");
@@ -52,7 +64,8 @@
     for (const input of inputs) input.setAttribute("aria-invalid", String(!input.validity.valid));
     try {
       const result = logic.calculate(data, { level: $("expLevel").value, percent: $("expPercent").value,
-        charlieExp: $("expCharlieRate").value, shoes: $("expShoes").value,
+        targetLevel: $("expTargetLevel").value,
+        shoes: $("expShoes").value,
         quantities: Object.fromEntries(charlie.materials.map(row => [row.id, $("expQty" + row.id).value])) });
       $("expError").hidden = true;
       $("expFinalLevel").textContent = `Lv.${result.final.level}`;
@@ -60,6 +73,20 @@
       $("expTotal").textContent = `${n(result.totalExp)} EXP`;
       $("expLevelGain").textContent = `+${n(result.gainedLevels)}`;
       $("expProgress").textContent = result.final.capped ? "已達計算上限" : `${n(result.final.exp)} / ${n(result.nextLevelExp)}`;
+      $("expTargetStartLabel").textContent = `目前距離 Lv.${result.target.level}`;
+      $("expTargetFinalLabel").textContent = `結算後距離 Lv.${result.target.level}`;
+      for (const [id, remaining] of [["expTargetStart", result.target.startRemainingExp], ["expTargetFinal", result.target.finalRemainingExp]]) {
+        $(id).textContent = remaining === 0 ? "0 EXP（已達目標）" : `${n(remaining)} EXP`;
+      }
+      $("expPlanTitle").textContent = `達到 Lv.${result.target.level} 所需組數`;
+      for (const [phase, suffix] of [["start", "Start"], ["final", "Final"]]) {
+        for (const [kind, label] of [["charlie", "Charlie"], ["shoes", "Shoes"]]) {
+          const plan = result.targetPlans[phase][kind];
+          $("expPlan" + label + suffix).innerHTML = plan.blocked
+            ? `<span class="expWarning">${escape(plan.blocked)}</span>`
+            : `<strong>${n(plan.groups)} 組</strong><small>${plan.groups ? `${n(plan.quantity)} 個` : "已達目標"}</small>`;
+        }
+      }
       $("expCapNote").hidden = !result.final.capped;
       $("expCapNote").textContent = `有效計入 ${n(result.appliedExp)} EXP；超出上限 ${n(result.final.discarded)} EXP 不計入。`;
       $("expShoeTotal").textContent = `${n(result.shoes.exp)} EXP`;
@@ -71,7 +98,10 @@
     } catch (error) {
       $("expError").textContent = error.message;
       $("expError").hidden = false;
-      for (const id of ["expFinalLevel", "expFinalPercent", "expTotal", "expLevelGain", "expProgress", "expShoeTotal", "expShoeCount", "expCharlieTotal"]) $(id).textContent = "待修正輸入";
+      for (const id of ["expFinalLevel", "expFinalPercent", "expTotal", "expLevelGain", "expProgress", "expTargetStart", "expTargetFinal", "expShoeTotal", "expShoeCount", "expCharlieTotal", "expPlanCharlieStart", "expPlanCharlieFinal", "expPlanShoesStart", "expPlanShoesFinal"]) $(id).textContent = "待修正輸入";
+      $("expPlanTitle").textContent = "達標所需組數";
+      $("expTargetStartLabel").textContent = "目前距離目標";
+      $("expTargetFinalLabel").textContent = "結算後距離目標";
       $("expCapNote").hidden = true;
       $("expShoeWarning").hidden = true;
       for (const row of charlie.materials) $("expRow" + row.id).textContent = "待計算";
@@ -80,7 +110,7 @@
   $("expForm").addEventListener("submit", event => event.preventDefault());
   $("expForm").addEventListener("input", event => { if (event.target.id !== "expSearch") update(); });
   $("expForm").addEventListener("change", update);
-  $("expSearch").addEventListener("input", () => {
+  function filterMaterials() {
     const query = $("expSearch").value.trim().toLocaleLowerCase();
     let count = 0;
     for (const row of charlie.materials) {
@@ -90,6 +120,17 @@
       if (visible) count++;
     }
     $("expSearchEmpty").hidden = count > 0;
-  });
+  }
+  $("expSearch").addEventListener("input", filterMaterials);
   update();
+  if (linkedMaterial) {
+    $("expSearch").value = String(linkedMaterial.id);
+    filterMaterials();
+    const details = document.querySelector(`[data-material="${linkedMaterial.id}"] .expRewardDetails`);
+    details.open = true;
+    requestAnimationFrame(() => {
+      $("expCharlie").scrollIntoView({ block: "start" });
+      details.querySelector("summary").focus({ preventScroll: true });
+    });
+  }
 })();

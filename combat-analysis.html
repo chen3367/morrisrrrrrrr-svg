@@ -38,8 +38,17 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20261015201732" />
+  <link rel="stylesheet" href="./styles.css?v=ccc1dc2b96ce" />
+  <link rel="stylesheet" href="./combat-hud.css?v=20261015" />
   <style>
+    .combatHudLauncher {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .combatHudLauncher img { flex: 0 0 18px; }
+    [data-theme="dark"] .combatHudLauncher img { filter: invert(1); }
     .combatAnalysisPage {
       min-height: calc(100vh - var(--header-height, 124px));
       padding: 12px;
@@ -638,6 +647,20 @@
           <div class="combatActionGrid">
             <button class="combatButton" type="button" id="shareScreenButton">分享螢幕</button>
             <button class="combatButton" type="button" id="startAnalysisButton">開始分析</button>
+            <button class="combatButtonSecondary combatHudLauncher" type="button" id="combatHudButton" title="開啟置頂 HUD"><img src="./assets/hud-icons/picture-in-picture-2.svg" alt="" width="18" height="18">開啟 HUD</button>
+            <button class="combatButtonSecondary combatHudLauncher" type="button" id="combatHudPopupButton" title="開啟一般小視窗（不保證置頂）"><img src="./assets/hud-icons/app-window.svg" alt="" width="18" height="18">HUD 小視窗</button>
+          </div>
+          <div class="combatStatus" id="combatHudStatus" role="status"></div>
+          <label class="combatField">辨識間隔
+            <select id="captureIntervalSelect">
+              <option value="2000">2 秒</option>
+              <option value="5000" selected>5 秒</option>
+              <option value="10000">10 秒</option>
+            </select>
+          </label>
+          <div class="combatActionGrid">
+            <button class="combatButtonSecondary" type="button" id="retryOcrButton">重新載入辨識</button>
+            <button class="combatButtonSecondary" type="button" id="disconnectCaptureButton" disabled>中斷分享</button>
           </div>
           <button class="combatButtonSecondary" type="button" id="resetSnapshotsButton">重設紀錄</button>
           <div class="combatStatus" id="ocrStatus"></div>
@@ -722,8 +745,10 @@
     </div>
   </main>
 
-  <script src="./maps-data.js?v=20261015201732"></script>
-  <script src="./combat-analysis-data.js?v=20261015201732"></script>
-  <script src="./combat-analysis.js?v=20261015201732"></script>
+  <script src="./maps-data.js?v=3baab98be154"></script>
+  <script src="./combat-analysis-data.js?v=20261016001730"></script>
+  <script src="./combat-ocr-runtime.js?v=20261015"></script>
+  <script src="./combat-hud.js?v=20261015"></script>
+  <script src="./combat-analysis.js?v=20261016001730"></script>
 </body>
 </html>

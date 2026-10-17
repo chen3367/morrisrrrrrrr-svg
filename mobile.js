@@ -115,6 +115,68 @@
 
   const hoverNavMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
   const reducedMotionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let refreshBackToTop = () => {};
+
+  function initializeBackToTop() {
+    if (document.getElementById("backToTop")) return () => {};
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = "backToTop";
+    button.className = "backToTop";
+    button.textContent = "TOP";
+    button.title = "回到頂端";
+    button.setAttribute("aria-label", "回到頂端");
+    button.hidden = true;
+    document.body.appendChild(button);
+    let frame = 0;
+
+    // Main content can scroll independently from the document. Exclude lists,
+    // map canvases and nested dialogue panels from the page-level action.
+    function scrollTargets() {
+      return [...new Set([document.scrollingElement, document.body,
+        ...document.querySelectorAll("main, .detail, .patchNotesDetail")])].filter(element =>
+        element && element.clientHeight > 0 && element.getClientRects().length &&
+        element.scrollHeight > element.clientHeight + 1 && element.scrollTop > 0
+      );
+    }
+
+    function update() {
+      frame = 0;
+      button.hidden = root.dataset.navDrawerOpen === "true" ||
+        !scrollTargets().some(element => element.scrollTop > 400);
+      const dock = document.querySelector(".mobileDock")?.getBoundingClientRect();
+      button.style.bottom = dock?.height && dock.top < innerHeight
+        ? `${innerHeight - dock.top + 12}px`
+        : "calc(16px + env(safe-area-inset-bottom, 0px))";
+    }
+
+    function schedule() {
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+
+    button.addEventListener("click", event => {
+      const targets = scrollTargets();
+      const behavior = reducedMotionMedia.matches ? "instant" : "smooth";
+      targets.forEach(element => element.scrollTo({top: 0, behavior}));
+      if (event.detail === 0) {
+        const heading = targets.at(-1)?.querySelector("h1, h2");
+        if (heading) {
+          const hadTabIndex = heading.hasAttribute("tabindex");
+          if (!hadTabIndex) heading.setAttribute("tabindex", "-1");
+          heading.focus({preventScroll: true});
+          if (!hadTabIndex) heading.addEventListener("blur", () => heading.removeAttribute("tabindex"), {once: true});
+        }
+      }
+      schedule();
+    });
+    document.addEventListener("scroll", schedule, {capture: true, passive: true});
+    document.addEventListener("toggle", schedule, true);
+    window.addEventListener("resize", schedule, {passive: true});
+    window.addEventListener("pageshow", schedule);
+    schedule();
+    return schedule;
+  }
+
   const navAnimations = new WeakMap();
   const navCloseTimers = new WeakMap();
 
@@ -254,7 +316,7 @@
     ensureNavBackdrop();
     setNavDrawer(false);
     const stored = readStoredPane();
-    const partyQuestLink = location.hash === "#partyQuestFlow" && document.getElementById("partyQuestFlow");
+    const partyQuestLink = (location.hash === "#partyQuestFlow" || location.hash.startsWith("#partyQuest-")) && document.getElementById("partyQuestFlow");
     const initial = partyQuestLink ? "detail" : stored === "filters" ? lastContentPane : stored || "list";
     setPane(initial, { settings: "keep", scrollTop: false });
     toggleSettings(currentPane() === "filters");
@@ -342,6 +404,7 @@
 
   const observer = new MutationObserver(() => {
     if (isMobile()) updateDock();
+    refreshBackToTop();
   });
 
   let mobileEnhancementsStarted = false;
@@ -351,7 +414,9 @@
     mobileEnhancementsStarted = true;
     initializeNavMenus();
     initializeMobileState();
+    refreshBackToTop = initializeBackToTop();
     observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(root, { attributes: true, attributeFilter: ["data-mobile-pane", "data-nav-drawer-open"] });
   }
 
   media.addEventListener?.("change", initializeMobileState);

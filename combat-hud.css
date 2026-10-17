@@ -1,0 +1,110 @@
+/* Isolated HUD document only. Official Lucide assets: assets/hud-icons/LICENSE. */
+.maple-combat-hud {
+  color-scheme: light;
+  --hud-bg: #fafbfc;
+  --hud-fg: #202426;
+  --hud-muted: #60676b;
+  --hud-line: #dbe0e3;
+  --hud-hover: #e9edf0;
+  --hud-exp: #087a63;
+  --hud-meso: #976000;
+  --hud-warning: #a54413;
+  --hud-track: #e4e9e8;
+  background: var(--hud-bg);
+  color: var(--hud-fg);
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+  letter-spacing: 0;
+}
+.maple-combat-hud[data-theme="dark"] {
+  color-scheme: dark;
+  --hud-bg: #191c1e;
+  --hud-fg: #edf1f2;
+  --hud-muted: #a5afb4;
+  --hud-line: #353c40;
+  --hud-hover: #2a3236;
+  --hud-exp: #68dab7;
+  --hud-meso: #efc969;
+  --hud-warning: #ffb48d;
+  --hud-track: #303b38;
+}
+.maple-combat-hud body { margin: 0; }
+.maple-combat-hud .hud, .maple-combat-hud .hud * { box-sizing: border-box; }
+.maple-combat-hud .hud {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.maple-combat-hud .hud h1, .maple-combat-hud .hud p, .maple-combat-hud .hud dl, .maple-combat-hud .hud dd { margin: 0; }
+.maple-combat-hud .hud [hidden] { display: none !important; }
+.maple-combat-hud .hud-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; }
+.maple-combat-hud .hud-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.maple-combat-hud .hud-brand-icon { object-fit: contain; image-rendering: pixelated; flex: 0 0 32px; }
+.maple-combat-hud .hud h1 { font-size: 16px; font-weight: 700; line-height: 1.25; }
+.maple-combat-hud .hud h1 span { display: block; font-size: 11px; font-weight: 500; color: var(--hud-muted); }
+.maple-combat-hud .hud-controls { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; }
+.maple-combat-hud .hud-controls button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--hud-fg);
+  background: transparent;
+  cursor: pointer;
+}
+.maple-combat-hud .hud-controls button:hover { background: var(--hud-hover); border-color: var(--hud-line); }
+.maple-combat-hud .hud-controls button:focus-visible { outline: 2px solid var(--hud-exp); outline-offset: 1px; }
+.maple-combat-hud .hud-controls button:disabled { cursor: default; opacity: .4; }
+.maple-combat-hud .hud-controls button[data-action="toggle"] { color: var(--hud-exp); background: var(--hud-hover); }
+.maple-combat-hud .hud-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  -webkit-mask: var(--hud-icon) center / contain no-repeat;
+  mask: var(--hud-icon) center / contain no-repeat;
+}
+.maple-combat-hud .hud-icon[data-icon="play"] { --hud-icon: url("./assets/hud-icons/play.svg"); }
+.maple-combat-hud .hud-icon[data-icon="pause"] { --hud-icon: url("./assets/hud-icons/pause.svg"); }
+.maple-combat-hud .hud-icon[data-icon="rotate-ccw"] { --hud-icon: url("./assets/hud-icons/rotate-ccw.svg"); }
+.maple-combat-hud .hud-icon[data-icon="unplug"] { --hud-icon: url("./assets/hud-icons/unplug.svg"); }
+.maple-combat-hud .hud-icon[data-icon="x"] { --hud-icon: url("./assets/hud-icons/x.svg"); }
+.maple-combat-hud .hud-session { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; padding: 9px 0; border-top: 1px solid var(--hud-line); }
+.maple-combat-hud .hud-status { color: var(--hud-muted); font-weight: 600; }
+.maple-combat-hud .hud[data-status="running"] .hud-status { color: var(--hud-exp); }
+.maple-combat-hud .hud[data-status="stale"] .hud-status, .maple-combat-hud .hud[data-status="starting"] .hud-status { color: var(--hud-warning); }
+.maple-combat-hud .hud-duration { display: inline-flex; flex-wrap: wrap; gap: 6px; color: var(--hud-muted); }
+.maple-combat-hud .hud-duration time { color: var(--hud-fg); font-weight: 600; }
+.maple-combat-hud .hud-level { padding-bottom: 10px; }
+.maple-combat-hud .hud-level-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; color: var(--hud-muted); font-size: 12px; }
+.maple-combat-hud .hud-level-line strong { color: var(--hud-fg); font-size: 14px; font-weight: 600; }
+.maple-combat-hud .hud-progress { height: 3px; margin-top: 7px; background: var(--hud-track); overflow: hidden; }
+.maple-combat-hud .hud-progress > span { display: block; width: 0; height: 100%; background: var(--hud-exp); }
+.maple-combat-hud .hud-rates, .maple-combat-hud .hud-totals { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.maple-combat-hud .hud-rates { padding: 10px 0 12px; border-top: 1px solid var(--hud-line); }
+.maple-combat-hud .hud dt { color: var(--hud-muted); font-size: 11px; }
+.maple-combat-hud .hud-rates dd { min-height: 32px; margin-top: 2px; font-size: 23px; line-height: 1.4; font-weight: 650; }
+.maple-combat-hud .hud-exp dd { color: var(--hud-exp); }
+.maple-combat-hud .hud-meso dd { color: var(--hud-meso); }
+.maple-combat-hud .hud-totals { padding: 0 0 10px; }
+.maple-combat-hud .hud-totals dd { font-size: 15px; font-weight: 600; margin-top: 1px; }
+.maple-combat-hud .hud-context { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 7px 12px; padding: 10px 0; border-top: 1px solid var(--hud-line); }
+.maple-combat-hud .hud-context dd { margin-top: 2px; font-size: 12px; }
+.maple-combat-hud .hud-map { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.maple-combat-hud .hud-map dt { flex: 0 0 auto; }
+.maple-combat-hud .hud-map dd { min-width: 0; }
+.maple-combat-hud .hud-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 10px; padding-top: 7px; border-top: 1px solid var(--hud-line); font-size: 10px; color: var(--hud-muted); }
+.maple-combat-hud .hud-footer [data-stale="true"] { color: var(--hud-warning); }
+.maple-combat-hud .hud .hud-error { padding-top: 8px; color: var(--hud-warning); font-size: 12px; }
+@media (max-width: 340px) {
+  .maple-combat-hud .hud { padding: 10px; }
+  .maple-combat-hud .hud-header { gap: 6px; }
+  .maple-combat-hud .hud-brand { gap: 5px; }
+  .maple-combat-hud .hud-controls { gap: 0; }
+  .maple-combat-hud .hud-controls button { width: 30px; height: 32px; }
+  .maple-combat-hud .hud-rates, .maple-combat-hud .hud-totals, .maple-combat-hud .hud-context { column-gap: 10px; }
+}

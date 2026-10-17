@@ -47,7 +47,7 @@ const COMBAT_JOB_CANDIDATES = [
   { id: 522, label: "槍神" },
 ];
 const COOKIE_DAYS = 180;
-const CAPTURE_INTERVAL_MS = 10000;
+const CAPTURE_INTERVAL_MS = 5000;
 const OCR_REGION_AUTO = "auto";
 const OCR_REGION_COOKIE = "ms_combat_ocr_resolution";
 const REPORT_EMAIL = "morrisrrrrrrr-svg@users.noreply.github.com";
@@ -151,6 +151,15 @@ const state = {
   ocrResolutionKey: initialOcrResolutionKey(),
   stream: null,
   timer: null,
+  running: false,
+  starting: false,
+  generation: 0,
+  capturePromise: null,
+  sharePromise: null,
+  intervalMs: CAPTURE_INTERVAL_MS,
+  activeSince: null,
+  elapsedMs: 0,
+  segmentId: 0,
   snapshots: [],
   latest: null,
   ocrAvailable: typeof window.TextDetector === "function",
@@ -192,7 +201,15 @@ const el = {
   exportReport: document.getElementById("exportReportDatasetButton"),
   emailReport: document.getElementById("emailReportDatasetButton"),
   reportStatus: document.getElementById("reportDatasetStatus"),
+  interval: document.getElementById("captureIntervalSelect"),
+  hud: document.getElementById("combatHudButton"),
+  hudPopup: document.getElementById("combatHudPopupButton"),
+  disconnect: document.getElementById("disconnectCaptureButton"),
+  retryOcr: document.getElementById("retryOcrButton"),
 };
+
+const ocrRuntime = window.MapleCombatOcr.create({ loadTesseract: ensureTesseract });
+let combatHud = null;
 
 const levelMap = new Map(levelRows.map(row => [Number(row.level), Number(row.expToNextLevel || 0)]));
 const cumulativeMap = new Map();
@@ -472,6 +489,8 @@ function getAbsoluteExp(snapshot) {
 }
 
 function numericCandidate(value) {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  if (typeof value === "string" && !value.trim()) return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
@@ -657,9 +676,10 @@ function formatExpConsistencyStatus(result) {
 function latestKnownMeso() {
   for (let index = state.snapshots.length - 1; index >= 0; index -= 1) {
     const meso = state.snapshots[index]?.meso;
-    if (Number.isFinite(Number(meso))) return Number(meso);
+    if (meso !== null && meso !== undefined && Number.isFinite(Number(meso))) return Number(meso);
   }
-  if (Number.isFinite(Number(state.latest?.meso))) return Number(state.latest.meso);
+  const latest = state.latest?.meso;
+  if (latest !== null && latest !== undefined && Number.isFinite(Number(latest))) return Number(latest);
   return null;
 }
 
@@ -786,18 +806,18 @@ function mesoDecreaseLimit(previous) {
 }
 
 function resolveMesoValue(candidates, previous = latestKnownMeso()) {
-  const rows = [];
-  const seen = new Set();
+  const byValue = new Map();
   for (const candidate of candidates) {
     const value = normalizeMesoCandidate(candidate?.value);
-    if (value === null || seen.has(value)) continue;
-    seen.add(value);
-    rows.push({
+    if (value === null) continue;
+    const row = {
       value,
       source: candidate?.source || "",
       confidence: Number.isFinite(candidate?.confidence) ? candidate.confidence : 0.5,
-    });
+    };
+    if (!byValue.has(value) || byValue.get(value).confidence < row.confidence) byValue.set(value, row);
   }
+  const rows = [...byValue.values()];
   if (!rows.length) return { value: null, reason: "missing" };
   if (previous === null || previous === undefined) {
     rows.sort((a, b) => b.confidence - a.confidence || String(b.value).length - String(a.value).length);
@@ -814,7 +834,7 @@ function resolveMesoValue(candidates, previous = latestKnownMeso()) {
     }))
     .filter(row => row.delta >= -maxDecrease && row.delta <= maxIncrease);
   if (accepted.length) {
-    accepted.sort((a, b) => a.distance - b.distance || b.confidence - a.confidence);
+    accepted.sort((a, b) => b.confidence - a.confidence || a.distance - b.distance);
     return { value: accepted[0].value, reason: "", source: accepted[0].source };
   }
 
@@ -2775,7 +2795,7 @@ function readMesoFromCanvas(canvas) {
   return { meso: Number(digits.map(row => row.digit).join("")) };
 }
 
-async function detectTextFromCanvas(canvas) {
+async function detectTextFromCanvas(canvas, generation = state.generation) {
   if (state.ocrAvailable) {
     try {
       const detector = new window.TextDetector();
@@ -2787,33 +2807,22 @@ async function detectTextFromCanvas(canvas) {
     }
   }
   const tesseract = await ensureTesseract();
-  if (!tesseract) return { text: "", supported: false };
+  if (!tesseract || generation !== state.generation) return { text: "", supported: false };
   try {
-    const result = await tesseract.recognize(canvas, "eng", {
-      logger(message) {
-        if (message?.status === "recognizing text" && typeof message.progress === "number") {
-          setStatus(`OCR 辨識中 ${Math.round(message.progress * 100)}%`);
-        }
-      },
+    const result = await ocrRuntime.recognize(canvas, "eng", {
       tessedit_char_whitelist: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzEXP%,.[]()楓幣 ",
     });
     return { text: result?.data?.text || "", supported: true };
   } catch (_error) {
-    state.tesseractFailed = true;
     return { text: "", supported: false };
   }
 }
 
-async function detectMesoText(canvas) {
+async function detectMesoText(canvas, generation = state.generation) {
   const tesseract = await ensureTesseract();
-  if (!tesseract) return { text: "", supported: false };
+  if (!tesseract || generation !== state.generation) return { text: "", supported: false };
   try {
-    const result = await tesseract.recognize(canvas, "eng", {
-      logger(message) {
-        if (message?.status === "recognizing text" && typeof message.progress === "number") {
-          setStatus(`楓幣 OCR 辨識中 ${Math.round(message.progress * 100)}%`);
-        }
-      },
+    const result = await ocrRuntime.recognize(canvas, "eng", {
       tessedit_char_whitelist: "0123456789,",
       tessedit_pageseg_mode: "7",
     });
@@ -2823,7 +2832,7 @@ async function detectMesoText(canvas) {
   }
 }
 
-async function detectMapText(canvas) {
+async function detectMapText(canvas, generation = state.generation) {
   if (!canvas) return { text: "", supported: false };
   if (state.ocrAvailable) {
     try {
@@ -2836,20 +2845,16 @@ async function detectMapText(canvas) {
     }
   }
   const tesseract = await ensureTesseract();
-  if (!tesseract) return { text: "", supported: false };
+  if (!tesseract || generation !== state.generation) return { text: "", supported: false };
   try {
-    const result = await tesseract.recognize(canvas, "chi_tra+eng", {
-      logger(message) {
-        if (message?.status === "recognizing text" && typeof message.progress === "number") {
-          setShareStatus(`小地圖 OCR 辨識中 ${Math.round(message.progress * 100)}%`);
-        }
-      },
+    const result = await ocrRuntime.recognize(canvas, "chi_tra+eng", {
       tessedit_pageseg_mode: "6",
     });
     return { text: result?.data?.text || "", supported: true };
   } catch (_error) {
+    if (_error?.name === "AbortError" || generation !== state.generation) return { text: "", supported: false };
     try {
-      const fallback = await tesseract.recognize(canvas, "eng", {
+      const fallback = await ocrRuntime.recognize(canvas, "eng", {
         tessedit_pageseg_mode: "6",
       });
       return { text: fallback?.data?.text || "", supported: true };
@@ -2859,7 +2864,7 @@ async function detectMapText(canvas) {
   }
 }
 
-async function detectJobText(canvas) {
+async function detectJobText(canvas, generation = state.generation) {
   if (!canvas) return { text: "", supported: false };
   if (state.ocrAvailable) {
     try {
@@ -2872,20 +2877,16 @@ async function detectJobText(canvas) {
     }
   }
   const tesseract = await ensureTesseract();
-  if (!tesseract) return { text: "", supported: false };
+  if (!tesseract || generation !== state.generation) return { text: "", supported: false };
   try {
-    const result = await tesseract.recognize(canvas, "chi_tra+eng", {
-      logger(message) {
-        if (message?.status === "recognizing text" && typeof message.progress === "number") {
-          setShareStatus(`職業 OCR 辨識中 ${Math.round(message.progress * 100)}%`);
-        }
-      },
+    const result = await ocrRuntime.recognize(canvas, "chi_tra+eng", {
       tessedit_pageseg_mode: "7",
     });
     return { text: result?.data?.text || "", supported: true };
   } catch (_error) {
+    if (_error?.name === "AbortError" || generation !== state.generation) return { text: "", supported: false };
     try {
-      const fallback = await tesseract.recognize(canvas, "eng", {
+      const fallback = await ocrRuntime.recognize(canvas, "eng", {
         tessedit_pageseg_mode: "7",
       });
       return { text: fallback?.data?.text || "", supported: true };
@@ -2898,17 +2899,17 @@ async function detectJobText(canvas) {
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${src}"]`);
-    if (existing) {
-      existing.addEventListener("load", resolve, { once: true });
-      existing.addEventListener("error", reject, { once: true });
-      return;
-    }
+    if (existing) existing.remove();
     const script = document.createElement("script");
     script.src = src;
     script.async = true;
     script.crossOrigin = "anonymous";
-    script.onload = resolve;
-    script.onerror = reject;
+    const timer = window.setTimeout(() => {
+      script.remove();
+      reject(new Error("OCR script timeout"));
+    }, 20000);
+    script.onload = () => { window.clearTimeout(timer); resolve(); };
+    script.onerror = () => { window.clearTimeout(timer); script.remove(); reject(new Error("OCR script unavailable")); };
     document.head.appendChild(script);
   });
 }
@@ -2918,7 +2919,7 @@ async function ensureTesseract() {
   if (state.tesseractFailed) return null;
   if (!state.tesseractPromise) {
     setStatus("OCR 元件載入中。");
-    state.tesseractPromise = loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js")
+    state.tesseractPromise = loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js")
       .then(() => window.Tesseract || null)
       .catch(() => {
         state.tesseractFailed = true;
@@ -2959,30 +2960,34 @@ function addSnapshot(snapshot) {
 function scrollHistoryToLatest() {
   window.requestAnimationFrame(() => {
     const wrap = document.getElementById("snapshotHistoryWrap");
-    if (wrap) wrap.scrollTop = 0;
+    if (wrap && wrap.scrollTop < 10) wrap.scrollTop = 0;
   });
 }
 
 function analysisIsRunning() {
-  return Boolean(state.timer);
+  return state.running;
 }
 
 function updateAnalysisToggleButton() {
   if (!el.start) return;
   const running = analysisIsRunning();
-  el.start.textContent = running ? "停止分析" : "開始分析";
-  el.start.setAttribute("aria-pressed", running ? "true" : "false");
+  el.start.textContent = running ? "停止分析" : state.starting ? "取消連接" : "開始分析";
+  el.start.setAttribute("aria-pressed", running || state.starting ? "true" : "false");
   el.start.classList.toggle("combatButton", !running);
   el.start.classList.toggle("combatButtonDanger", running);
+  if (el.disconnect) el.disconnect.disabled = !state.stream && !state.sharePromise;
+  combatHud?.update();
 }
 
 async function ensureScreenShare() {
   if (state.stream) return true;
+  if (state.sharePromise) return state.sharePromise;
   if (!navigator.mediaDevices?.getDisplayMedia) {
     setStatus("目前瀏覽器不支援分享螢幕。");
     return false;
   }
-  try {
+  const generation = state.generation;
+  const request = (async () => { try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: {
         frameRate: { ideal: 2, max: 5 },
@@ -2991,25 +2996,47 @@ async function ensureScreenShare() {
       },
       audio: false,
     });
+    if (generation !== state.generation) {
+      stream.getTracks().forEach(track => track.stop());
+      return false;
+    }
     state.stream = stream;
     el.video.srcObject = stream;
     await el.video.play();
+    if (generation !== state.generation || state.stream !== stream) return false;
     updateRegionPresetStatus();
     refreshShareIdentityFromCanvas(currentScreenCanvas(), true);
     stream.getVideoTracks().forEach(track => {
-      track.addEventListener("ended", stopAnalysis);
+      track.addEventListener("ended", () => { if (state.stream === stream) stopAnalysis(); });
     });
     setStatus("已連接螢幕分享。");
     return true;
   } catch (_error) {
-    setStatus("尚未取得螢幕分享。");
+    if (generation === state.generation) {
+      state.stream?.getTracks().forEach(track => track.stop());
+      state.stream = null;
+      el.video.srcObject = null;
+      setStatus("尚未取得螢幕分享。");
+    }
     return false;
+  } })();
+  state.sharePromise = request;
+  updateAnalysisToggleButton();
+  try { return await request; }
+  finally {
+    if (state.sharePromise === request) state.sharePromise = null;
+    updateAnalysisToggleButton();
   }
 }
 
 function stopAnalysis() {
+  state.generation += 1;
+  state.running = false;
+  state.starting = false;
+  if (state.activeSince !== null) state.elapsedMs += Math.max(0, Date.now() - state.activeSince);
+  state.activeSince = null;
   if (state.timer) {
-    window.clearInterval(state.timer);
+    window.clearTimeout(state.timer);
     state.timer = null;
   }
   if (state.stream) {
@@ -3017,14 +3044,25 @@ function stopAnalysis() {
     state.stream = null;
   }
   if (el.video) el.video.srcObject = null;
+  ocrRuntime.release();
   render();
   updateAnalysisToggleButton();
   setStatus("分析已停止。");
 }
 
 async function captureFrame(addToTimeline = true) {
+  if (state.capturePromise) return null;
+  const generation = state.generation;
+  const pending = captureFrameOnce(addToTimeline, generation);
+  state.capturePromise = pending;
+  try { return await pending; }
+  finally { if (state.capturePromise === pending) state.capturePromise = null; }
+}
+
+async function captureFrameOnce(addToTimeline, generation) {
   const ready = await ensureScreenShare();
-  if (!ready || !el.video.videoWidth || !el.video.videoHeight) return null;
+  if (!ready || generation !== state.generation || !el.video.videoWidth || !el.video.videoHeight) return null;
+  const capturedAt = Date.now();
   const sourceCanvas = document.createElement("canvas");
   sourceCanvas.width = el.video.videoWidth;
   sourceCanvas.height = el.video.videoHeight;
@@ -3062,6 +3100,7 @@ async function captureFrame(addToTimeline = true) {
       ? detectMesoText(mesoOcrCanvas(mesoTemplateCanvas(sourceCanvas, mesoCandidate.region)))
       : Promise.resolve({ text: "" }),
   ]);
+  if (generation !== state.generation) return null;
   const parsedLevel = parseLevelText(lvDetection.text);
   const parsedExp = parseDetectedText(expDetection.text);
   const parsedMeso = parseDetectedText(mesoDetection.text);
@@ -3107,7 +3146,8 @@ async function captureFrame(addToTimeline = true) {
   const meso = mesoResult.value;
 
   const snapshot = level && expResult.ok ? {
-    time: Date.now(),
+    time: capturedAt,
+    segmentId: state.segmentId,
     level,
     exp: Math.max(0, Math.min(expToNext || exp, exp)),
     percent,
@@ -3156,20 +3196,44 @@ async function captureFrame(addToTimeline = true) {
 }
 
 async function startAnalysis() {
-  if (state.timer) return;
-  const ready = await ensureScreenShare();
-  if (!ready) return;
-  await captureFrame(true);
-  if (state.timer) window.clearInterval(state.timer);
-  state.timer = window.setInterval(() => {
-    captureFrame(true);
-  }, CAPTURE_INTERVAL_MS);
-  render();
+  if (state.running || state.starting) return;
+  const generation = state.generation;
+  state.starting = true;
   updateAnalysisToggleButton();
+  try {
+    const ready = await ensureScreenShare();
+    if (!ready || generation !== state.generation) return;
+    state.running = true;
+    state.starting = false;
+    state.segmentId += 1;
+    state.activeSince = Date.now();
+    state.pendingMesoCandidate = null;
+    render();
+    updateAnalysisToggleButton();
+    void pollAnalysis(generation);
+  } finally {
+    if (generation === state.generation) state.starting = false;
+    updateAnalysisToggleButton();
+  }
+}
+
+async function pollAnalysis(generation) {
+  if (!state.running || generation !== state.generation) return;
+  state.timer = null;
+  const began = performance.now();
+  try { await captureFrame(true); }
+  catch (_error) {
+    if (generation === state.generation) setStatus("本次辨識未完成，將自動重試。");
+  } finally {
+    if (state.running && generation === state.generation) {
+      const delay = Math.max(250, state.intervalMs - (performance.now() - began));
+      state.timer = window.setTimeout(() => pollAnalysis(generation), delay);
+    }
+  }
 }
 
 async function toggleAnalysis() {
-  if (analysisIsRunning()) {
+  if (analysisIsRunning() || state.starting) {
     stopAnalysis();
     return;
   }
@@ -3177,10 +3241,22 @@ async function toggleAnalysis() {
 }
 
 function resetSnapshots() {
+  state.generation += 1;
+  state.starting = false;
+  if (state.timer) window.clearTimeout(state.timer);
+  state.timer = null;
+  ocrRuntime.release();
+  state.elapsedMs = 0;
+  state.activeSince = state.running ? Date.now() : null;
+  state.segmentId += 1;
+  state.pendingCalibration = null;
+  state.pendingMesoCandidate = null;
+  state.lastIdentityScanAt = 0;
   state.snapshots = [];
   state.latest = null;
   render();
   setStatus("紀錄已重設。");
+  if (state.running) pollAnalysis(state.generation);
 }
 
 function median(values) {
@@ -3216,6 +3292,7 @@ function buildAnalysisSegments(snapshots) {
   for (let index = 1; index < points.length; index += 1) {
     const prev = points[index - 1];
     const next = points[index];
+    if (prev.snapshot.segmentId !== next.snapshot.segmentId) continue;
     const minutes = (next.snapshot.time - prev.snapshot.time) / 60000;
     if (!Number.isFinite(minutes) || minutes <= 0) continue;
     const expDelta = next.absExp - prev.absExp;
@@ -3555,7 +3632,7 @@ function cloneCanvas(sourceCanvas) {
   return canvas;
 }
 
-async function readShareJobFromCanvas(sourceCanvas) {
+async function readShareJobFromCanvas(sourceCanvas, generation = state.generation) {
   if (!sourceCanvas) {
     return { job: state.shareJob || "", rawText: "", score: 0, source: "none" };
   }
@@ -3577,6 +3654,7 @@ async function readShareJobFromCanvas(sourceCanvas) {
   for (const candidate of candidates.slice(0, 6)) {
     const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 12);
     const detection = await detectJobText(ocrCanvas);
+    if (generation !== state.generation) return { job: "", rawText: "", score: 0, source: "cancelled" };
     const rawText = normalizeOcrText(detection.text);
     const matched = resolveJobFromText(rawText);
     const score = matched?.score || 0;
@@ -3614,7 +3692,7 @@ async function readShareJobFromScreen() {
   return readShareJobFromCanvas(sourceCanvas);
 }
 
-async function readShareMapFromCanvas(sourceCanvas) {
+async function readShareMapFromCanvas(sourceCanvas, generation = state.generation) {
   if (!sourceCanvas) {
     const cached = state.shareMapName || "";
     const cachedMatch = cached ? resolveMapFromText(cached) : null;
@@ -3633,6 +3711,7 @@ async function readShareMapFromCanvas(sourceCanvas) {
   for (const candidate of candidates.slice(0, 8)) {
     const ocrCanvas = cropRegionCanvas(sourceCanvas, candidate.region, 4);
     const detection = await detectMapText(ocrCanvas);
+    if (generation !== state.generation) return { input: "", rawText: "", map: null, score: 0, source: "cancelled" };
     const rawText = normalizeOcrText(detection.text);
     const input = sanitizeMapOcrText(rawText);
     const matched = resolveMapFromText(input);
@@ -3652,6 +3731,7 @@ async function readShareMapFromCanvas(sourceCanvas) {
 
   if (!bestResult.map) {
     const visualMatch = await matchMapByMiniMapVisual(sourceCanvas);
+    if (generation !== state.generation) return { input: "", rawText: "", map: null, score: 0, source: "cancelled" };
     if (visualMatch?.map) {
       bestResult = {
         input: visualMatch.map.name || "",
@@ -3698,12 +3778,14 @@ function refreshShareIdentityFromCanvas(sourceCanvas, force = false) {
   const snapshotCanvas = cloneCanvas(sourceCanvas);
   if (!snapshotCanvas) return;
   state.lastIdentityScanAt = now;
-  state.identityScanPromise = Promise.all([
-    readShareJobFromCanvas(snapshotCanvas),
-    readShareMapFromCanvas(snapshotCanvas),
+  const generation = state.generation;
+  const pending = Promise.all([
+    readShareJobFromCanvas(snapshotCanvas, generation),
+    readShareMapFromCanvas(snapshotCanvas, generation),
   ]).catch(() => null).finally(() => {
-    state.identityScanPromise = null;
+    if (state.identityScanPromise === pending) state.identityScanPromise = null;
   });
+  state.identityScanPromise = pending;
 }
 
 function roundRectPath(ctx, x, y, width, height, radius) {
@@ -3948,43 +4030,92 @@ function downloadShareImage() {
 function render() {
   if (!el.panel) return;
   const stats = computeStats();
+  state.stats = stats;
   if (el.count) el.count.textContent = `${levelRows.length} 級 · 螢幕分析`;
-  el.panel.innerHTML = `
+  if (!document.getElementById("combatRunStatus")) el.panel.innerHTML = `
     <header class="combatHero">
       <div>
         <h2 id="combatAnalysisTitle">戰鬥分析</h2>
-        <p>從分享螢幕擷取 EXP 與楓幣數值，估算目前練功效率與升級時間。</p>
       </div>
       <div class="combatMetricCard">
-        <strong>${state.timer ? "進行中" : "待開始"}</strong>
+        <strong id="combatRunStatus"></strong>
         <span>狀態</span>
       </div>
     </header>
-    <div class="combatSummaryGrid">
-      ${renderSummaryCards(stats)}
-    </div>
+    <div class="combatSummaryGrid" id="combatSummary"></div>
     <div class="combatDetailBody">
       <section class="combatCard">
         <header class="combatCardHeader">
           <h3>目前紀錄</h3>
-          <span class="combatMuted">${state.ocrAvailable || window.Tesseract ? "本機 OCR" : "OCR/校正"}</span>
+          <span class="combatMuted">本機 OCR</span>
         </header>
-        <div class="combatCardBody">${renderCurrentSnapshot(state.latest || state.snapshots[state.snapshots.length - 1], stats)}</div>
+        <div class="combatCardBody" id="combatCurrent"></div>
       </section>
       <section class="combatCard">
         <header class="combatCardHeader">
           <h3>紀錄列表</h3>
-          <span class="combatMuted">${state.snapshots.length} 筆</span>
+          <span class="combatMuted" id="combatHistoryCount"></span>
         </header>
-        <div class="combatCardBody">${renderHistory()}</div>
+        <div class="combatCardBody" id="combatHistory"></div>
       </section>
       ${renderLevelExpTable()}
     </div>
   `;
+  document.getElementById("combatRunStatus").textContent = state.running ? "進行中" : state.starting ? "連接中" : "已停止";
+  document.getElementById("combatHistoryCount").textContent = `${state.snapshots.length} 筆`;
+  const history = document.getElementById("snapshotHistoryWrap");
+  const scrollTop = history?.scrollTop || 0;
+  for (const [id, html] of [
+    ["combatSummary", renderSummaryCards(stats)],
+    ["combatCurrent", renderCurrentSnapshot(state.latest || state.snapshots[state.snapshots.length - 1], stats)],
+    ["combatHistory", renderHistory()],
+  ]) {
+    const node = document.getElementById(id);
+    if (node._renderedHtml !== html) { node.innerHTML = html; node._renderedHtml = html; }
+  }
+  const nextHistory = document.getElementById("snapshotHistoryWrap");
+  if (nextHistory) nextHistory.scrollTop = scrollTop;
+  combatHud?.update();
+}
+
+function readHudState() {
+  const latest = state.latest;
+  const stats = state.stats;
+  return {
+    running: state.running, starting: state.starting, connected: Boolean(state.stream),
+    elapsedMs: state.elapsedMs + (state.activeSince === null ? 0 : Math.max(0, Date.now() - state.activeSince)),
+    level: latest?.level ?? null, percent: latest?.percent ?? null,
+    expPerHour: stats?.forecastHourExp ?? null, mesoPerHour: stats?.forecastHourMeso ?? null,
+    expGained: stats?.expDelta ?? null, mesoGained: stats?.mesoDelta ?? null,
+    etaMinutes: stats?.etaMinutes ?? null, job: state.shareJob, map: state.shareMapName,
+    lastSampleAt: latest?.time ?? null, theme: state.theme,
+  };
+}
+
+function retryRecognition() {
+  state.generation += 1;
+  state.starting = false;
+  if (state.timer) window.clearTimeout(state.timer);
+  state.timer = null;
+  ocrRuntime.release();
+  state.tesseractFailed = false;
+  state.tesseractPromise = null;
+  state.lastIdentityScanAt = 0;
+  setStatus("辨識已重設，下一次擷取將重新讀取。");
+  if (state.running) pollAnalysis(state.generation);
+  updateAnalysisToggleButton();
 }
 
 function initialize() {
   setTheme(state.theme);
+  combatHud = window.MapleCombatHud.create({ readState: readHudState, onToggle: toggleAnalysis, onReset: resetSnapshots, onDisconnect: stopAnalysis });
+  el.disconnect?.addEventListener("click", stopAnalysis);
+  el.retryOcr?.addEventListener("click", retryRecognition);
+  el.interval?.addEventListener("change", () => {
+    const value = Number(el.interval.value);
+    state.intervalMs = [2000, 5000, 10000].includes(value) ? value : CAPTURE_INTERVAL_MS;
+  });
+  window.addEventListener("pagehide", () => { stopAnalysis(); combatHud.destroy(); });
   const meta = db.metadata || {};
   const parts = [];
   if (meta.gameVersion) parts.push(`遊戲版本 ${meta.gameVersion}`);

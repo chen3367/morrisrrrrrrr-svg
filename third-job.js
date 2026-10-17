@@ -4,7 +4,7 @@
   const byId = id => document.getElementById(id);
   const escape = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
   const normalize = value => String(value).normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
-  const searchIndex = new Map(db.questions.map(q => [q.id, normalize([q.question, ...q.options.map(o => o.text), q.evidence].join(" "))]));
+  const searchIndex = new Map(db.questions.map(q => [q.id, normalize([q.question, q.officialCorrection?.previousQuestion || "", ...q.options.map(o => o.text), q.evidence].join(" "))]));
   const parameters = new URLSearchParams(location.search);
   let currentView = parameters.get("view") === "flow" ? "flow" : "questions";
   let currentJob = db.classes.find(c => c.id === parameters.get("job"))?.id || db.classes[0].id;
@@ -47,7 +47,7 @@
           <ol class="thirdJobOptions">${q.options.map((option, index) => `<li data-answer="${option.id === q.answerId}">${index + 1}. ${escape(option.text)}${option.id === q.answerId ? `<span class="thirdJobAnswerTag">${label}</span>` : ""}</li>`).join("")}</ol>
           <p class="thirdJobEvidence">${escape(q.evidence)}</p>
           <div class="thirdJobEntities">${q.entities.map(entityHtml).join("")}</div>
-          <details><summary>題目原始字串 · ${escape(q.key)}</summary><pre>${escape(q.raw)}</pre></details>
+          <details><summary>本地客戶端原始字串 · ${escape(q.key)}</summary><pre>${escape(q.raw)}</pre></details>
         </details>
       </article>`;
     }).join("");

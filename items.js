@@ -654,6 +654,7 @@ function sourceRows(item) {
     boxSources: item.sources?.boxSources || [],
     boxChoices: item.sources?.boxChoices || [],
     gachaSources: item.sources?.gachaSources || [],
+    exchangeSources: item.sources?.exchangeSources || [],
   };
 }
 
@@ -675,6 +676,7 @@ function sourceCounts(item) {
     boxSources: rows.boxSources.length,
     boxChoices: rows.boxChoices.length,
     gachaSources: rows.gachaSources.length,
+    exchangeSources: rows.exchangeSources.length,
   };
 }
 
@@ -688,6 +690,7 @@ function sourceSummary(item) {
   if (counts.boxSources) parts.push(`箱子 ${formatNumber(counts.boxSources)}`);
   if (counts.boxChoices) parts.push(`內容 ${formatNumber(counts.boxChoices)}`);
   if (counts.gachaSources) parts.push(`轉蛋 ${formatNumber(counts.gachaSources)}`);
+  if (counts.exchangeSources) parts.push(`交換 ${formatNumber(counts.exchangeSources)}`);
   return parts.length ? parts.join(" / ") : "尚無來源";
 }
 
@@ -764,6 +767,9 @@ function searchableText(item) {
     row.itemId,
     row.itemName,
   ]);
+  const exchangeText = sources.exchangeSources.flatMap(row => [
+    row.name, row.npc?.id, row.npc?.name, row.material?.id, row.material?.name,
+  ]);
   return [
     item.id,
     ...(item.mergedIds || []),
@@ -782,6 +788,7 @@ function searchableText(item) {
     ...boxSourceText,
     ...boxChoiceText,
     ...gachaText,
+    ...exchangeText,
   ].map(norm).join(" ");
 }
 
@@ -1202,7 +1209,7 @@ function renderList() {
 
 function totalSources(item) {
   const counts = sourceCounts(item);
-  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices + counts.gachaSources;
+  return counts.monsterDrops + counts.questRewards + counts.shops + counts.crafts + counts.boxSources + counts.boxChoices + counts.gachaSources + counts.exchangeSources;
 }
 
 function selectedItem() {
@@ -1238,6 +1245,7 @@ function renderDetail() {
     ${renderSellPrice(item)}
     ${renderMonsterSources(item)}
     ${renderQuestSources(item)}
+    ${renderExchangeSources(item)}
     ${renderShopSources(item)}
     ${renderCraftSources(item)}
     ${renderBoxSources(item)}
@@ -1368,21 +1376,23 @@ function renderQuestSources(item) {
   const rows = sourceRows(item).questRewards;
   return sourceChipBlock("任務獲取", rows, "questSourceList", row => {
     const historical = row.sourceKind === "historicalPartyQuestReward";
+    const bonusBox = row.sourceKind === "partyQuestBox";
+    const confirmedPartyReward = String(row.questId) === "1203" && row.currentVersionConfirmed;
     const summary = [questStateLabel(row.state)];
     if (row.category) summary.push(row.category);
     if (state.showIds) summary.push(`ID ${row.questId}`);
-    const meta = [row.quantityLabel || `${formatNumber(row.count)} 個`];
+    const meta = bonusBox ? ["隨機掉落"] : [row.quantityLabel || `${formatNumber(row.count)} 個`];
     if (row.choice) meta.push("自選獎勵");
-    else if (row.random) meta.push("隨機獎勵");
-    if (row.sourceLabel && row.sourceLabel !== "任務獎勵" && !historical) meta.push(row.sourceLabel);
+    else if (row.random && !bonusBox) meta.push("隨機獎勵");
+    if (row.sourceLabel && row.sourceLabel !== "任務獎勵" && !historical && !bonusBox) meta.push(row.sourceLabel);
     const sourceNpc = row.sourceNpc || row.rewardNpc || null;
     if (sourceNpc?.name) meta.push(sourceNpc.name);
     const badge = questConditionBadgeHtml(row);
     return `
-    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}" href="${questUrl(row.questId)}">
-      ${questNpcImage(row)}
+    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}${confirmedPartyReward ? " sourcePartyRewardRow" : ""}" href="${questUrl(row.questId)}${bonusBox ? "#partyQuest-bonus" : ""}">
+      ${bonusBox ? assetImage("./assets/map_marks/GoddessTower.png", "寶物倉庫", "箱", "sourceMonsterImage") : questNpcImage(row)}
       <div>
-        <strong>${escapeHtml(row.questName)}</strong>
+        <strong>${escapeHtml(row.questName)}${bonusBox ? "：寶物倉庫箱子" : ""}</strong>
         <span>${escapeHtml(summary.join(" · "))}</span>
         <p>${escapeHtml(meta.join(" · "))}</p>
       </div>
@@ -1391,6 +1401,22 @@ function renderQuestSources(item) {
     </a>
   `;
   });
+}
+
+function renderExchangeSources(item) {
+  const rows = sourceRows(item).exchangeSources;
+  const note = rows.some(row => !row.currentVersionConfirmed)
+    ? '<small class="dropRateReferenceInline">舊版獎勵參考，現行品項與機率待確認。</small>' : "";
+  return sourceChipBlock("交換取得", rows, "exchangeSourceList", row => `
+    <a class="sourceRow sourceLinkRow sourceChipRow exchangeSourceRow" href="${escapeHtml(row.href)}">
+      ${assetImage(row.npc?.image, row.npc?.name || row.name, "?", "sourceMonsterImage")}
+      <div>
+        <strong>${escapeHtml(row.name)}</strong>
+        <p>${escapeHtml(row.material.name)} ×${formatNumber(row.material.count)}</p>
+      </div>
+      <small class="sourceChipBadge">隨機 ×${formatNumber(row.count)}</small>
+    </a>
+  `, note);
 }
 
 function shopPriceHtml(row) {
@@ -1668,7 +1694,7 @@ function renderQuestRequirementSources(item) {
   return sourceChipBlock("任務需求", rows, "questSourceList questRequirementSourceList", row => {
     const summary = [row.category || "任務"];
     if (state.showIds) summary.push(`ID ${row.questId}`);
-    const meta = [row.stageLabel || "任務條件", `需要 ${formatNumber(row.count)} 個`];
+    const meta = [row.stageLabel || "任務條件", row.mustEquip === true ? "需裝備" : row.mustEquip === false ? "不可裝備" : `需要 ${formatNumber(row.count)} 個`];
     if (row.parent) meta.push(row.parent);
     const badge = questConditionBadgeHtml(row);
     return `

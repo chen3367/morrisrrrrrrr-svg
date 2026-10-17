@@ -18,7 +18,7 @@
 .expHeading { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
 .expHeading p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
 .expOverview { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; padding: 22px 0 16px; }
-.expInitialFields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.expInitialFields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 .expMinor { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 .expResult { border-left: 3px solid var(--accent); padding-left: 24px; min-width: 0; }
 #expFinal { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin: 14px 0; font-variant-numeric: tabular-nums; }
@@ -28,6 +28,16 @@
 .expResult dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; }
 .expResult dt { color: var(--muted); }
 .expResult dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.expTargetStart { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.expTargetPlan { padding: 20px 0; border-top: 1px solid var(--line); }
+.expPlanTable { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+.expPlanTable th, .expPlanTable td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: middle; overflow-wrap: anywhere; }
+.expPlanTable th:first-child { width: 40%; text-align: left; padding-left: 0; }
+.expPlanTable thead th { color: var(--muted); font-size: 12px; font-weight: 500; }
+.expPlanTable td strong { display: block; font-size: 18px; color: var(--active-text); font-variant-numeric: tabular-nums; }
+.expPlanTable small { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.expPlanIdentity { display: flex; align-items: center; gap: 10px; font-weight: 650; }
+.expPlanIdentity span { min-width: 0; }
 .expEstimate { font-size: 12px; color: var(--muted); margin: 0 0 18px; }
 .expError { color: #ab2c27; background: #fcebe9; border-left: 3px solid #b63b36; padding: 10px 14px; font-size: 14px; }
 .expWarning { color: #82531a; font-size: 13px; margin: 0; }
@@ -42,8 +52,9 @@
 .expShoeStats span { font-size: 12px; color: var(--muted); }
 #expShoeWarning { grid-column: 1 / -1; }
 .expCharlie { padding: 22px 0; }
+#expCharlie { scroll-margin-top: 110px; }
+.expRewardList > .expLinkedReward { background: var(--accent-soft); outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; padding-inline: 8px; }
 .expSectionHeading { display: flex; align-items: center; gap: 20px; justify-content: space-between; margin-bottom: 12px; }
-.expRate { display: grid; gap: 6px; width: 180px; flex-shrink: 0; }
 .expMaterialToolbar { display: flex; gap: 20px; justify-content: space-between; align-items: end; margin-bottom: 12px; }
 .expMaterialToolbar label { max-width: 380px; flex: 1; }
 #expCharlieTotal { color: var(--active-text); font-size: 14px; font-weight: 650; text-align: right; overflow-wrap: anywhere; }
@@ -93,11 +104,14 @@
   .expMain { padding: 18px 16px 36px; }
   .expOverview { gap: 24px; grid-template-columns: minmax(0, 1fr); }
   .expResult { padding-left: 16px; }
+  .expPlanTable th, .expPlanTable td { padding: 12px 5px; }
+  .expPlanTable th:first-child { width: 38%; }
+  .expPlanTable td strong { font-size: 16px; }
+  .expPlanIdentity { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 13px; }
   .expShoes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
   .expShoes > .expIdentity { grid-column: 1 / -1; }
   .expShoeStats { padding-top: 20px; }
   .expSectionHeading { flex-wrap: wrap; gap: 12px; }
-  .expRate { width: 100%; grid-template-columns: 1fr 120px; align-items: center; }
   .expMaterialToolbar { gap: 12px; flex-wrap: wrap; align-items: center; }
   .expMaterialToolbar label { flex-basis: 100%; max-width: none; }
   .expMaterialHeader { grid-template-columns: minmax(0, 1fr) 110px; gap: 10px; }

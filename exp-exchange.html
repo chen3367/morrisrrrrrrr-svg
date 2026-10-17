@@ -22,8 +22,8 @@
   </script>
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
-  <link rel="stylesheet" href="./styles.css?v=20261015201732" />
-  <link rel="stylesheet" href="./exp-exchange.css?v=a8dfa74d6cd1" />
+  <link rel="stylesheet" href="./styles.css?v=20261017011432" />
+  <link rel="stylesheet" href="./exp-exchange.css?v=b8c1906b9bec" />
 </head>
 <body class="expExchangePage">
   <header class="appHeader">
@@ -75,20 +75,32 @@
         <div class="expInitial"><h3 id="expInitialTitle">初始角色</h3><div class="expInitialFields">
           <label>等級<input id="expLevel" name="level" type="number" min="1" max="200" step="1" value="25" required inputmode="numeric" /></label>
           <label>經驗百分比 (%)<input id="expPercent" name="percent" type="number" min="0" max="99.999999" step="0.000001" value="0" required inputmode="decimal" /></label>
+          <label>目標等級<input id="expTargetLevel" name="targetLevel" type="number" min="1" max="200" step="1" value="30" required inputmode="numeric" /></label>
         </div><p class="expMinor">先結算中士交換，再依結算後等級檢查玻璃鞋條件。</p></div>
-        <div class="expResult" aria-live="polite" aria-atomic="true"><h3>推估結算</h3><div id="expFinal"><strong id="expFinalLevel">Lv.25</strong><span id="expFinalPercent">0.0000%</span></div><dl><div><dt>總獎勵經驗</dt><dd id="expTotal">0 EXP</dd></div><div><dt>提升等級</dt><dd id="expLevelGain">0</dd></div><div><dt>本級經驗</dt><dd id="expProgress">0 / 47,216</dd></div></dl><p id="expCapNote" class="expMinor" hidden></p></div>
+        <div class="expResult" aria-live="polite" aria-atomic="true"><h3>推估結算</h3><div id="expFinal"><strong id="expFinalLevel">Lv.25</strong><span id="expFinalPercent">0.0000%</span></div><dl><div><dt>總獎勵經驗</dt><dd id="expTotal">0 EXP</dd></div><div><dt>提升等級</dt><dd id="expLevelGain">0</dd></div><div><dt>本級經驗</dt><dd id="expProgress">0 / 47,216</dd></div><div class="expTargetStart"><dt id="expTargetStartLabel">目前距離 Lv.30</dt><dd id="expTargetStart">待計算</dd></div><div><dt id="expTargetFinalLabel">結算後距離 Lv.30</dt><dd id="expTargetFinal">待計算</dd></div></dl><p id="expCapNote" class="expMinor" hidden></p></div>
       </section>
       <p id="expError" class="expError" role="alert" hidden></p>
       <p class="expEstimate">結算結果為推估，實際以遊戲為準。</p>
+      <section class="expTargetPlan" aria-labelledby="expPlanTitle" aria-live="polite">
+        <h3 id="expPlanTitle">達標所需組數</h3>
+        <p class="expMinor">1 組 = 1 次交換。以下為兩種獨立方案，不需兩者都準備。</p>
+        <table class="expPlanTable">
+          <thead><tr><th scope="col">交換方式</th><th scope="col">目前所需</th><th scope="col">結算後還需</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" id="expPlanCharlieIdentity"></th><td id="expPlanCharlieStart">待計算</td><td id="expPlanCharlieFinal">待計算</td></tr>
+            <tr><th scope="row" id="expPlanShoesIdentity"></th><td id="expPlanShoesStart">待計算</td><td id="expPlanShoesFinal">待計算</td></tr>
+          </tbody>
+        </table>
+      </section>
       <section class="expShoes" aria-labelledby="expShoeTitle">
         <div id="expShoeIdentity" class="expIdentity"></div>
         <div class="expShoeControl"><label for="expShoes">玻璃鞋數量</label><input id="expShoes" name="shoes" type="number" min="0" max="1000000000" step="1" value="0" required inputmode="numeric" /></div>
         <div class="expShoeStats"><strong id="expShoeTotal">0 EXP</strong><span id="expShoeCount">完成 0 次 · 剩餘 0 個</span></div>
         <p id="expShoeWarning" class="expWarning" hidden></p>
       </section>
-      <section class="expCharlie" aria-labelledby="expCharlieTitle">
-        <header class="expSectionHeading"><div id="expCharlieIdentity" class="expIdentity"></div><div class="expRate"><label for="expCharlieRate">每次交換 EXP</label><input id="expCharlieRate" name="charlieExp" type="number" min="0" max="10000000" step="1" value="500" required inputmode="numeric" /></div></header>
-        <p class="expEstimate">每次交換預設 500 EXP（待確認）。不同材料分開計算，不合併餘數。</p>
+      <section id="expCharlie" class="expCharlie" aria-labelledby="expCharlieTitle">
+        <header class="expSectionHeading"><div id="expCharlieIdentity" class="expIdentity"></div></header>
+        <p class="expEstimate">每次交換獲得 <span id="expCharlieExp">500</span> EXP。不同材料分開計算，不合併餘數。</p>
         <p class="expRewardNotice">隨機獎勵清單僅供參考，實際品項與機率待確認。</p>
         <div class="expMaterialToolbar"><label for="expSearch">材料／獎勵名稱或 ID<input id="expSearch" type="search" placeholder="搜尋材料或獎勵" /></label><span id="expCharlieTotal">0 次 · 0 EXP</span></div>
         <div class="expMaterialHeader" aria-hidden="true"><span>交換材料</span><span>持有數量</span><span>次數／餘數</span></div>
@@ -101,9 +113,9 @@
     </section>
     <noscript>請啟用 JavaScript 進行經驗試算。<a href="./quests.html?quest=2017">艾溫的玻璃鞋任務索引</a></noscript>
   </main>
-  <script src="./exp-exchange-data.js?v=419ab0de230b"></script>
-  <script src="./exp-exchange-logic.js?v=10c64d334836"></script>
-  <script src="./exp-exchange.js?v=cf523041b958"></script>
-  <script src="./mobile.js?v=20261015201732"></script>
+  <script src="./exp-exchange-data.js?v=ef73b20bde49"></script>
+  <script src="./exp-exchange-logic.js?v=c107722b6233"></script>
+  <script src="./exp-exchange.js?v=bc762d464c62"></script>
+  <script src="./mobile.js?v=20261017011432"></script>
 </body>
 </html>

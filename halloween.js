@@ -20,7 +20,7 @@
       maps = row.maps.length ? `<div class="hwMapLinks">${mapLink(row.maps[0])}</div>` : '<small>未提供固定地圖座標</small>';
       if (row.maps.length > 1) maps += `<details><summary>其他場景地圖 ${row.maps.length - 1}</summary><div class="hwMapLinks">${row.maps.slice(1).map(mapLink).join("")}</div></details>`;
     }
-    return `<div class="hwEntity ${row.kind === "p" ? "hwNpc" : ""}">${image(row)}<div>${role ? `<small>${escape(role)}</small>` : ""}<strong>${name}${row.count != null ? ` × ${number(row.count)}` : ""}</strong>${row.quantityLabel ? `<small>${escape(row.quantityLabel)}</small>` : ""}${maps}${drops}${row.choice ? "<small>選擇獎勵</small>" : ""}${row.weight ? "<small>隨機獎勵，機率未確認</small>" : ""}</div></div>`;
+    return `<div class="hwEntity ${row.kind === "p" ? "hwNpc" : ""}">${image(row)}<div>${role ? `<small>${escape(role)}</small>` : ""}<strong>${name}${row.count != null && row.mustEquip == null ? ` × ${number(row.count)}` : ""}</strong>${row.quantityLabel ? `<small>${escape(row.quantityLabel)}</small>` : ""}${maps}${drops}${row.choice ? "<small>選擇獎勵</small>" : ""}${row.weight ? "<small>隨機獎勵，機率未確認</small>" : ""}</div></div>`;
   }
 
   function questLink(q, label) {
@@ -50,11 +50,11 @@
     const rect = preview.imageRectPercent;
     const offsets = [[0, -26], [-16, -28], [-16, 28]];
     const markers = preview.points.map((point, index) => {
-      const [dx, dy] = offsets[index];
+      const [dx, dy] = point.labelOffset || offsets[index] || [0, -26];
       const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-      return `<a class="hwMapPoint" href="${escape(preview.map.href)}" style="left:${point.leftPercent}%;top:${point.topPercent}%" data-number="${point.number}" aria-label="${point.number} ${escape(point.label)}木材堆，座標 ${point.x}, ${point.y}"><span class="hwMapLeader" style="width:${Math.hypot(dx, dy)}px;transform:rotate(${angle}deg)"></span><span class="hwMapDot"></span><span class="hwMapNumber" style="left:${dx}px;top:${dy}px">${point.number}</span></a>`;
+      return `<a class="hwMapPoint" href="${escape(preview.map.href)}" style="left:${point.leftPercent}%;top:${point.topPercent}%" data-number="${point.number}" aria-label="${point.number} ${escape(point.displayName)}，座標 ${point.x}, ${point.y}"><span class="hwMapLeader" style="width:${Math.hypot(dx, dy)}px;transform:rotate(${angle}deg)"></span><span class="hwMapDot"></span><span class="hwMapNumber${point.markerLabel ? " hwMapName" : ""}" style="left:${dx}px;top:${dy}px">${escape(point.markerLabel || point.number)}</span></a>`;
     }).join("");
-    return `<section class="hwSection hwLocationPreview"><h4>三個木材堆</h4><a href="${escape(preview.map.href)}">${escape(preview.map.name)}</a><div class="hwMapFrame"><div class="hwMapCanvas" style="aspect-ratio:${preview.canvas.width}/${preview.canvas.height}"><img src="${escape(preview.image)}" width="${preview.imageSize.width}" height="${preview.imageSize.height}" alt="${escape(preview.map.name)}小地圖" style="left:${rect.left}%;top:${rect.top}%;width:${rect.width}%;height:${rect.height}%" />${markers}</div></div><ol class="hwMapCoordinates">${preview.points.map(point => `<li><span class="hwCoordinateNumber">${point.number}</span><div><strong>${escape(point.label)}木材堆</strong><span>X ${point.x} · Y ${point.y}</span></div></li>`).join("")}</ol></section>`;
+    return `<section class="hwSection hwLocationPreview${preview.compact ? " hwCompactLocation" : ""}"><h4>${escape(preview.title)}</h4><a href="${escape(preview.map.href)}">${escape(preview.map.name)}</a><div class="hwMapFrame"><div class="hwMapCanvas" style="aspect-ratio:${preview.canvas.width}/${preview.canvas.height}"><img src="${escape(preview.image)}" width="${preview.imageSize.width}" height="${preview.imageSize.height}" alt="${escape(preview.map.name)}小地圖" style="left:${rect.left}%;top:${rect.top}%;width:${rect.width}%;height:${rect.height}%" />${markers}</div></div><ol class="hwMapCoordinates">${preview.points.map(point => `<li>${point.image ? `<img class="hwCoordinateIcon" src="${escape(point.image)}" alt="" width="36" height="36" />` : `<span class="hwCoordinateNumber">${point.number}</span>`}<div><strong>${escape(point.displayName)}</strong><span>X ${point.x} · Y ${point.y}</span></div></li>`).join("")}</ol></section>`;
   }
 
   function renderQuest(id) {
@@ -70,15 +70,15 @@
       <p class="hwSchedule">客戶端排程：${escape(q.start || "未提供")} ～ ${escape(q.end || "未提供")}（未核實實際開放）</p>
       ${q.daily ? '<p class="hwAlert hwDaily">每日任務</p>' : ""}
       <section class="hwSection"><h4>NPC 與地點</h4><div class="hwEntities">${q.startNpc ? entity(q.startNpc, q.endNpc?.id === q.startNpc.id ? "接取與回報" : q.startRole) : '<p class="hwMuted">未提供接取 NPC</p>'}${q.endNpc && q.endNpc.id !== q.startNpc?.id ? entity(q.endNpc, "回報") : ""}</div></section>
-      ${startReq.length ? `<section class="hwSection"><h4>接取前置條件</h4><div class="hwPrereqs">${startReq.map((r) => `<div>${questLink(r)} <span>· ${stateLabel(r.state)}</span></div>`).join("")}</div></section>` : ""}
+      ${startReq.length ? `<section class="hwSection"><h4>接取前置條件</h4><div class="hwPrereqs">${startReq.map((r) => `<div>${questLink(r)} <span>· ${escape(r.stateLabel || stateLabel(r.state))}</span></div>`).join("")}</div></section>` : ""}
       <section class="hwSection"><h4>任務流程</h4><ol class="hwSteps">${q.steps.map((step) => `<li>${escape(step)}</li>`).join("")}</ol>${finishReq.length ? `<h4>完成本段前需先完成</h4><div class="hwPrereqs">${finishReq.map((r) => `<div>${questLink(r)} <span>· ${stateLabel(r.state)}</span></div>`).join("")}</div>` : ""}</section>
       ${locationPreview(q.locationPreview)}
-      ${q.materials.length ? `<section class="hwSection"><h4>需求道具</h4><div class="hwEntities">${q.materials.map((e) => entity(e)).join("")}</div></section>` : ""}
+      ${q.materials.length ? `<section class="hwSection"><h4>需求道具</h4><div class="hwEntities">${q.materials.map((e) => entity(e, e.mustEquip === true ? "完成條件：需裝備" : e.mustEquip === false ? "完成條件：不可裝備" : "")).join("")}</div></section>` : ""}
       ${q.monsters.length ? `<section class="hwSection"><h4>需求狩獵</h4><div class="hwEntities">${q.monsters.map((e) => entity(e)).join("")}</div></section>` : ""}
       ${q.extraEntities.length ? `<section class="hwSection"><h4>相關怪物與道具</h4><div class="hwEntities">${q.extraEntities.map((e) => entity(e, e.role)).join("")}</div></section>` : ""}
       ${q.startRewards.give.length ? `<section class="hwSection"><h4>接取時領取</h4><div class="hwEntities">${q.startRewards.give.map((e) => entity(e)).join("")}</div></section>` : ""}
       ${rewards(q)}
-      ${q.next.length ? `<section class="hwSection"><h4>相關後續</h4><div class="hwPrereqs">${q.next.map((r) => `<div>${questLink(r)} <span>· 對方${r.stage}條件要求本段${stateLabel(r.state)}</span></div>`).join("")}</div></section>` : ""}
+      ${q.next.length ? `<section class="hwSection"><h4>相關後續</h4><div class="hwPrereqs">${q.next.map((r) => `<div>${questLink(r)} <span>· 對方${r.stage}條件要求本段${escape(r.stateLabel || stateLabel(r.state))}</span></div>`).join("")}</div></section>` : ""}
       <details class="hwQuestDialogues"><summary>完整 NPC 對話與事件台詞 · ${q.dialogues.length + q.scene.length} 段</summary>${q.dialogues.length ? dialogueRows(q.dialogues) : ""}${q.scene.length ? '<h4>事件台詞</h4><p class="hwMuted">依本段劇情對應；台詞順序不代表已還原全部伺服器分支。</p>' + dialogueRows(q.scene, "2026_halloweenevent") : ""}</details>
       <details class="hwJournal"><summary>完整任務日誌</summary><ol class="hwDialogue">${q.journal.map((row) => `<li><small>${escape({0: "接取前", 1: "進行中", 2: "完成後", parent: "任務群"}[row.key] || row.key)}</small><p>${escape(row.text)}</p></li>`).join("")}</ol></details>
       <nav class="hwPager" aria-label="相鄰流程">${prev ? questLink(prev, `上一段：${prev.name}`) : "<span></span>"}${next ? questLink(next, `下一段：${next.name}`) : ""}</nav>
@@ -104,7 +104,7 @@
     const a = db.audit;
     $("hwAuditContent").innerHTML = `<p>掃描 ${a.questTableCount} 筆本地任務。收錄 ${a.playableCount} 筆具名流程與 ${a.internalCount} 筆內部旗標／台詞控制任務。每日清單另核對活動公告。</p>
       <p>本地並未提供完整伺服器事件程式。一般任務未列冷卻時，不自行補寫等待時間。</p>
-      <p>第一章的「漫漫長夜的守護者」與「永恆的營火」已確認為每日任務。「雪山之歌」另有額外劇情進度要求，觸發條件待確認。</p>
+      <p>第一章的「漫漫長夜的守護者」與「永恆的營火」為每日任務；兩項皆至少完成一次，即可接取「雪山之歌」。</p>
       <p>缺少完整對話：${a.missingDialogues.length ? a.missingDialogues.join("、") : "無（每筆均有任務 Say 或事件台詞）"}。缺少獨立圖示：${escape(a.missingIcons.join("、") || "無")}。</p>
       <p>活動公告期間為 ${escape(db.dailyChecklist.activityPeriod)}。各任務卡保留客戶端排程，尚未逐一核實實際開放。公告未明列每日重置鐘點；勾選清單以台灣時間午夜換日。</p>
       <details><summary>收錄的任務 ID 與依據</summary><ul class="hwAuditRows">${db.quests.map((q) => `<li><strong>${questLink(q, `${q.id} ${q.name}`)}</strong>${escape(q.reason.join("；"))}</li>`).join("")}</ul></details>
