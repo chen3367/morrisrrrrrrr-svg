@@ -1084,6 +1084,20 @@ function renderPartyQuestFlow(quest) {
     ${row.note ? `<p class="partyQuestRewardNote">${escapeHtml(row.note)}</p>` : ""}
     ${row.tool && tool ? `<a class="partyQuestToolLink" href="${escapeHtml(tool.href)}">${escapeHtml(tool.stepLabel || tool.label)} →</a>` : ""}
     ${row.entities.length ? `<div class="partyQuestEntities">${row.entities.map(entity).join("")}</div>` : ""}
+    ${row.blessing ? `<details class="questDialogueDetails partyQuestBlessing">
+      <summary><strong>${escapeHtml(row.blessing.title)}</strong><span>隨機 1 種・${Number(row.blessing.durationMinutes)} 分鐘</span></summary>
+      <p class="partyQuestRewardNote">${escapeHtml(row.blessing.note)}</p>
+      <table class="partyQuestBlessingTable" aria-label="妖精溫莉的祝福效果"><thead><tr><th scope="col">祝福</th><th scope="col">效果</th></tr></thead>
+        <tbody>${row.blessing.effects.map(effect => `<tr><th scope="row"><a href="${escapeHtml(effect.item.href)}">${assetImage(effect.item.image, effect.item.name, "?", "miniIcon")}<strong>${escapeHtml(effect.name)}</strong></a></th><td>${effect.stats.map(stat => `<span>${escapeHtml(stat)}</span>`).join("")}</td></tr>`).join("")}</tbody>
+      </table>
+    </details>` : ""}
+    ${row.feeding ? `<details class="questDialogueDetails partyQuestFeeding">
+      <summary><strong>${escapeHtml(row.feeding.title)}</strong></summary>
+      <div id="partyQuest-friendship"><ol class="partyQuestInstructions">${row.feeding.instructions.map(line => `<li>${escapeHtml(line)}</li>`).join("")}</ol>
+        <h5>建議備料</h5><p class="partyQuestRewardNote">${escapeHtml(row.feeding.note)}</p>
+        <div class="partyQuestEntities">${row.feeding.materials.map(entity).join("")}</div>
+      </div>
+    </details>` : ""}
     ${renderPartyQuestSeedMap(row.seedMap)}
     ${renderPartyQuestGuideMap(row.guideMap)}
     ${renderPartyQuestQuiz(row.quiz)}
@@ -1123,6 +1137,7 @@ function renderPartyQuestRewards(quest) {
   return `<section class="sectionBlock partyQuestExchange">
     <div class="sectionTitle"><h3>女神手鐲兌換</h3></div>
     <p class="partyQuestRewardNote">${escapeHtml(exchange.note)}</p>
+    <p class="partyQuestRewardNote"><a href="#partyQuest-friendship">查看溫莉好感度餵食方式 →</a></p>
     <div class="dropsGrid questRewardGrid">${exchange.materials.map(item => questRewardItemCard(item, "需要")).join("")}${questRewardItemCard(exchange.reward, "兌換")}</div>
     <details class="questDialogueDetails partyQuestEvidence">
       <summary><strong>本地領獎對話摘錄</strong><span>${info.evidence.length} 段</span></summary>
@@ -1131,12 +1146,15 @@ function renderPartyQuestRewards(quest) {
   </section>
   <section class="sectionBlock partyQuestReference">
     <details class="questDialogueDetails">
-      <summary><strong>${escapeHtml(reference.title)}</strong><span>卷軸・母礦・藥水・經驗值</span></summary>
-      <p class="partyQuestRewardNote">${escapeHtml(reference.note)} ${escapeHtml(reference.sourceName)}</p>
-      <div class="requirementGroup"><strong>羽翼領取數量</strong><p>${escapeHtml(reference.featherNote)} 舊版玩家記錄</p></div>
-      <div class="requirementGroup"><strong>經驗值（舊台版參考）</strong><div class="statsGrid compactStats">${reference.exp.map(row => `<div class="statCell"><span>${escapeHtml(row.stage)}</span><strong>${formatNumber(row.amount)}</strong></div>`).join("")}</div><p>${escapeHtml(reference.expNote)}</p></div>
-      <p class="partyQuestRewardNote">以下為舊台版通關隨機獎勵，每次領取其中一項；卷軸的 10%、60%、100% 是強化成功率，不是抽中機率。</p>
-      ${reference.groups.map(group => `<div class="requirementGroup"><strong>${escapeHtml(group.title)}</strong><div class="dropsGrid questRewardGrid">${group.items.map(item => questRewardItemCard(item, "參考數量")).join("")}</div></div>`).join("")}
+      <summary><strong>${escapeHtml(reference.title)}</strong><span>每場隨機 1 項</span></summary>
+      <p class="partyQuestRewardNote">${escapeHtml(reference.note)}</p>
+      <div class="requirementGroup"><strong>羽翼領取數量</strong><p>${escapeHtml(reference.featherNote)}</p></div>
+      <p class="partyQuestRewardNote">卷軸的 10%、60%、100% 是強化成功率，不是抽中機率。</p>
+      ${reference.groups.map(group => `<div class="requirementGroup"><strong>${escapeHtml(group.title)}</strong><div class="dropsGrid questRewardGrid">${group.items.map(item => questRewardItemCard(item, "獎勵")).join("")}</div></div>`).join("")}
+    </details>
+    <details class="questDialogueDetails partyQuestExperience">
+      <summary><strong>關卡經驗值</strong></summary>
+      <div class="statsGrid compactStats">${reference.exp.map(row => `<div class="statCell"><span>${escapeHtml(row.stage)}</span><strong>${formatNumber(row.amount)}</strong></div>`).join("")}</div><p>${escapeHtml(reference.expNote)}</p>
     </details>
   </section>`;
 }

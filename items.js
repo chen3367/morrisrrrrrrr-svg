@@ -1377,6 +1377,7 @@ function renderQuestSources(item) {
   return sourceChipBlock("任務獲取", rows, "questSourceList", row => {
     const historical = row.sourceKind === "historicalPartyQuestReward";
     const bonusBox = row.sourceKind === "partyQuestBox";
+    const confirmedPartyReward = String(row.questId) === "1203" && row.currentVersionConfirmed;
     const summary = [questStateLabel(row.state)];
     if (row.category) summary.push(row.category);
     if (state.showIds) summary.push(`ID ${row.questId}`);
@@ -1388,7 +1389,7 @@ function renderQuestSources(item) {
     if (sourceNpc?.name) meta.push(sourceNpc.name);
     const badge = questConditionBadgeHtml(row);
     return `
-    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}" href="${questUrl(row.questId)}${bonusBox ? "#partyQuest-bonus" : ""}">
+    <a class="sourceRow sourceLinkRow sourceChipRow sourceQuestRow${historical ? " sourceReferenceRow" : ""}${confirmedPartyReward ? " sourcePartyRewardRow" : ""}" href="${questUrl(row.questId)}${bonusBox ? "#partyQuest-bonus" : ""}">
       ${bonusBox ? assetImage("./assets/map_marks/GoddessTower.png", "寶物倉庫", "箱", "sourceMonsterImage") : questNpcImage(row)}
       <div>
         <strong>${escapeHtml(row.questName)}${bonusBox ? "：寶物倉庫箱子" : ""}</strong>

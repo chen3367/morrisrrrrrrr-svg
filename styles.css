@@ -1669,6 +1669,15 @@ h3 {
 .partyQuestMusic { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 18px 0; }
 .partyQuestMusic > div { display: grid; gap: 6px; align-content: start; }
 .partyQuestMusic > div > strong { font-size: 13px; color: var(--muted); }
+.partyQuestBlessingTable { width: 100%; max-width: 640px; table-layout: fixed; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+.partyQuestBlessingTable th, .partyQuestBlessingTable td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
+.partyQuestBlessingTable th:first-child { width: 120px; }
+.partyQuestBlessingTable thead { color: var(--muted); font-size: 12px; }
+.partyQuestBlessingTable a { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+.partyQuestBlessingTable .miniIcon { width: 28px; height: 28px; flex-shrink: 0; }
+.partyQuestBlessingTable td span { display: block; }
+.partyQuestFeeding h5 { margin: 16px 0 4px; font-size: 14px; }
+#partyQuest-friendship { scroll-margin-top: 120px; }
 .partyQuestToolLink { display: inline-block; font-weight: 700; margin: 4px 0; }
 .partyQuestRewardNote { color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; margin: 10px 0; font-size: 13px; }
 .partyQuestEvidence { margin-top: 12px; }
@@ -1997,6 +2006,24 @@ h3 {
 .sourceChipList .sourceReferenceRow > .sourceChipBadge {
   grid-column: 3;
   grid-row: 1;
+}
+.sourceChipList .sourcePartyRewardRow {
+  position: relative;
+  grid-template-columns: 38px minmax(0, 1fr);
+  padding-top: 32px;
+}
+.sourceChipList .sourcePartyRewardRow strong,
+.sourceChipList .sourcePartyRewardRow span,
+.sourceChipList .sourcePartyRewardRow p {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.sourceChipList .sourcePartyRewardRow > .sourceChipBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 .shopSourceList .sourceChipBadge {
   min-width: 90px;
