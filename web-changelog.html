@@ -42,7 +42,7 @@
   <link rel="icon" href="./assets/items/4031456.png" type="image/png" />
   <link rel="apple-touch-icon" href="./assets/items/4031456.png" />
   <link rel="stylesheet" href="./styles.css?v=3cc08978412f" />
-  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-17T16:56:58+08:00","updatedAtText":"2026-10-17 16:56:58 GMT+8"};</script>
+  <script>window.MS_SITE_METADATA = {"updatedAt":"2026-10-21T17:50:03+08:00","updatedAtText":"2026-10-21 17:50:03 GMT+8"};</script>
 </head>
 <body>
   <p class="seoIntro">楓憶MapleMemory 是楓之谷經典服資料庫，可查詢經典服、楓之谷經典服、經典服資料庫相關的怪物掉落、道具取得、任務、地圖、技能與實用工具。</p>
@@ -86,13 +86,14 @@
           </div>
         </details>
       </nav>
-      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-17 16:56:58 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
+      <div class="buildMeta" id="buildMeta">網頁更新 2026-10-21 17:50:03 GMT+8 · 只列已提交到 GitHub Pages 的網站功能更新</div>
     </div>
   </header>
 
   <main class="patchNotesLayout">
     <aside class="monsterList patchVersionList" aria-label="Commit 列表">
-      <a class="patchVersionRow active" href="#cfe17741b"><strong>fe17741b</strong><span>2026-10-17</span></a>
+      <a class="patchVersionRow active" href="#c6bcf7d31"><strong>6bcf7d31</strong><span>2026-10-21</span></a>
+      <a class="patchVersionRow" href="#cfe17741b"><strong>fe17741b</strong><span>2026-10-17</span></a>
       <a class="patchVersionRow" href="#ccf47803b"><strong>cf47803b</strong><span>2026-10-17</span></a>
       <a class="patchVersionRow" href="#ce8f2ad0a"><strong>e8f2ad0a</strong><span>2026-10-16</span></a>
       <a class="patchVersionRow" href="#c39e5eff8"><strong>39e5eff8</strong><span>2026-10-16</span></a>
@@ -187,10 +188,20 @@
             <p>每筆更新都對齊 GitHub commit hash；遊戲資料版本變動請查看遊戲更新日誌。</p>
           </div>
           <div class="patchNoteDate">
-            <strong>84</strong>
+            <strong>85</strong>
             <span>筆更新</span>
           </div>
         </header>
+
+        <section id="c6bcf7d31" class="patchNoteSection">
+          <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/6bcf7d31231892be93d9738f04bb5514a40c9cae">6bcf7d31</a> 變形雪吉拉掉落與聖騎士傷害修正</h3>
+          <ul class="patchChangeList">
+            <li><strong>新增變形雪吉拉</strong>：與一般雪吉拉分開列出，補上銀龍槍等 29 項掉落，同步更新道具來源反查與出現地圖。</li>
+            <li><strong>聖騎士新增屬性充能選擇</strong>：依已學習技能與目前武器選擇火、冰、雷或聖屬性充能，套用技能等級的傷害倍率與怪物屬性抗性；充能不重複疊加，並納入屬性強化對屬性攻擊的加成。</li>
+            <li><strong>怪物模擬加入降魔咒</strong>：勾選「降魔咒已命中」後，依技能等級降低目標物理防禦，重新計算傷害與擊殺次數；不影響魔法防禦。</li>
+            <li><strong>補計三轉獎勵 5 AP</strong>：配點預算在 70 級起額外計入一次三轉獎勵，並修正怪物模擬勾選框在手機上的排版。</li>
+          </ul>
+        </section>
 
         <section id="cfe17741b" class="patchNoteSection">
           <h3><a class="commitHashLink" href="https://github.com/morrisrrrrrrr-svg/morrisrrrrrrr-svg.github.io/commit/fe17741bc38b569cb1b5ca7b455bea596b57c332">fe17741b</a> 女神組隊獎勵、祝福與好感度攻略</h3>
