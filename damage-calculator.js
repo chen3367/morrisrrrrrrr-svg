@@ -649,7 +649,7 @@ function skillAssignableMax(skill) {
 }
 
 function baseStatLimit() {
-  return LEVEL_ONE_BASE_STAT_POINTS + Math.max(0, characterLevel() - 1) * 5;
+  return LEVEL_ONE_BASE_STAT_POINTS + Math.max(0, characterLevel() - 1) * 5 + (characterLevel() >= 70 ? 5 : 0);
 }
 
 function baseStatInput(stat) {
@@ -739,7 +739,7 @@ function updateBaseStatBudget() {
   const used = baseStatSum();
   const limit = baseStatLimit();
   const remaining = Math.max(0, limit - used);
-  el.baseStatBudget.textContent = `基本數值 ${formatNumber(used)} / ${formatNumber(limit)}，剩餘 ${formatNumber(remaining)} 點`;
+  el.baseStatBudget.textContent = `基本數值 ${formatNumber(used)} / ${formatNumber(limit)}，剩餘 ${formatNumber(remaining)} 點${characterLevel() >= 70 ? "（含三轉獎勵 5 點）" : ""}`;
 }
 
 function updateSpiritBlessingHint() {
@@ -1502,7 +1502,8 @@ function renderSkillDamageCard(skill, result, range = getAttackRange()) {
     : `<span class="damagePill">一般單段 ${formatNumber(profile.normal?.min ?? result.min)} ~ ${formatNumber(profile.normal?.max ?? result.max)}</span>
         <span class="damagePill">${escapeHtml(hitLabel)} ${formatNumber(totalMin)} ~ ${formatNumber(totalMax)}</span>
         ${criticalText}
-        <span class="damagePill">${escapeHtml(result.note || `${result.percent}%`)}</span>`;
+        <span class="damagePill">${escapeHtml(result.note || `${profile.skillPercent ?? result.percent}%`)}</span>
+        ${profile.charge ? `<span class="damagePill">${escapeHtml(profile.charge.name)} ×${profile.charge.multiplier}</span>` : ""}`;
   return `<div class="damageSkillCard">
     <img src="${escapeHtml(skill.image || "")}" alt="" loading="lazy" />
     <div>
@@ -1520,6 +1521,7 @@ function renderAll() {
   updateSpiritBlessingHint();
   renderSkills();
   renderSpecialBuffs();
+  renderKnightBuffControls();
   renderNormalBuffPicker();
   renderDetail();
 }
@@ -1529,6 +1531,9 @@ function clearAll() {
   combatState.monsterId = "";
   combatState.skillId = "";
   combatState.stunned = false;
+  combatState.chargeId = "";
+  combatState.threaten = false;
+  writeCookie("ms_damage_charge", "");
   writeCookie("ms_damage_monster", "");
   writeCookie("ms_damage_sim_skill", "");
   clearDamageInputCookies();
@@ -1613,6 +1618,9 @@ function setupEvents() {
   });
   el.jobSelect.addEventListener("change", () => {
     state.jobId = el.jobSelect.value;
+    combatState.chargeId = "";
+    combatState.threaten = false;
+    writeCookie("ms_damage_charge", "");
     writeCookie("ms_damage_job", state.jobId);
     state.skillLevels = {};
     state.activeSkillBuffs = {};
@@ -1903,8 +1911,58 @@ const COMBAT_RANGED_CRIT = new Set([3001004, 3001005, 3101005, 3110001, 3111003,
   4001344, 4101005, 4111005, 4121007, 3100001, 3200001]);
 const COMBAT_ELEMENT_NAMES = {f: 'fire', i: 'ice', l: 'lightning', s: 'poison', h: 'holy'};
 const COMBAT_ELEMENT_LABELS = {fire: '火', ice: '冰', lightning: '雷', poison: '毒', holy: '聖'};
-const combatState = {monsterId: readCookie('ms_damage_monster') || '', skillId: readCookie('ms_damage_sim_skill') || '', stunned: false};
+const combatState = {monsterId: readCookie('ms_damage_monster') || '', skillId: readCookie('ms_damage_sim_skill') || '',
+  stunned: false, chargeId: readCookie('ms_damage_charge') || '', threaten: false};
 let combatCache = {key: '', value: null};
+
+const KNIGHT_CHARGE_ELEMENTS = {1211003: 'fire', 1211004: 'fire', 1211005: 'ice', 1211006: 'ice',
+  1211007: 'lightning', 1211008: 'lightning', 1221003: 'holy', 1221004: 'holy'};
+
+function knightChargeCandidates(weapon = state.weaponType) {
+  const sword = ['單手劍', '雙手劍'].includes(weapon), blunt = ['單手棍', '雙手棍'].includes(weapon);
+  return jobSkills().filter(skill => KNIGHT_CHARGE_ELEMENTS[skill.id] && skillLevel(skill.id) > 0
+    && characterLevel() >= advancementStartLevel(skill.advancement)
+    && (Number(skill.id) % 2 ? sword : blunt)).map(skill => ({
+      id: String(skill.id), name: skill.name, image: skill.image, level: skillLevel(skill.id),
+      element: KNIGHT_CHARGE_ELEMENTS[skill.id], multiplier: Number(selectedSkillValues(skill).damage || 100) / 100,
+    }));
+}
+
+function activeKnightCharge(range) {
+  return knightChargeCandidates(range.weaponType).find(charge => charge.id === combatState.chargeId) || null;
+}
+
+function knightChargeElement(charge, monster) {
+  const status = monster?.elements?.[charge.element];
+  if (status === 'immune') return 0;
+  // Three-job charge scaling matches MXDC pe(); Holy Charge uses its legacy 20% base.
+  const delta = (charge.element === 'holy' ? 0.2 : 0.05) + charge.level * 0.015;
+  return status === 'weak' ? 1 + delta : ['resist', 'strong'].includes(status) ? 1 - delta : 1;
+}
+
+function learnedThreaten() {
+  return jobSkills().find(skill => Number(skill.id) === 1201006 && skillLevel(skill.id) > 0
+    && characterLevel() >= advancementStartLevel(skill.advancement));
+}
+
+function threatenedMonster(monster, enabled) {
+  const skill = enabled && learnedThreaten();
+  if (!monster || !skill) return {monster, reduction: 0};
+  const reduction = Math.max(0, Math.min(100, -Number(selectedSkillValues(skill).y || 0)));
+  return {monster: {...monster, physicalDefense: Math.max(0, Math.floor(Number(monster.physicalDefense || 0) * (1 - reduction / 100)))}, reduction};
+}
+
+function renderKnightBuffControls() {
+  const target = document.querySelector('#knightBuffControls');
+  if (!target) return;
+  if (currentJob()?.id !== 'paladin') { target.innerHTML = ''; return; }
+  const choices = knightChargeCandidates();
+  const charge = choices.find(row => row.id === combatState.chargeId);
+  target.innerHTML = `<label class="damageField"><span>屬性充能</span><select id="combatCharge"${choices.length ? '' : ' disabled'}>
+    <option value="">${choices.length ? '不套用充能' : '尚未學習符合武器的充能技能'}</option>
+    ${choices.map(row => `<option value="${row.id}"${charge?.id === row.id ? ' selected' : ''}>${escapeHtml(row.name)} Lv.${row.level} · ${Math.round(row.multiplier * 100)}%</option>`).join('')}</select></label>
+    ${charge ? `<p class="combatNote"><img class="combatSkillIcon" src="${escapeHtml(charge.image)}" alt="" /> ${escapeHtml(charge.name)} · 傷害 ×${charge.multiplier}</p>` : ''}`;
+}
 
 function criticalTotals(range, {stunned = false, passive = true} = {}) {
   let rate = Number(range.buff?.critRate || 0), bonus = Number(range.buff?.critBonus || 0);
@@ -1946,6 +2004,9 @@ function combatProfile(skill, range, monster = null) {
   const heal = isHealDamageSkill(skill);
   const magic = Boolean(id && !summon && !values.fixdamage && (range.job.kind === 'magic' || values.mad));
   let coefficient = magic || summon || values.fixdamage || id === 4111004 ? 1 : Number(values.damage || values.z || 100) / 100;
+  const charge = !magic && !summon && !values.fixdamage && id !== 4111004 ? activeKnightCharge(range) : null;
+  if (id === 1211002 && !charge) return {unavailable: '屬性攻擊需先啟用符合武器的屬性充能'};
+  if (id === 1211002 && skillLevel(1220010)) coefficient = Number(selectedSkillValues(skillById(1220010)).damage || values.damage) / 100;
   let baseMin = result.min / coefficient, baseMax = result.max / coefficient;
   if (!magic && !summon && !values.fixdamage && id !== 4111004) {
     baseMin = range.min; baseMax = range.max;
@@ -1981,15 +2042,19 @@ function combatProfile(skill, range, monster = null) {
     passive: id === 0 || COMBAT_RANGED_CRIT.has(id) || range.weaponType === '指虎'});
   if (COMBAT_NO_CRIT.has(id) || values.fixdamage) { critical.rate = 0; critical.bonus = 0; }
   if (id === 4111004) { critical.rate = Number(values.prop || 0); critical.bonus = 50; }
-  const element = heal ? (monster && !monster.undead ? 0 : 1) : combatElement(skill, monster);
-  const target = DamageCombat.targetRange(baseMin, baseMax, {monster, level: characterLevel(), magic,
-    element, ignoreDefense: Boolean(summon || values.fixdamage || id === 4111004 || (id === 1311005 && !monster?.boss))});
+  const element = heal ? (monster && !monster.undead ? 0 : 1) : combatElement(skill, monster) * (charge ? knightChargeElement(charge, monster) : 1);
+  const ignoreDefense = Boolean(summon || values.fixdamage || id === 4111004 || (id === 1311005 && !monster?.boss));
+  const debuff = threatenedMonster(monster, combatState.threaten && !magic && !ignoreDefense);
+  const target = DamageCombat.targetRange(baseMin * (charge?.multiplier || 1), baseMax * (charge?.multiplier || 1),
+    {monster: debuff.monster, level: characterLevel(), magic, element, ignoreDefense});
   const floor = value => element === 0 || baseMax <= 0 ? 0 : Math.max(1, Math.floor(value + Math.abs(value) * Number.EPSILON * 4));
   const weights = id === 5121007 ? [1, 1, 1, 1, 2, 4] : Array.from({length: Math.max(1, result.hits)}, () => 1);
   const segments = weights.map(weight => ({min: floor(target.min * coefficient * weight), max: floor(target.max * coefficient * weight),
     critMin: floor(target.min * (coefficient + critical.bonus / 100) * weight),
     critMax: floor(target.max * (coefficient + critical.bonus / 100) * weight), rate: critical.rate / 100}));
-  return {segments, critical, element, magic, summon, heal, normal: {min: segments[0].min, max: segments[0].max}};
+  return {segments, critical, element, magic, summon, heal, charge, skillPercent: coefficient * 100,
+    defenseReduction: debuff.reduction, effectiveDefense: debuff.monster?.physicalDefense,
+    normal: {min: segments[0].min, max: segments[0].max}};
 }
 
 function activeCombatSkills() {
@@ -2017,6 +2082,7 @@ function renderCombatShell() {
         <label class="damageField"><span>攻擊技能</span><select id="combatSkill">${skills.map(skill => `<option value="${skill.id}"${String(skill.id) === combatState.skillId ? ' selected' : ''}>${escapeHtml(skill.name)}${skill.id ? ` Lv.${skillLevel(skill.id)}` : ''}</option>`).join('')}</select></label>
       </div>
       <label class="combatCheck"${currentJob().id === 'buccaneer' && skillLevel(5110000) ? '' : ' hidden'}><input id="combatStunned" type="checkbox"${combatState.stunned && !monster?.boss ? ' checked' : ''}${monster?.boss ? ' disabled' : ''} />怪物已暈眩（致命暗襲）</label>
+      ${currentJob().id === 'paladin' ? `<label class="combatCheck"><input id="combatThreaten" type="checkbox"${combatState.threaten && learnedThreaten() ? ' checked' : ''}${learnedThreaten() ? '' : ' disabled'} /><span>降魔咒已命中${learnedThreaten() ? `（Lv.${skillLevel(1201006)}，物理防禦 -${-Number(selectedSkillValues(learnedThreaten()).y || 0)}%）` : '（尚未學習）'}</span></label>` : ''}
       <div id="combatResults" aria-live="polite"></div>
     </div>
   </section>`;
@@ -2061,7 +2127,10 @@ function renderCombatResults() {
   const counts = kills.impossible ? [] : [['最少次數', kills.min], ['最多次數', kills.max], ['平均次數', kills.mean], ['次數中位數', kills.median]];
   const note = kills.method === 'approximation' ? '長時間戰鬥：平均與中位擊殺次數採近似估算。' : '平均與中位擊殺次數以 4,096 次戰鬥估算。';
   const elementNames = [...String(skill.element || '').toLowerCase()].map(key => COMBAT_ELEMENT_LABELS[COMBAT_ELEMENT_NAMES[key]]).filter(Boolean).join('／');
-  target.innerHTML = `${summary}<div class="combatAttack">${skillImage}<strong>${escapeHtml(skill.name)}</strong><span>${profile.segments.length} 段${elementNames ? ` · ${elementNames}屬性 ×${profile.element}` : ''}</span></div>
+  target.innerHTML = `${summary}
+    ${profile.charge ? `<p class="combatNote">${escapeHtml(profile.charge.name)} Lv.${profile.charge.level} · 傷害 ×${profile.charge.multiplier} · ${COMBAT_ELEMENT_LABELS[profile.charge.element]}屬性相剋 ×${profile.element}</p>` : ''}
+    ${profile.defenseReduction ? `<p class="combatNote">降魔咒已命中 · 物理防禦 ${formatNumber(monster.physicalDefense)} → ${formatNumber(profile.effectiveDefense)}（-${profile.defenseReduction}%）</p>` : ''}
+    <div class="combatAttack">${skillImage}<strong>${escapeHtml(skill.name)}</strong><span>${profile.segments.length} 段${elementNames ? ` · ${elementNames}屬性 ×${profile.element}` : ''}</span></div>
     <p class="combatNote">一般單段 ${formatNumber(profile.normal.min)} ~ ${formatNumber(profile.normal.max)}${criticalText}</p>
     <h4>每次${profile.summon ? '召喚物攻擊' : '施放'}傷害</h4><dl class="combatStats">${stats.map(([label, value]) => `<div><dt>${label}</dt><dd>${combatNumber(value, 1)}</dd></div>`).join('')}</dl>
     <h4>擊殺所需${profile.summon ? '召喚物攻擊' : '施放'}次數</h4>${kills.impossible ? '<p class="combatNote">無法對此怪物造成傷害，無法擊殺。</p>' : `<dl class="combatStats">${counts.map(([label, value], index) => `<div><dt>${label}</dt><dd>${index > 1 && kills.method !== 'exact' ? '約 ' : ''}${combatNumber(value, 2)}</dd></div>`).join('')}</dl>`}
@@ -2081,6 +2150,13 @@ function setupCombatEvents() {
       combatState.skillId = event.target.value;
       writeCookie('ms_damage_sim_skill', combatState.skillId);
     } else if (event.target.id === 'combatStunned') combatState.stunned = event.target.checked;
+    else if (event.target.id === 'combatThreaten') combatState.threaten = event.target.checked && Boolean(learnedThreaten());
+    else if (event.target.id === 'combatCharge') {
+      combatState.chargeId = event.target.value;
+      writeCookie('ms_damage_charge', combatState.chargeId);
+      renderAll();
+      return;
+    }
     else return;
     renderCombatResults();
   });
